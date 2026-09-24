@@ -13,6 +13,7 @@ Makes the information and services of Swiss municipalities reachable through cha
   - [0005](docs/adr/0005-stateless-server-no-citizen-query-logs.md) Stateless server, no Citizen query logs
   - [0006](docs/adr/0006-reference-client-is-a-fork-of-open-webui-with-own-mcp-apps-host.md) Reference Client = Open WebUI fork with own MCP Apps host
   - [0007](docs/adr/0007-service-inventory-is-typed-data-with-injection-check.md) Service Inventory is typed data, with injection check
+  - [0008](docs/adr/0008-agentic-only-where-the-next-step-depends-on-findings.md) **Proposed:** agentic only for discovery and the Citizen chat — for team discussion
 - [`docs/OPEN-QUESTIONS.md`](docs/OPEN-QUESTIONS.md) — OQ-1 Municipality sign-off · OQ-2 public model tool calling (test first!)
 
 ## Architecture at a glance
