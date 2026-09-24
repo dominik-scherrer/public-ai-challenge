@@ -1,26 +1,12 @@
 # Swiss Grounding MCP — Provenance-Aware Service Ingestion
 
-This package defines the concept for an adaptive ingestion pipeline that turns heterogeneous Swiss municipal websites into structured, provenance-preserving service records suitable for an MCP server.
+This directory defines the ingestion pipeline that turns heterogeneous Swiss municipal websites into structured, provenance-preserving service records suitable for an MCP server.
 
 The core claim:
 
 > **Do not build a generic scraper. Build a provenance-preserving municipal-service compiler with adaptive acquisition strategies.**
 
-The ingestion system should answer not only:
-
-- What service exists?
-- What are the requirements, fees, channels and responsible authorities?
-
-But also:
-
-- Where did every claim come from?
-- When was it fetched?
-- Was it official, observed, derived, inferred or dynamic?
-- Which extraction method produced it?
-- What evidence supports it?
-- How fresh is it?
-- How complete was the crawl?
-- Why did the system stop crawling?
+The system should answer not only what service exists, but also where every claim came from, when it was fetched, how it was transformed, how fresh it is, and why the crawler stopped.
 
 ## System boundary
 
@@ -29,21 +15,21 @@ municipality
     ↓
 context enrichment
     ↓
-website reconnaissance
+cheap reconnaissance
     ↓
-crawl-plan orchestration
+planner / semantic compiler
     ↓
-bounded scraping strategy
+typed CrawlPlan IR
     ↓
-source snapshots
+deterministic crawl runtime
     ↓
-observations
+source snapshots + PageIR
     ↓
-semantic interpretation
+small-model classification / extraction
     ↓
-typed service claims
+typed ClaimIR
     ↓
-validation / reconciliation
+deterministic validation / normalization
     ↓
 service records + provenance
     ↓
@@ -52,33 +38,65 @@ MCP-facing knowledge layer
 
 The LLM is **not** the scraper and **not** the authority.
 
-Its role is bounded:
+### Large-model role
 
-- classify source/page types
-- select an appropriate crawl strategy
-- identify likely service content
-- map heterogeneous wording into typed concepts
-- decide which evidence gaps justify targeted follow-up
+Use a capable planner only where the website is unfamiliar or the evidence is ambiguous:
 
-Deterministic software owns:
+- understand an unfamiliar site structure
+- select a crawl strategy
+- choose relevant languages
+- set budgets and stop rules
+- compile site-specific extraction plans
+- resolve hard conflicts or multilingual identity questions
+
+### Small-model role
+
+Use a cheaper constrained model, ultimately Apertus, for repetitive typed work:
+
+- page classification
+- service-vs-noise classification
+- field extraction into strict schemas
+- link relevance ranking
+- obvious multilingual pairing
+
+### Deterministic runtime role
+
+Software owns:
 
 - HTTP fetching
-- crawl budgets
+- browser escalation
 - domain boundaries
+- crawl budgets
+- caching and snapshots
 - canonicalization
-- hashing
-- timestamps
-- storage
+- hashing and timestamps
 - schema validation
-- duplicate handling
+- normalization
+- duplicate/conflict detection
 - stop conditions
 - provenance bookkeeping
 
+## Fetch principle
+
+Use the cheapest sufficient tool:
+
+```text
+HTTP fetch
+   ↓ insufficient / JS shell
+headless browser
+   ↓ real interaction required
+agentic browser
+```
+
+A browser is a fallback, not the default.
+
 ## Documents
 
-- `ARCHITECTURE.md` — full pipeline and orchestration model
+- `ARCHITECTURE.md` — end-to-end pipeline and model/runtime boundaries
+- `CRAWL_STRATEGIES.md` — adaptive crawl modes, fetch escalation and stop rules
+- `TOOLING_AND_RUNTIME.md` — candidate OSS components and runtime choices
+- `SEMANTIC_COMPILER.md` — planner → typed IR → small-model execution design
 - `PROVENANCE_AND_TRUST.md` — trust, provenance and evidence model
-- `CRAWL_STRATEGIES.md` — adaptive scraper modes and orchestration
 - `MUNICIPALITY_BENCHMARK.md` — seven representative test municipalities
 - `SERVICE_MODEL.md` — canonical service representation
 - `BUILD_PLAN.md` — first vertical slice and implementation sequence
@@ -88,4 +106,4 @@ Deterministic software owns:
 
 The Swiss Grounding MCP challenge values grounding quality, useful Swiss coverage, jurisdiction, freshness, citations, unsupported-query handling, agent efficiency, response size, latency, caching, refresh design, maintainability and MCP contract quality.
 
-This ingestion architecture is intended to make those properties visible and testable rather than implicit.
+This pipeline is designed to make those properties explicit and testable rather than implicit.

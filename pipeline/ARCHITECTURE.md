@@ -2,7 +2,7 @@
 
 ## 1. Goal
 
-Transform an official municipal entry point into structured, typed, provenance-preserving service records.
+Transform an official municipal entry point into structured, typed, provenance-preserving service records while minimizing unnecessary crawling and expensive model use.
 
 Input:
 
@@ -21,204 +21,228 @@ source[]
 evidence[]
 ```
 
-The pipeline should work across:
+The pipeline must work across large city portals, small municipality CMS sites, multilingual websites, external eGovernment portals, PDFs, departmental pages and mixed municipal/tourism content.
 
-- very large city portals
-- small municipality CMS sites
-- multilingual websites
-- external eGovernment portals
-- service directories
-- departmental pages
-- PDFs and linked forms
-- mixed municipal / tourism / association content
-
-## 2. Pipeline
+## 2. Architecture
 
 ```text
-URL
- │
- ▼
-1. CONTEXT ENRICHMENT
-   municipality metadata
-   population
-   language context
-   canton / BFS identity
- │
- ▼
-2. RECONNAISSANCE
-   homepage
-   robots.txt
-   sitemap
-   navigation
-   language variants
-   search
-   service directory
-   eGov portal links
- │
- ▼
-3. ORCHESTRATION
-   estimate scale
-   choose crawl strategy
-   choose languages
-   set page / token budgets
-   set stop rules
- │
- ▼
-4. FETCH
-   HTML / PDF / API / linked documents
- │
- ▼
-5. SNAPSHOT
-   URL
-   retrieval timestamp
-   response metadata
-   content hash
-   raw content
- │
- ▼
-6. CLEAN + STRUCTURE
-   remove navigation noise
-   retain headings, links, tables, forms, metadata
- │
- ▼
-7. CLASSIFY
-   service page?
-   department?
-   form?
-   transaction endpoint?
-   PDF?
-   tourism/commercial?
- │
- ▼
-8. EXTRACT OBSERVATIONS
-   raw facts with exact evidence
- │
- ▼
-9. NORMALIZE
-   map observations into canonical service concepts
- │
- ▼
-10. VALIDATE
-   schema
-   jurisdiction
-   source authority
-   duplicates
-   multilingual equivalence
- │
- ▼
-11. GAP ANALYSIS
-   what is missing?
-   is targeted follow-up justified?
- │
- ├─ yes → bounded follow-up crawl
- └─ no  → stop
- │
- ▼
-12. PUBLISH
-   canonical service records
-   provenance graph
-   MCP-ready index
+MUNICIPALITY
+    │
+    ▼
+CONTEXT ENRICHMENT
+BFS/canton/language context
+    │
+    ▼
+CHEAP RECONNAISSANCE
+homepage / robots / sitemap / nav / hreflang / portal links
+    │
+    ▼
+PLANNER / SEMANTIC COMPILER
+large model only when useful
+    │
+    ▼
+CrawlPlan IR
+    │
+    ▼
+DETERMINISTIC RUNTIME
+HTTP first → browser fallback → interactive fallback
+    │
+    ├── source snapshot
+    └── PageIR
+            │
+            ▼
+SMALL CONSTRAINED MODEL
+classify / extract / rank links
+            │
+            ▼
+ClaimIR
+            │
+            ▼
+VALIDATOR / COMPILER
+schema / provenance / normalization / conflicts
+            │
+      ┌─────┴─────┐
+      │           │
+ confident      ambiguous
+      │           │
+      ▼           ▼
+    STORE      LARGE MODEL
 ```
 
 ## 3. Source snapshot before interpretation
 
 Never let an extractor directly create the only stored representation.
 
-Always store:
+Always preserve:
 
 ```text
 SOURCE SNAPSHOT
     ↓
+PageIR
+    ↓
 OBSERVATIONS
     ↓
-TYPED CLAIMS
+ClaimIR
     ↓
 SERVICE RECORD
 ```
 
-This allows:
+This allows re-running improved extractors without re-fetching, auditing changed interpretations, comparing versions over time and reproducing tests.
 
-- re-running improved extractors without re-fetching
-- auditing changed interpretations
-- comparing versions over time
-- checking model mistakes against raw evidence
-- reproducible tests
+## 4. Fetch escalation
 
-## 4. Agentic boundary
+A headless browser is not the baseline.
+
+### Tier 1 — HTTP
+
+Prefer direct HTTP when it yields useful source content.
+
+Use it for:
+
+- static HTML
+- sitemaps
+- PDFs
+- JSON/API endpoints
+- canonical metadata
+- most traditional municipal CMS pages
+
+### Tier 2 — Headless browser
+
+Escalate when:
+
+- the HTTP response is a JavaScript shell
+- meaningful content appears only after rendering
+- navigation or content depends on client-side state
+- a service directory requires browser execution
+
+### Tier 3 — Agentic browser
+
+Escalate only when a real interaction is necessary:
+
+- multi-step portal navigation
+- menus/forms that cannot be represented by stable selectors
+- dynamic transaction flows needed for discovery
+
+The fetcher records which tier was used and why.
+
+## 5. Agentic boundary
 
 Agentic orchestration is justified where the pipeline must choose among known actions.
 
-Good agentic tasks:
+Good model tasks:
 
-- classify the municipality website
-- choose crawl strategy
-- identify relevant language variants
-- detect likely service directories
-- rank candidate links for missing evidence
-- decide whether a follow-up fetch is justified
-- pair multilingual pages representing the same service
+- classify the municipality/site
+- choose FULL / SECTION / DIRECTORY / DISCOVERY
+- choose relevant language variants
+- rank evidence-bearing links
+- compile extraction rules
+- resolve hard multilingual equivalence
+- decide whether uncertainty warrants escalation
 
-Bad agentic tasks:
+Bad model tasks:
 
 - unconstrained browsing
 - unlimited crawling
-- deciding whether a URL may be fetched outside deterministic rules
+- ignoring deterministic URL/domain policy
 - inventing service facts
-- silently changing jurisdiction
+- replacing schema validation
 - deciding freshness from intuition
-- replacing deterministic validation
 
-## 5. Bounded orchestration loop
+## 6. Semantic compiler boundary
 
-```text
-municipality profile
-        +
-reconnaissance result
-        ↓
-crawl planner
-        ↓
-known strategy
-        ↓
-observations
-        ↓
-coverage analysis
-        ↓
-┌───────────────┐
-│ enough?       │
-├───────┬───────┤
-│ yes   │ no    │
-▼       ▼
-stop    targeted follow-up
+The large model should emit typed intermediate representations rather than directly performing the entire crawl.
+
+Example:
+
+```json
+{
+  "schema": "municipal-crawl-plan/v1",
+  "strategy": "directory_crawl",
+  "roots": [{"url": "...", "role": "service_directory"}],
+  "languages": ["de"],
+  "fetch_policy": {
+    "prefer": "http",
+    "browser_fallback": true
+  },
+  "budget": {
+    "max_pages": 250,
+    "max_depth": 4
+  },
+  "stop": {
+    "directory_exhausted": true,
+    "novelty_window": 20
+  }
+}
 ```
 
-Every iteration records:
+Software validates and executes this plan.
 
-- strategy
-- reason
-- budget
-- URLs examined
-- URLs retained
-- languages attempted
-- coverage gaps
-- stop reason
+## 7. Small-model execution
 
-## 6. Important principle
+The small model receives bounded inputs and strict output schemas.
 
-Population size is a hint, not the strategy.
+Example page classification:
 
-Actual strategy depends on:
+```json
+{
+  "page_role": "service",
+  "service_probability": 0.94,
+  "follow_candidates": []
+}
+```
+
+Example field extraction:
+
+```json
+{
+  "claims": [
+    {
+      "field": "fees[0].raw",
+      "value": "CHF 30",
+      "evidence_span": [182, 188]
+    }
+  ]
+}
+```
+
+Deterministic code then parses currency/amount, validates schema and attaches provenance.
+
+## 8. Compile successful behavior into rules
+
+Unknown sites may initially require model help. Repeated crawls should become cheaper.
+
+```text
+model discovers structure
+        ↓
+typed selector/extraction plan
+        ↓
+validated
+        ↓
+cached site adapter
+        ↓
+future crawl without large model
+```
+
+This is a core design goal: **discover with intelligence, formalize, replay cheaply.**
+
+## 9. Strategy selection signals
+
+Population is only a hint.
+
+Strategy depends on:
 
 ```text
 population
-+ estimated website size
++ estimated site size
 + sitemap availability
-+ site search
 + service directory
++ search
 + eGov portal presence
 + language structure
-+ observed branching factor
++ branching factor
 + content density
-+ crawl cost
++ browser requirement
++ observed crawl cost
 ```
 
-Website structure overrides population when evidence disagrees.
+Website evidence overrides demographic expectations.

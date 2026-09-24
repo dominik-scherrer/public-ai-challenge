@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pipeline Build Observatory</title>
+<style>
+:root{--bg:#f4f2ec;--ink:#171717;--muted:#6f6a61;--card:#fffdf8;--line:#d8d2c7;--ok:#1d7a52;--warn:#a66a00;--bad:#a33b32;--blue:#285f91;--violet:#72539a}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:1380px;margin:0 auto;padding:28px}
+header{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:22px}
+.eyebrow{font:600 12px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(34px,5vw,70px);line-height:.95;margin:7px 0 0;letter-spacing:-.055em;max-width:850px}
+.meta{text-align:right;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px}
+.hero{min-height:220px;display:flex;flex-direction:column;justify-content:space-between}
+.phase{font-size:30px;letter-spacing:-.03em;margin:8px 0}
+.summary{max-width:760px;font-size:17px;line-height:1.55;color:#444}
+.badge{display:inline-flex;border:1px solid currentColor;border-radius:999px;padding:6px 10px;font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.section-title h2{font-size:18px;margin:0;letter-spacing:-.02em}
+.flow{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px}
+.step{min-width:135px;min-height:84px;border:1px solid var(--line);border-radius:14px;padding:12px;background:#faf7f0;display:flex;align-items:flex-end;font-size:13px;font-weight:650;position:relative}
+.step:not(:last-child):after{content:"→";position:absolute;right:-9px;top:31px;background:var(--bg);z-index:2;color:var(--muted)}
+.modules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.module{border:1px solid var(--line);border-radius:14px;padding:14px;min-height:155px}
+.module h3{font-size:15px;margin:10px 0 7px}.module p{font-size:13px;line-height:1.45;color:#555;margin:0}
+.status{font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase}
+.status.implemented{color:var(--ok)}.status.in_progress{color:var(--blue)}.status.designed{color:var(--violet)}.status.not_started,.status.deferred{color:var(--muted)}.status.blocked{color:var(--bad)}
+.list{margin:0;padding-left:20px}.list li{margin:8px 0;line-height:1.45}
+.question{border-top:1px solid var(--line);padding:11px 0}.question:first-of-type{border-top:0}.priority{font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;color:var(--warn)}
+.timeline{position:relative;padding-left:24px}.event{position:relative;padding:0 0 22px 18px;border-left:1px solid var(--line)}.event:before{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:var(--ink);left:-5px;top:3px}.event:last-child{padding-bottom:0}.event time{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted)}.event h3{font-size:14px;margin:4px 0}.event p{font-size:13px;color:#555;margin:0;line-height:1.4}
+footer{margin-top:20px;padding:18px 2px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.modules{grid-template-columns:1fr 1fr}.meta{text-align:left}header{align-items:flex-start;flex-direction:column}}
+@media(max-width:620px){main{padding:16px}.modules{grid-template-columns:1fr}h1{font-size:42px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><div class="eyebrow">Public AI Challenge · pipeline/</div><h1>Build Observatory</h1></div>
+<div class="meta"><div id="generated"></div><div>scope: pipeline/ only</div></div>
+</header>
+<div class="grid">
+<section class="card hero">
+<div><span id="statusBadge" class="badge"></span><div class="phase" id="phase"></div><div class="summary" id="summary"></div></div>
+<div class="eyebrow">Truth before optimism · designed ≠ implemented</div>
+</section>
+<section class="card"><div class="section-title"><h2>Next actions</h2><span class="eyebrow">ordered</span></div><ol class="list" id="next"></ol></section>
+</div>
+
+<section class="card" style="margin-top:18px">
+<div class="section-title"><h2>Operational flow</h2><span class="eyebrow">target architecture</span></div>
+<div class="flow" id="flow"></div>
+</section>
+
+<section class="card" style="margin-top:18px">
+<div class="section-title"><h2>Module state</h2><span class="eyebrow">evidence-based</span></div>
+<div class="modules" id="modules"></div>
+</section>
+
+<div class="grid">
+<section class="card">
+<div class="section-title"><h2>Open questions</h2><span class="eyebrow">information orchestration</span></div>
+<div id="questions"></div>
+</section>
+<section class="card">
+<div class="section-title"><h2>Build history</h2><span class="eyebrow">material changes</span></div>
+<div class="timeline" id="history"></div>
+</section>
+</div>
+
+<footer>
+Static dashboard. Its embedded state mirrors <code>state.json</code>. Refresh agents should preserve history and only commit when the state materially changes.
+</footer>
+</main>
+<script>
+window.__BUILD_STATE__={"schema":"pipeline-build-observatory/v1","generated_at":"2026-09-24T14:54:00+02:00","source":{"repository":"dominik-scherrer/public-ai-challenge","scope":"pipeline/","base_branch":"main","observed_branch":"docs/pipeline-adaptive-scraping-runtime","open_prs":[{"number":3,"title":"docs(pipeline): define adaptive scraping runtime and semantic compiler","state":"open","url":"https://github.com/dominik-scherrer/public-ai-challenge/pull/3"}]},"headline":{"phase":"Architecture → first implementation","status":"design_ready","summary":"The ingestion architecture is defined and a runtime/semantic-compiler PR is open. No executable pipeline modules or baseline corpus are committed under pipeline/ yet."},"modules":[{"id":"baseline","name":"Baseline corpus","status":"not_started","confidence":"high","evidence":["No pipeline/baseline directory is committed."],"next":"Commit the Claude/Cowork reference corpus for the seven municipalities."},{"id":"fetch","name":"HTTP fetch + snapshot","status":"not_started","confidence":"high","evidence":["BUILD_PLAN defines this as an implementation phase; no src code exists under pipeline/."],"next":"Implement deterministic HTTP fetch, metadata, hashes, cache and errors."},{"id":"pageir","name":"Cleaner + PageIR","status":"not_started","confidence":"high","evidence":["PageIR is specified in PR #3 docs only."],"next":"Define schema and deterministic parser."},{"id":"browser","name":"Browser fallback","status":"not_started","confidence":"high","evidence":["Headless-browser escalation is documented but not implemented."],"next":"Prototype Playwright/Crawl4AI fallback only for JS-dependent pages."},{"id":"planner","name":"CrawlPlan planner","status":"designed","confidence":"high","evidence":["SEMANTIC_COMPILER.md defines municipal-crawl-plan/v1."],"next":"Create schema and planner adapter."},{"id":"executor","name":"Small Apertus executor","status":"designed","confidence":"high","evidence":["Small-model page classification and ClaimIR are designed in PR #3."],"next":"Build constrained classifier/extractor behind a model-neutral adapter."},{"id":"provenance","name":"Provenance + trust","status":"designed","confidence":"high","evidence":["PROVENANCE_AND_TRUST.md and SERVICE_MODEL.md exist."],"next":"Turn the document model into schemas and validation code."},{"id":"evals","name":"Evaluation harness","status":"designed","confidence":"medium","evidence":["EVALS.md defines criteria; no executable eval harness is committed."],"next":"Convert benchmark criteria into fixtures/tests."},{"id":"mcp","name":"MCP publication","status":"deferred","confidence":"high","evidence":["Build plan explicitly says prove ingestion boundary first."],"next":"Wait until the first three municipalities work end-to-end."}],"open_questions":[{"priority":"now","question":"When will the seven-municipality baseline corpus be committed under pipeline/baseline/?","owner":"pipeline"},{"priority":"now","question":"Which first runtime should we prototype: Crawl4AI or a thinner HTTP + Playwright stack?","owner":"pipeline"},{"priority":"now","question":"Can direct HTTP access reach the municipal domains from the intended runtime, or do we need browser fallback for network reasons as well as rendering?","owner":"pipeline"},{"priority":"next","question":"What confidence/escalation threshold should move a task from small Apertus to the large planner?","owner":"pipeline"},{"priority":"next","question":"How do we version and validate reusable site adapters generated by the planner?","owner":"pipeline"}],"next_actions":["Merge/review PR #3 so the semantic-compiler/runtime design becomes the shared baseline.","Commit the baseline corpus for Binn, Biel/Bienne and Zürich first.","Implement SourceSnapshot and PageIR schemas.","Build HTTP-first fetcher with cache, hashes and explicit browser escalation.","Add a first small-model classifier and compare it against the baseline."],"flow":["Municipality context","Reconnaissance","Large planner / semantic compiler","CrawlPlan IR","Deterministic fetch runtime","SourceSnapshot + PageIR","Small Apertus classifier/extractor","ClaimIR","Validation + provenance","Service records","MCP"],"history":[{"at":"2026-09-24T13:19:15Z","kind":"commit","title":"Concept docs committed","detail":"Initial adaptive ingestion, provenance, benchmark, service model and build plan were added under pipeline/."},{"at":"2026-09-24T13:32:42Z","kind":"pull_request","title":"PR #3 opened","detail":"HTTP-first runtime, browser escalation, OSS tooling options and semantic-compiler architecture proposed."},{"at":"2026-09-24T14:54:00+02:00","kind":"analysis","title":"Build observatory initialized","detail":"Current state classified as design-ready; implementation modules remain unstarted in pipeline/."}]};
+const s=window.__BUILD_STATE__;
+document.getElementById('generated').textContent='snapshot '+new Date(s.generated_at).toLocaleString();
+document.getElementById('statusBadge').textContent=s.headline.status.replaceAll('_',' ');
+document.getElementById('phase').textContent=s.headline.phase;
+document.getElementById('summary').textContent=s.headline.summary;
+document.getElementById('next').innerHTML=s.next_actions.map(x=>'<li>'+esc(x)+'</li>').join('');
+document.getElementById('flow').innerHTML=s.flow.map((x,i)=>'<div class="step"><span><span class="eyebrow">'+String(i+1).padStart(2,'0')+'</span><br>'+esc(x)+'</span></div>').join('');
+document.getElementById('modules').innerHTML=s.modules.map(m=>'<article class="module"><span class="status '+m.status+'">'+esc(m.status.replaceAll('_',' '))+'</span><h3>'+esc(m.name)+'</h3><p>'+esc(m.next)+'</p></article>').join('');
+document.getElementById('questions').innerHTML=s.open_questions.map(q=>'<div class="question"><span class="priority">'+esc(q.priority)+'</span><div>'+esc(q.question)+'</div></div>').join('');
+document.getElementById('history').innerHTML=[...s.history].reverse().map(e=>'<div class="event"><time>'+esc(e.at)+'</time><h3>'+esc(e.title)+'</h3><p>'+esc(e.detail)+'</p></div>').join('');
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script>
+</body>
+</html>
