@@ -1,124 +1,60 @@
-# Municipality Benchmark
+# Municipality Discovery Benchmark
 
 ## Goal
 
-Use a deliberately heterogeneous municipality set to test whether the ingestion system adapts to different Swiss realities.
+Benchmark **service discovery and authoritative-source handoff**, not full service normalization.
 
-The benchmark should stress:
+The important question is:
 
-- municipality scale
-- site scale
-- language
-- multilingual equivalence
-- administrative complexity
-- eGovernment maturity
-- sparse service representation
-- mixed-content websites
-- rural / merged municipalities
+> Can Agent 1 find the services a municipality exposes and package the right authoritative sources for Agent 2?
 
-## Initial benchmark set
+## Batch A — first implementation benchmark
 
-| Municipality | Character | Main test |
+| Municipality | Discovery shape | Why it belongs in Batch A |
 |---|---|---|
-| Zürich ZH | very large city | large-site precision and selective discovery |
-| Lausanne VD | large city | French extraction and ontology portability |
-| Lugano TI | medium city | Italian + external/dedicated eGov transactions |
-| Biel/Bienne BE | bilingual city | multilingual service equivalence |
-| Ilanz/Glion GR | small regional municipality | multilingual + merged/decentralized structure |
-| Binn VS | tiny alpine municipality | sparse traditional municipal website |
-| Bosco/Gurin TI | very tiny mountain municipality | municipal / tourism / association content separation |
+| **Ausserberg VS** | administrative pages + PDFs/forms/handoffs | aligns discovery work with the project's existing MVP reference scenarios |
+| **Binn VS** | tiny traditional site | broad-crawl baseline; near-complete discovery should be feasible |
+| **Dübendorf ZH** | structured i-web `/dienstleistungen/` catalogue | tests a reusable CMS pattern with potentially high national leverage |
+| **Bosco/Gurin TI** | municipality + tourism + associations mixed together | precision/noise stress test |
 
-## Why seven instead of five?
+These four test fundamentally different discovery problems without requiring Agent 1 to solve national normalization first.
 
-Five large or well-known cities would bias the system toward mature portals.
+## Why the batch changed
 
-The additional tiny municipalities test the opposite failure mode:
+The previous benchmark emphasized:
 
-> Can the system recognize municipal services when there is no clean service catalogue at all?
+- municipality size
+- multilingual normalization
+- cross-language identity
+- portal maturity
 
-## Expected strategy by municipality
+Those remain useful later, but the new Agent 1 boundary is narrower.
 
-### Zürich
+For Agent 1, the highest-value early questions are:
 
-Likely:
+1. Can we find services?
+2. Can we avoid noise?
+3. Can we group the right source pages/documents?
+4. Can we recognize reusable site structures?
+5. Can we hand the result to Agent 2 with provenance intact?
 
-```text
-DISCOVERY_CRAWL
-→ DIRECTORY_CRAWL
-```
+## Batch A cases
 
-Do not crawl the entire city website.
-
-Test:
-
-- directory discovery
-- eGov endpoints
-- page-budget discipline
-- high branching factor
-- deduplication
-
-### Lausanne
-
-Likely:
-
-```text
-DISCOVERY_CRAWL
-→ DIRECTORY or SECTION
-```
+### Ausserberg — reference integration case
 
 Test:
 
-- French-language service extraction
-- ontology independence from German terms
+- existing MVP reference scenarios
+- administrative service pages
+- PDF/form discovery
+- official handoff URLs
+- service-source grouping
 
-### Lugano
+This connects the discovery pipeline directly to the team's agreed demo/MVP material.
 
-Likely:
+### Binn — completeness baseline
 
-```text
-DISCOVERY_CRAWL
-→ DIRECTORY_CRAWL
-→ external official eGov portal
-```
-
-Test:
-
-- Italian-language extraction
-- distinction between informational page and executable service endpoint
-
-### Biel/Bienne
-
-Likely:
-
-```text
-SECTION / DIRECTORY
-+ multilingual pairing
-```
-
-Test:
-
-- DE/FR service equivalence
-- duplicate prevention
-- language coverage parity
-
-### Ilanz/Glion
-
-Likely:
-
-```text
-SECTION_CRAWL
-```
-
-Test:
-
-- smaller administration
-- services embedded in departmental pages
-- German / Romansh variation
-- merged municipality structure
-
-### Binn
-
-Likely:
+Likely strategy:
 
 ```text
 FULL_CRAWL
@@ -127,34 +63,103 @@ FULL_CRAWL
 Test:
 
 - tiny site
-- low service density
-- traditional CMS
-- whether broad crawling is cheaper than complex planning
+- low page budget
+- service-vs-general-information classification
+- broad coverage
+- unusual local service names such as Strahlerpatente
 
-### Bosco/Gurin
+### Dübendorf — reusable structured CMS
 
-Likely:
+Likely strategy:
 
 ```text
-FULL_CRAWL
-+ aggressive classification
+DIRECTORY_CRAWL
+→ site adapter
 ```
 
 Test:
 
-- distinguish municipal services from:
-  - tourism
-  - accommodation
-  - associations
-  - commercial activity
-  - events
-- very small administration
-- unusual language context
+- `/dienstleistungen/` structure
+- predictable service pages
+- selector/rule compilation
+- whether one adapter can generalize to other i-web municipalities
+
+This matters more for scaling than proving Zürich immediately.
+
+### Bosco/Gurin — noisy precision case
+
+Likely strategy:
+
+```text
+FULL_CRAWL
++ aggressive service/noise classification
+```
+
+Test separation of:
+
+- municipal administration
+- tourism
+- lodging
+- associations
+- culture/events
+- local commerce
+
+## Batch B — complexity after discovery works
+
+Candidates:
+
+| Municipality | Main later test |
+|---|---|
+| Airolo TI | custom Italian form/service portal |
+| Biel/Bienne BE | multilingual source grouping |
+| Zürich ZH | bounded discovery on a very large site |
+| Lausanne VD | French service catalogue |
+| Ilanz/Glion GR | small multilingual/decentralized administration |
+| Lugano TI | richer eGovernment portal |
+
+Batch B is where language parity, large-scale selective crawling and portal complexity become primary.
+
+## Metrics
+
+Agent 1 should be evaluated on:
+
+### Service discovery precision
+
+Of emitted Service Leads, how many are real municipal services?
+
+### Discovery recall
+
+Against a manually checked reference set, how many relevant services were found?
+
+### Source-bundle quality
+
+Does the lead include the source material Agent 2 actually needs?
+
+### Authority precision
+
+Are sources genuinely official/responsible?
+
+### Crawl efficiency
+
+```text
+pages fetched
+service leads emitted
+useful source links retained
+noise pages processed
+model calls
+```
+
+### Downstream usefulness
+
+Most important new metric:
+
+> Can Agent 2 build a useful MCP capability from the Service Lead without having to rediscover the municipality website from scratch?
 
 ## Benchmark principle
 
-Zürich primarily tests **recall under bounded crawling**.
+- **Binn** tests coverage.
+- **Bosco/Gurin** tests precision.
+- **Dübendorf** tests repeatability/scaling.
+- **Ausserberg** tests integration with the team's actual MVP story.
 
-Bosco/Gurin primarily tests **precision under noisy crawling**.
-
-Together, they help test whether adaptive orchestration is actually useful.
+That is a stronger first batch for the revised architecture.

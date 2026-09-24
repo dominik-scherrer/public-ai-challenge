@@ -1,129 +1,24 @@
-# Semantic Compiler — Large Planner, Small Apertus Executor
+# Semantic Compiler — From Service Lead to Local MCP Capability
 
-## 1. Goal
+## 1. Revised goal
 
-Use the model hierarchy efficiently:
+The semantic compiler no longer needs to turn every municipal webpage into one normalized national service record.
 
-> **large model for unfamiliar architecture and planning; small Apertus model for repetitive constrained execution; deterministic software for authority and validation.**
+Its strongest role is downstream:
 
-The model should not own the crawl state or final truth.
+> **Given a discovered service and its authoritative source bundle, compile a useful municipality-specific MCP capability.**
 
-## 2. Three layers
+## 2. Two semantic stages
 
-### Planner
+### Stage A — Discovery classifier
 
-Large capable model.
+Cheap / constrained.
 
-Responsibilities:
+Input:
 
-- understand an unfamiliar municipality/site
-- choose acquisition strategy
-- set language plan and crawl budget
-- identify promising roots
-- propose extraction rules
-- resolve ambiguous conflicts
-- handle exceptions escalated from the small model
-
-Output must be typed IR.
-
-### Executor
-
-Small Apertus model.
-
-Responsibilities:
-
-- classify page role
-- service-vs-noise classification
-- map text spans to allowed service fields
-- rank candidate follow-up links
-- perform obvious multilingual equivalence checks
-
-The executor receives only bounded context and enumerated output choices.
-
-### Runtime/compiler
-
-Deterministic code.
-
-Responsibilities:
-
-- fetch
-- parse
-- validate IR
-- enforce URL/domain/budget policy
-- execute crawl plan
-- normalize dates/currencies/URLs
-- hash snapshots
-- attach provenance
-- detect conflicts
-- decide whether confidence thresholds trigger escalation
-
-## 3. CrawlPlan IR
-
-Example:
-
-```json
-{
-  "schema": "municipal-crawl-plan/v1",
-  "target": {
-    "municipality": "Zürich",
-    "jurisdiction": "CH-ZH-Zurich"
-  },
-  "strategy": "directory_crawl",
-  "roots": [
-    {
-      "url": "https://...",
-      "role": "service_directory"
-    }
-  ],
-  "languages": ["de"],
-  "fetch_policy": {
-    "prefer": "http",
-    "browser_fallback": true,
-    "agent_browser": false
-  },
-  "link_policy": {
-    "allow_roles": ["service", "form", "egov", "official_pdf"],
-    "deny_roles": ["news", "events", "politics", "tourism"]
-  },
-  "budget": {
-    "max_pages": 250,
-    "max_depth": 4,
-    "max_targeted_followups_per_service": 3
-  },
-  "stop": {
-    "directory_exhausted": true,
-    "novelty_window": 20
-  }
-}
+```text
+PageIR + link graph + municipality context
 ```
-
-The runtime rejects invalid plans before crawling.
-
-## 4. PageIR
-
-Do not feed raw browser state to the executor when deterministic parsing can reduce it first.
-
-Example:
-
-```json
-{
-  "url": "...",
-  "title": "...",
-  "language": "de",
-  "headings": ["..."],
-  "main_text": "...",
-  "links": [
-    {"url": "...", "text": "...", "internal": true}
-  ],
-  "forms": [],
-  "documents": [],
-  "source_ref": "src_123"
-}
-```
-
-## 5. Small-model classifier
-
-Input: PageIR + allowed labels.
 
 Output:
 
@@ -131,116 +26,129 @@ Output:
 {
   "page_role": "service",
   "service_probability": 0.94,
-  "authority_signal": "official",
-  "follow_candidates": [
-    {
-      "url": "...",
-      "role": "official_pdf",
-      "reason_code": "missing_requirements"
-    }
+  "service_type_hint": "permit",
+  "related_source_candidates": [
+    {"url": "...", "role": "application_pdf"}
   ]
 }
 ```
 
-Prefer enums/reason codes over prose.
+The result becomes a Service Lead.
 
-## 6. ClaimIR
+### Stage B — Service Compiler
 
-The executor must extract evidence-backed candidate claims, not final facts.
+More capable model.
 
-```json
-{
-  "claims": [
-    {
-      "field": "fees[0].raw",
-      "value": "CHF 30",
-      "source_ref": "src_123",
-      "evidence_span": [182, 188],
-      "semantic_classification": "official_observation"
-    }
-  ]
-}
-```
-
-Then deterministic code derives:
-
-```json
-{
-  "amount": 30,
-  "currency": "CHF",
-  "classification": "derived"
-}
-```
-
-## 7. Confidence and escalation
-
-The executor should not improvise outside its schema.
+Input:
 
 ```text
-small model result
-      ↓
-schema valid?
-  no → retry/large model
-      ↓
-confidence/evidence sufficient?
-  yes → continue
-  no  → large model
+Service Lead
++ authoritative source bundle
++ municipality context
 ```
 
-Escalation reasons should be typed, for example:
+Output:
 
-- `ambiguous_service_identity`
-- `conflicting_official_sources`
-- `unknown_page_structure`
-- `language_pair_uncertain`
-- `portal_boundary_uncertain`
+```text
+McpCapabilityPlan
+```
 
-## 8. Compile once, replay cheaply
+This is where deeper local interpretation belongs.
 
-The planner may produce reusable site rules:
+## 3. Capability IR
+
+Example:
 
 ```json
 {
-  "adapter": "stadt-zuerich/v1",
-  "service_link_selector": "...",
-  "exclude_patterns": ["/news/", "/politik/"],
-  "language_routes": {"de": "..."},
-  "field_rules": {}
+  "schema": "mcp-capability-plan/v1",
+  "service_lead_ref": "lead_binn_waste",
+
+  "capabilities": [
+    {
+      "tool": "get_waste_information",
+      "description": "Return official local waste guidance.",
+      "inputs": [],
+      "source_strategy": "document_lookup"
+    },
+    {
+      "tool": "get_collection_calendar",
+      "description": "Return collection schedule information available in the municipal sources.",
+      "inputs": [],
+      "source_strategy": "pdf_table"
+    }
+  ],
+
+  "handoffs": [],
+
+  "limitations": [
+    "No address-specific API detected."
+  ]
 }
 ```
 
-After validation, future crawls should try the adapter first.
+## 4. Why this boundary is better
 
-Large-model cost should trend toward zero for stable sites.
+Different municipalities can expose the same broad service very differently.
 
-## 9. Evaluation hypothesis
+```text
+Binn waste service
+→ PDF calendar + local guidance
+→ document-oriented MCP capability
 
-Primary architectural experiment:
+Zürich waste service
+→ structured/open-data endpoint
+→ address-aware MCP capability
+```
 
-> Can a large model inspect one municipality once and compile enough rules that most subsequent service discovery/extraction is handled by deterministic code plus a small Apertus model?
+Trying to fully normalize both before MCP compilation can throw away useful local structure.
 
-Measure:
+## 5. Common protocol, local capability
 
-- large-model calls per municipality
-- small-model calls per page/service
-- percentage of pages handled by HTTP vs browser
-- percentage of extraction handled by compiled rules
-- escalation rate
-- evidence coverage
-- precision/recall versus the baseline corpus
+The shared contract should focus on:
 
-## 10. Long-term Apertus path
+- provenance
+- MCP safety/runtime rules
+- capability-plan schema
+- source handling
+- packaging/deployment
+- evidence/refusal behavior
 
-The architecture should work even if the small model has modest reasoning ability.
+It does not require every municipality to expose identical tools internally.
 
-Make execution easy by:
+## 6. Apertus path
 
-- reducing raw HTML to PageIR
-- enumerating allowed page roles
-- exposing only legal next actions
-- using strict schemas
-- providing exact evidence spans
-- normalizing deterministically
-- routing hard exceptions upward
+This makes the model split cleaner.
 
-This is the semantic-compiler/JEV principle applied to web ingestion: **software defines the legal state/action space; the small model performs fuzzy classification inside it.**
+### Small Apertus / deterministic layer
+
+- service-vs-noise classification
+- page role
+- service type hint
+- link/source relevance
+- obvious grouping
+
+### Larger planner/compiler
+
+- understand source bundle
+- decide local capability shape
+- define tool inputs/outputs
+- identify source strategies
+- express limitations
+- resolve difficult ambiguity
+
+### Deterministic builder
+
+- validate capability IR
+- generate/configure runtime
+- bind allowed sources
+- enforce budgets/security
+- test tool contract
+
+## 7. Semantic compiler hypothesis
+
+The architectural experiment is now:
+
+> **Can we reduce heterogeneous municipal websites to reliable Service Leads, then use a planning model to compile each local service into a bounded MCP capability without requiring a giant universal data schema?**
+
+That is the experiment to measure.

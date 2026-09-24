@@ -1,239 +1,151 @@
-# Build Plan — First Vertical Slice
+# Build Plan — Discovery First, MCP Compilation Second
 
 ## Goal
 
-Prove this end-to-end path:
+Prove:
 
 ```text
 municipality URL
-→ reconnaissance
-→ CrawlPlan IR
-→ adaptive fetch
-→ source snapshot
-→ PageIR
-→ small-model classification/extraction
-→ ClaimIR
-→ deterministic validation/provenance
-→ targeted follow-up
-→ canonical service JSON
+→ discover municipal services
+→ group authoritative source bundles
+→ Service Leads
+→ hand off to Agent 2
+→ compile local MCP capabilities
 ```
 
-Do not begin by attempting all seven municipalities.
+Agent 1 does not need to fully normalize service attributes.
 
-## Phase 0 — Keep work scoped to pipeline/
+## Phase 1 — Make discovery reliable
 
-All code, schemas, fixtures, baselines and docs for this subsystem stay under this directory.
+Current prototype priorities:
 
-Suggested structure:
+1. URL normalization + redirect/canonical deduplication
+2. crawl prioritization and noise filtering
+3. service-vs-noise classification
+4. source-role classification
+5. related-source grouping
+6. provenance-preserving Service Lead output
+7. graceful optional-model fallback
+
+Success means:
+
+> given a municipality, we find the meaningful service surfaces and hand off the right sources.
+
+## Phase 2 — Minimal Service Lead schema
+
+Implement a small contract:
 
 ```text
-pipeline/
-├── docs/                # optional future split; current design docs remain here
-├── baseline/
-├── schemas/
-├── fixtures/
-├── src/
-│   ├── context/
-│   ├── recon/
-│   ├── planner/
-│   ├── crawl/
-│   ├── snapshot/
-│   ├── extract/
-│   ├── normalize/
-│   ├── provenance/
-│   └── orchestrator/
-├── evals/
-└── tests/
+id
+labels
+service_type_hint
+authority
+source refs + roles
+discovery evidence/confidence
+crawl provenance
 ```
 
-## Phase 1 — Baseline corpus
+Do not add fee/eligibility/process fields to Agent 1 unless Agent 2 proves they are required for routing.
 
-Use the research-agent baseline for the seven municipalities before tuning our crawler.
+## Phase 3 — Source bundle grouping
 
-Purpose:
-
-- reference services
-- real source weirdness
-- multilingual examples
-- evidence/provenance examples
-- comparison target for our pipeline
-
-Treat service-count targets as soft budgets, not quotas.
-
-## Phase 2 — Deterministic fetch + snapshot
-
-Implement HTTP first:
-
-- redirects
-- content type
-- canonical URL when observable
-- timestamps
-- SHA-256
-- raw response storage
-- cache
-- retry/backoff
-- basic robots/rate policy
-- structured error representation
-
-Success:
+For each likely service:
 
 ```text
-URL → reproducible SourceSnapshot
+service page
++ form
++ PDF
++ department/contact page
++ external official handoff
 ```
 
-## Phase 3 — Cleaner + PageIR
+Group related sources without deeply interpreting them.
 
-Extract deterministically:
+## Phase 4 — Agent 2 prototype
 
-- title
-- headings
-- main text
-- internal/external links
-- PDFs
-- forms
-- hreflang
-- canonical link
-- JSON-LD
-- metadata
-
-Success:
+Give a Service Lead to a planning model and ask it to produce:
 
 ```text
-SourceSnapshot → bounded PageIR
+mcp-capability-plan/v1
 ```
 
-## Phase 4 — Browser fallback
+The plan should state:
 
-Add Playwright/Crawl4AI only when HTTP is insufficient.
+- useful MCP capability/tools
+- inputs
+- source strategy
+- handoffs
+- limitations
 
-Record:
+## Phase 5 — MCP builder/runtime
 
-- fetch tier
-- escalation reason
-- rendering/interaction requirement
+Validate the capability plan and bind it to the allowed sources.
 
-Do not make every request a browser request.
+The builder—not the model—owns:
 
-## Phase 5 — Typed planner
-
-Implement `municipal-crawl-plan/v1`.
-
-Planner receives:
-
-- municipality context
-- cheap reconnaissance
-- discovered languages
-- site scale signals
-
-Planner returns:
-
-- strategy
-- roots
-- budgets
-- fetch policy
-- language plan
-- link policy
-- stop rules
-
-Validate before execution.
-
-## Phase 6 — Small Apertus-compatible classifier
-
-Input: PageIR.
-
-Strict output:
-
-- page role
-- service likelihood
-- authority signal
-- follow-up candidates
-- confidence/escalation reason
-
-Start with any available model adapter if needed; keep the interface Apertus-compatible.
-
-## Phase 7 — Service extraction to ClaimIR
-
-Produce evidence-backed candidate claims.
-
-Do not write final service records directly.
-
-Deterministic code handles:
-
-- date/currency parsing
+- runtime safety
+- source boundaries
 - schema validation
-- duplicate/conflict detection
-- provenance
-- evidence coverage
+- packaging
+- tool contract tests
 
-## Phase 8 — Compile reusable site adapters
+## First discovery batch
 
-When the planner discovers stable structure, emit cached rules/selectors.
+The first batch should stress **different service-discovery shapes**, not multilingual normalization.
 
-Try adapter-first on subsequent runs.
+### Batch A — four complementary discovery cases
 
-Measure how much large-model work disappears.
+1. **Ausserberg VS — reference workflow / PDFs + administrative pages**
+   - already used by the MVP plan
+   - gives continuity with Patrick's reference scenarios
+   - tests service + document + handoff discovery
 
-## Phase 9 — Three-municipality proof
+2. **Binn VS — tiny site / broad crawl**
+   - small enough to approach near-complete discovery
+   - good deterministic baseline
+   - already exposes useful edge cases such as Strahlerpatente
 
-First trio:
+3. **Dübendorf ZH — structured i-web service catalogue**
+   - tests a reusable CMS pattern
+   - high value because one adapter may generalize to many municipalities
+   - easier than starting with Zürich-scale complexity
 
-1. **Binn** — full-crawl baseline
-2. **Biel/Bienne** — multilingual identity test
-3. **Zürich** — selective large-site crawl
+4. **Bosco/Gurin TI — noisy mixed municipal/tourism site**
+   - precision stress test
+   - verifies that service discovery does not become generic local-content scraping
 
-Then:
+### Batch B — after the basic discovery contract works
 
-4. Lugano
-5. Lausanne
-6. Ilanz/Glion
-7. Bosco/Gurin
+5. **Airolo TI or Lugano TI** — Italian portal/form patterns
+6. **Biel/Bienne BE** — multilingual service/source grouping
+7. **Zürich ZH** — selective discovery at large scale
+8. **Lausanne VD / Ilanz-Glion GR** — additional language/structure tests
 
-## First hackathon acceptance criteria
+The exact later set can change; Batch A should stay focused on distinct discovery architectures.
 
-For each first-trio municipality:
+## Acceptance criteria for Batch A
 
-- real service candidates with exact source references
-- every populated structured field has evidence or is explicitly derived
-- crawl strategy and stop reason recorded
-- HTTP/browser fetch tier visible
-- no fabricated fields
-- multilingual duplicates detectable
-- snapshot reprocessable without refetching
-- at least one targeted follow-up
-- at least one site adapter/rule compiled and replayed
-- model escalation events recorded
+- each real Service Lead points to at least one authoritative source
+- obvious non-services are excluded
+- source bundles preserve links to PDFs/forms/handoffs
+- no final URL is processed repeatedly
+- crawl strategy and stop reason are visible
+- Binn can approach broad coverage without complex orchestration
+- Dübendorf demonstrates a reusable structured-directory pattern
+- Bosco/Gurin demonstrates precision under noisy content
+- Ausserberg demonstrates compatibility with the team's MVP reference scenarios
 
-## Architectural experiment
+## Defer from Agent 1
 
-Measure:
+- universal fee normalization
+- universal eligibility schema
+- full eCH-0070 mapping
+- perfect multilingual entity resolution
+- national canonical service ontology
+- generating final MCP code directly from raw pages
 
-```text
-large-model calls
-small-model calls
-HTTP vs browser fetches
-compiled-rule coverage
-pages fetched
-services retained
-evidence coverage
-precision / recall against baseline
-```
+These may exist downstream if they prove useful.
 
-The strongest proof is not "the agent can browse".
+## Core experiment
 
-It is:
-
-> **A capable model can compile an unfamiliar public website into a bounded acquisition program that deterministic software and a smaller public model can execute repeatedly.**
-
-## Defer
-
-Do not spend hackathon time on:
-
-- vector database
-- graph database
-- broad national crawling
-- sophisticated UI
-- stealth/browser fingerprint work
-- complex trust scoring
-- continuous scheduler
-
-Prove the ingestion/compiler boundary first.
+> **Can a lightweight discovery agent reliably produce enough service/source structure that a second agent can build a useful local MCP without a universal normalized municipal dataset?**

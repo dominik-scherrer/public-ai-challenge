@@ -1,155 +1,133 @@
-# Canonical Service Model
+# Service Lead Model
 
 ## 1. Purpose
 
-Create one typed representation that can absorb heterogeneous municipal service pages without losing source terminology or provenance.
+Agent 1 does not produce a fully normalized municipal service record.
 
-## 2. Example service record
+It produces a **Service Lead**: a compact, provenance-preserving handoff that tells Agent 2:
+
+- what service appears to exist
+- how the municipality names it
+- where the authoritative source material is
+- what kind of source each URL is
+- why we think the pages belong together
+
+## 2. Minimal contract
 
 ```json
 {
-  "service_id": "ch.zh.zurich.residence.registration",
-  "concept": "residence_registration",
+  "service_lead_id": "lead_binn_strahlerpatent",
 
   "labels": {
-    "de": "Wohnsitz anmelden"
+    "de": "Strahlerpatente"
   },
 
-  "description": "...",
+  "service_type_hint": "permit",
 
-  "provider": {
-    "name": "Stadt Zürich",
-    "authority_level": "municipality"
-  },
-
-  "jurisdiction": {
+  "authority": {
     "country": "CH",
-    "canton": "ZH",
-    "municipality": "Zürich"
+    "canton": "VS",
+    "municipality": "Binn",
+    "department": null
   },
 
-  "eligibility": [],
-  "requirements": [],
-  "documents": [],
-
-  "fees": [
+  "sources": [
     {
-      "amount": null,
-      "currency": "CHF",
-      "description": null
-    }
-  ],
-
-  "processing_time": null,
-
-  "channels": {
-    "online": false,
-    "in_person": true,
-    "postal": false
-  },
-
-  "actions": [
-    {
-      "type": "online_transaction",
-      "url": null
-    }
-  ],
-
-  "contacts": [],
-
-  "source_refs": [],
-  "field_provenance": {}
-}
-```
-
-## 3. Preserve original wording
-
-Normalization should not destroy source terminology.
-
-Keep:
-
-```json
-{
-  "concept": "residence_certificate",
-  "labels": {
-    "de": "Wohnsitzbestätigung",
-    "fr": "Attestation de domicile",
-    "it": "Certificato di domicilio"
-  }
-}
-```
-
-The canonical concept is machine-facing.
-
-Labels are source-facing.
-
-## 4. Observation before claim
-
-Raw extraction:
-
-```json
-{
-  "observation_id": "obs_...",
-  "source_ref": "src_...",
-  "text": "Die Gebühr beträgt CHF 30.",
-  "selector": "...",
-  "language": "de"
-}
-```
-
-Typed claim:
-
-```json
-{
-  "field": "fees[0].amount",
-  "value": 30,
-  "classification": "inferred",
-  "observation_refs": ["obs_..."]
-}
-```
-
-## 5. Conflict representation
-
-Do not silently select one value.
-
-```json
-{
-  "field": "fees[0].amount",
-  "status": "conflict",
-  "candidates": [
-    {
-      "value": 20,
-      "source_ref": "src_a"
+      "source_ref": "src_001",
+      "role": "service_page"
     },
     {
-      "value": 30,
-      "source_ref": "src_b"
+      "source_ref": "src_002",
+      "role": "application_pdf"
     }
-  ]
+  ],
+
+  "discovery": {
+    "confidence": 0.91,
+    "method": "heuristic-v1",
+    "evidence": [
+      {
+        "source_ref": "src_001",
+        "text": "Strahlerpatente"
+      }
+    ]
+  },
+
+  "status": "candidate"
 }
 ```
 
-A resolver may later choose based on:
+## 3. What is intentionally absent
 
-- authority
-- date
-- page role
-- jurisdiction
-- explicit supersession
+Agent 1 does not need to populate:
 
-The conflict itself should remain inspectable.
+- normalized fees
+- eligibility
+- required documents
+- processing times
+- opening hours
+- canonical national service concepts
+- transaction inputs
+- full eCH-0070 mapping
 
-## 6. Service identity
+Those belong to Agent 2 if they are useful for the local MCP capability.
 
-Service identity is not page identity.
+## 4. Service type hint
 
-One canonical service may have:
+`service_type_hint` helps routing and grouping but is not canonical truth.
 
-- multiple languages
-- multiple official pages
-- a PDF
-- an online transaction endpoint
-- a responsible office page
-- a cantonal reference
+Examples:
 
-All belong to one service entity when evidence supports that conclusion.
+- `waste_collection`
+- `residence_certificate`
+- `permit`
+- `facility_booking`
+- `contact_hours`
+- `unknown`
+
+It may remain `unknown`.
+
+## 5. Source roles
+
+Useful source roles include:
+
+- `service_page`
+- `department_page`
+- `form`
+- `application_pdf`
+- `information_pdf`
+- `calendar_pdf`
+- `official_portal`
+- `external_handoff`
+- `contact_page`
+
+The same service lead can reference several sources.
+
+## 6. Identity and grouping
+
+Page identity is not service identity.
+
+Agent 1 should group pages when evidence suggests they support one citizen capability:
+
+```text
+Abfallentsorgung
++ Abfallkalender.pdf
++ Sammelstellen
++ Gebührenblatt
+
+→ one service lead / source bundle
+```
+
+But uncertain grouping should remain explicit rather than silently merged.
+
+## 7. Multilingual pages
+
+Multilingual equivalents can be grouped when obvious, but perfect cross-language normalization is no longer a first-batch requirement.
+
+Preserve original official labels and source languages.
+
+## 8. Downstream handoff
+
+The Service Lead is an input to Agent 2, not the final public service object.
+
+Agent 2 is free to compile different local MCP tools from different municipalities even when the broad service category is similar.

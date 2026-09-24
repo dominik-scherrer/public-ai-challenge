@@ -1,92 +1,18 @@
 # Provenance and Trust
 
-## 1. Provenance is part of the product
+## 1. Provenance remains a first-class requirement
 
-Every service field should be inspectable back to evidence.
+The architectural boundary changed, but provenance did not become less important.
 
-The MCP should never return only:
+Agent 1 now needs to prove:
 
-```json
-{"fee": "CHF 20"}
-```
+> **Why do we believe this service exists, and which authoritative sources should Agent 2 inspect?**
 
-It should be able to explain:
+It no longer needs field-level provenance for every normalized service attribute.
 
-```text
-fee = CHF 20
-source = official municipality page
-retrieved = 2026-09-24
-evidence = exact source passage
-extraction = deterministic parse / inferred mapping
-freshness = known / unknown
-```
+## 2. Source provenance
 
-## 2. Provenance classifications
-
-Use explicit classifications:
-
-| Classification | Meaning |
-|---|---|
-| `official` | Directly published by the responsible public authority |
-| `observed` | Directly observed in another source or registry |
-| `derived` | Deterministically transformed or computed from observed data |
-| `inferred` | Semantic interpretation produced by a model |
-| `dynamic` | Computed at query time from current parameters |
-
-Example:
-
-```text
-Municipal page says "Gebühr CHF 30"
-→ official observation
-
-Parser converts CHF 30 into
-amount=30, currency=CHF
-→ derived
-
-Model maps paragraph to
-service.fee
-→ inferred mapping
-
-MCP computes "fresh for 14 days"
-→ dynamic
-```
-
-The original official observation remains available underneath all later transformations.
-
-## 3. Do not hide trust inside one score
-
-Avoid:
-
-```json
-{"trust_score": 0.87}
-```
-
-Prefer:
-
-```json
-{
-  "trust": {
-    "authority": "high",
-    "directness": "primary",
-    "freshness": "known",
-    "evidence_coverage": 0.92,
-    "extraction_confidence": 0.96,
-    "conflicts": []
-  }
-}
-```
-
-A convenience summary may exist:
-
-```json
-{"trust_summary": "high"}
-```
-
-but it must be derived from inspectable dimensions.
-
-## 4. Source provenance
-
-Minimum source record:
+Every source keeps:
 
 ```json
 {
@@ -94,7 +20,7 @@ Minimum source record:
   "classification": "official",
   "source_type": "municipality_website",
   "publisher": {
-    "name": "Stadt Zürich",
+    "name": "Gemeinde Binn",
     "authority_level": "municipality"
   },
   "url": "...",
@@ -103,113 +29,127 @@ Minimum source record:
   "source_modified_at": null,
   "content_type": "text/html",
   "language": "de",
-  "sha256": "sha256:...",
-  "snapshot_id": "snapshot_..."
+  "sha256": "sha256:..."
 }
 ```
 
-## 5. Field-level evidence
+## 3. Service-lead provenance
 
-Each extracted field should support:
+A Service Lead should expose:
 
 ```json
 {
-  "field": "fees[0].amount",
-  "value": 30,
-  "classification": "inferred",
-  "source_refs": ["src_..."],
-  "evidence": [
-    {
-      "source_ref": "src_...",
-      "text": "Die Gebühr beträgt CHF 30.",
-      "selector": "main article p:nth-of-type(4)"
-    }
+  "service_lead_id": "lead_...",
+  "labels": {"de": "Strahlerpatente"},
+  "sources": [
+    {"source_ref": "src_1", "role": "service_page"},
+    {"source_ref": "src_2", "role": "application_pdf"}
   ],
-  "extractor": {
-    "name": "service-extractor",
-    "version": "0.1.0",
-    "model": "optional-model-id"
+  "discovery": {
+    "confidence": 0.91,
+    "method": "heuristic-v1",
+    "evidence": [
+      {
+        "source_ref": "src_1",
+        "text": "Strahlerpatente"
+      }
+    ]
   }
 }
 ```
 
-## 6. Freshness
+The important audit questions are:
 
-Never equate `official` with `current`.
+- Where was the service discovered?
+- Is the publisher authoritative?
+- Which source bundle was handed to Agent 2?
+- When was it fetched?
+- Was the grouping inferred?
+- Were any relevant pages inaccessible?
 
-Track separately:
+## 4. Classification vocabulary
 
-- `retrieved_at`
-- `source_modified_at`, if available
-- HTTP validators (`etag`, `last-modified`)
-- last successful verification
-- refresh policy
-- stale threshold by content class
+| Classification | Meaning |
+|---|---|
+| `official` | Published directly by the responsible authority |
+| `observed` | Directly observed in another source |
+| `derived` | Deterministically produced from source data |
+| `inferred` | Semantic judgement by a model/heuristic |
+| `dynamic` | Computed at request/runtime |
 
 Example:
 
+```text
+"Strahlerpatente" appears on municipality page
+→ official observation
+
+page classified as a municipal service
+→ inferred
+
+PDF link grouped with that service lead
+→ inferred or derived depending on rule
+
+Agent 2 later interprets fee/process details
+→ downstream responsibility
+```
+
+## 5. Trust dimensions
+
+Avoid one opaque score.
+
+For discovery, keep dimensions such as:
+
 ```json
 {
-  "freshness": {
-    "retrieved_at": "2026-09-24T13:15:00Z",
-    "source_modified_at": null,
-    "verified_at": "2026-09-24T13:15:00Z",
-    "status": "fresh",
-    "policy": "refresh_30d"
+  "trust": {
+    "authority": "high",
+    "source_directness": "primary",
+    "freshness": "unknown",
+    "service_identity_confidence": 0.91,
+    "source_bundle_confidence": 0.83
   }
 }
 ```
 
-## 7. Crawl provenance
+## 6. Crawl provenance
 
-The acquisition process itself should be auditable.
+Record how discovery happened:
 
 ```json
 {
   "crawl_id": "crawl_...",
-  "strategy": "directory_crawl",
-  "strategy_reason": [
-    "large site",
-    "service directory discovered",
-    "official eGov portal discovered"
-  ],
-  "page_budget": 300,
-  "languages_requested": ["de"],
-  "languages_discovered": ["de", "en"],
-  "pages_examined": 187,
-  "pages_retained": 76,
-  "stop_reason": "service coverage converged"
+  "strategy": "full_crawl",
+  "page_budget": 50,
+  "pages_examined": 31,
+  "service_leads_found": 12,
+  "stop_reason": "queue_exhausted"
 }
 ```
 
-This explains not only where claims came from, but also why the system believes it searched enough.
+This lets Agent 2 and later evaluators distinguish a service lead found in a nearly complete tiny-site crawl from one found in a heavily bounded large-site crawl.
 
-## 8. Snapshot discipline
+## 7. Freshness
 
-A crawl should produce a manifest:
+Official does not mean current.
 
-```json
-{
-  "crawl_id": "crawl_2026-09-24_001",
-  "municipality": "Ilanz/Glion",
-  "started_at": "...",
-  "completed_at": "...",
-  "entrypoint": "...",
-  "pipeline_versions": {
-    "fetcher": "0.1.0",
-    "parser": "0.1.0",
-    "extractor": "0.1.0"
-  },
-  "results": {
-    "pages_fetched": 17,
-    "services_detected": 32,
-    "services_verified": 27,
-    "services_partial": 5,
-    "conflicts": 1
-  }
-}
-```
+Keep:
 
-The key distinction:
+- retrieval timestamp
+- last-modified/etag when available
+- content hash
+- crawl/build ID
+- inaccessible/failed source records
 
-> Real data can still be stale. A frozen snapshot must identify itself as frozen.
+Freshness interpretation can happen downstream.
+
+## 8. Responsibility boundary
+
+Agent 1 provenance answers:
+
+> **What did we discover and where?**
+
+Agent 2 / Judge provenance answers:
+
+> **What factual claims did we derive from those sources and should they be exposed?**
+
+Do not mix the two stages.

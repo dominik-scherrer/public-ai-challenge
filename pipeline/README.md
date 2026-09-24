@@ -1,80 +1,76 @@
-# Swiss Grounding MCP — Provenance-Aware Service Ingestion
+# Swiss Grounding MCP — Service Discovery → Local MCP Compilation
 
-This directory defines the ingestion pipeline that turns heterogeneous Swiss municipal websites into structured, provenance-preserving service records suitable for an MCP server.
+This directory defines the pipeline that turns heterogeneous Swiss municipal websites into **service leads with authoritative source bundles**, which are then compiled downstream into a municipality-specific MCP.
 
-The core claim:
+The key boundary is now simpler:
 
-> **Do not build a generic scraper. Build a provenance-preserving municipal-service compiler with adaptive acquisition strategies.**
+> **Agent 1 discovers what services exist and where the authoritative material lives. Agent 2 understands each service deeply and builds the local MCP capability.**
 
-The system should answer not only what service exists, but also where every claim came from, when it was fetched, how it was transformed, how fresh it is, and why the crawler stopped.
+Agent 1 does **not** need to normalize every fee, requirement, opening hour or procedure into one national service schema.
 
 ## System boundary
 
 ```text
-municipality
+municipality website
     ↓
-context enrichment
+reconnaissance
     ↓
-cheap reconnaissance
+adaptive crawl / discovery
     ↓
-planner / semantic compiler
+SERVICE LEADS
+(name / hint / authority / source bundle / provenance)
     ↓
-typed CrawlPlan IR
+Agent 2 — Service Compiler
+(inspect local sources, understand local capability)
     ↓
-deterministic crawl runtime
+MCP Capability Plan
     ↓
-source snapshots + PageIR
+municipality-specific MCP
     ↓
-small-model classification / extraction
-    ↓
-typed ClaimIR
-    ↓
-deterministic validation / normalization
-    ↓
-service records + provenance
-    ↓
-MCP-facing knowledge layer
+citizen / agent
 ```
 
-The LLM is **not** the scraper and **not** the authority.
+## Agent 1 — Discovery
 
-### Large-model role
+Agent 1 answers:
 
-Use a capable planner only where the website is unfamiliar or the evidence is ambiguous:
+- What municipal services appear to exist?
+- Which pages/documents are authoritative for each service?
+- Which links belong together?
+- Which municipality/department published them?
+- When and how were they discovered?
+- How confident are we that this is a real municipal service?
 
-- understand an unfamiliar site structure
-- select a crawl strategy
-- choose relevant languages
-- set budgets and stop rules
-- compile site-specific extraction plans
-- resolve hard conflicts or multilingual identity questions
+It should not try to fully understand or normalize the service.
 
-### Small-model role
+Example output:
 
-Use a cheaper constrained model, ultimately Apertus, for repetitive typed work:
+```json
+{
+  "service_lead_id": "lead_binn_waste",
+  "label": "Abfall / Kehricht",
+  "service_type_hint": "waste_collection",
+  "municipality": "Binn",
+  "sources": [
+    {"url": "...", "role": "service_page"},
+    {"url": "...", "role": "calendar_pdf"}
+  ],
+  "confidence": 0.93
+}
+```
 
-- page classification
-- service-vs-noise classification
-- field extraction into strict schemas
-- link relevance ranking
-- obvious multilingual pairing
+## Agent 2 — Service Compiler
 
-### Deterministic runtime role
+Agent 2 receives one service lead plus its source bundle and decides:
 
-Software owns:
+- what the service actually supports locally
+- what information can be exposed
+- what MCP tools/resources make sense
+- what inputs are needed
+- what limitations apply
+- whether a handoff to another portal is required
 
-- HTTP fetching
-- browser escalation
-- domain boundaries
-- crawl budgets
-- caching and snapshots
-- canonicalization
-- hashing and timestamps
-- schema validation
-- normalization
-- duplicate/conflict detection
-- stop conditions
-- provenance bookkeeping
+The common standard is therefore primarily the **MCP/protocol boundary**, not necessarily one globally normalized municipal data model.
 
 ## Fetch principle
 
@@ -84,7 +80,7 @@ Use the cheapest sufficient tool:
 HTTP fetch
    ↓ insufficient / JS shell
 headless browser
-   ↓ real interaction required
+   ↓ genuine interaction required
 agentic browser
 ```
 
@@ -92,18 +88,16 @@ A browser is a fallback, not the default.
 
 ## Documents
 
-- `ARCHITECTURE.md` — end-to-end pipeline and model/runtime boundaries
-- `CRAWL_STRATEGIES.md` — adaptive crawl modes, fetch escalation and stop rules
-- `TOOLING_AND_RUNTIME.md` — candidate OSS components and runtime choices
-- `SEMANTIC_COMPILER.md` — planner → typed IR → small-model execution design
-- `PROVENANCE_AND_TRUST.md` — trust, provenance and evidence model
-- `MUNICIPALITY_BENCHMARK.md` — seven representative test municipalities
-- `SERVICE_MODEL.md` — canonical service representation
-- `BUILD_PLAN.md` — first vertical slice and implementation sequence
-- `EVALS.md` — benchmark and evaluation criteria
+- `ARCHITECTURE.md` — Agent 1 → Agent 2 system boundary
+- `CRAWL_STRATEGIES.md` — adaptive discovery strategies
+- `TOOLING_AND_RUNTIME.md` — crawler/runtime options
+- `SEMANTIC_COMPILER.md` — service lead → local MCP capability compilation
+- `PROVENANCE_AND_TRUST.md` — source/service-lead provenance
+- `MUNICIPALITY_BENCHMARK.md` — discovery-shape benchmark
+- `SERVICE_MODEL.md` — minimal Service Lead contract
+- `BUILD_PLAN.md` — current implementation sequence
+- `EVALS.md` — discovery and downstream acceptance criteria
 
-## Hackathon fit
+## Hackathon claim
 
-The Swiss Grounding MCP challenge values grounding quality, useful Swiss coverage, jurisdiction, freshness, citations, unsupported-query handling, agent efficiency, response size, latency, caching, refresh design, maintainability and MCP contract quality.
-
-This pipeline is designed to make those properties explicit and testable rather than implicit.
+> **We do not try to flatten every Swiss municipality into one giant normalized dataset. We discover each municipality's services, preserve the authoritative sources, and compile those local capabilities into an MCP tailored to that municipality.**

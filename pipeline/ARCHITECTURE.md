@@ -1,248 +1,205 @@
-# Architecture — Adaptive Municipal Service Ingestion
+# Architecture — Discover Services, Compile Local MCP Capabilities
 
 ## 1. Goal
 
-Transform an official municipal entry point into structured, typed, provenance-preserving service records while minimizing unnecessary crawling and expensive model use.
+Given an official municipality URL, identify the services the municipality exposes and produce provenance-preserving **Service Leads** that a downstream Service Compiler can turn into a municipality-specific MCP.
 
-Input:
+Agent 1 does not need to fully normalize the service domain.
 
-```text
-https://municipality.example.ch/
-```
-
-Output:
+## 2. Revised architecture
 
 ```text
-service[]
-authority[]
-jurisdiction[]
-procedure[]
-source[]
-evidence[]
+MUNICIPALITY WEBSITE
+        │
+        ▼
+┌─────────────────────────────┐
+│ AGENT 1 — DISCOVERY         │
+│                             │
+│ recon / crawl / classify    │
+│ identify service surfaces   │
+│ group authoritative sources │
+└──────────────┬──────────────┘
+               │
+               │ ServiceLead[]
+               ▼
+┌─────────────────────────────┐
+│ AGENT 2 — SERVICE COMPILER  │
+│                             │
+│ inspect local source bundle │
+│ understand local semantics  │
+│ choose useful capabilities  │
+└──────────────┬──────────────┘
+               │
+               │ McpCapabilityPlan
+               ▼
+┌─────────────────────────────┐
+│ MCP BUILDER / RUNTIME       │
+│                             │
+│ tools / retrieval / handoff │
+│ validation / packaging      │
+└──────────────┬──────────────┘
+               │
+               ▼
+        CITIZEN / AGENT
 ```
 
-The pipeline must work across large city portals, small municipality CMS sites, multilingual websites, external eGovernment portals, PDFs, departmental pages and mixed municipal/tourism content.
+Trust/provenance spans the whole chain.
 
-## 2. Architecture
+## 3. Agent 1 contract
+
+Agent 1 should determine:
 
 ```text
-MUNICIPALITY
-    │
-    ▼
-CONTEXT ENRICHMENT
-BFS/canton/language context
-    │
-    ▼
-CHEAP RECONNAISSANCE
-homepage / robots / sitemap / nav / hreflang / portal links
-    │
-    ▼
-PLANNER / SEMANTIC COMPILER
-large model only when useful
-    │
-    ▼
-CrawlPlan IR
-    │
-    ▼
-DETERMINISTIC RUNTIME
-HTTP first → browser fallback → interactive fallback
-    │
-    ├── source snapshot
-    └── PageIR
-            │
-            ▼
-SMALL CONSTRAINED MODEL
-classify / extract / rank links
-            │
-            ▼
-ClaimIR
-            │
-            ▼
-VALIDATOR / COMPILER
-schema / provenance / normalization / conflicts
-            │
-      ┌─────┴─────┐
-      │           │
- confident      ambiguous
-      │           │
-      ▼           ▼
-    STORE      LARGE MODEL
+service identity / label
++ municipality / authority
++ source URLs
++ source roles
++ discovery evidence
++ language
++ confidence
++ crawl provenance
 ```
 
-## 3. Source snapshot before interpretation
+It should **not** be responsible for extracting and normalizing every service attribute.
 
-Never let an extractor directly create the only stored representation.
-
-Always preserve:
-
-```text
-SOURCE SNAPSHOT
-    ↓
-PageIR
-    ↓
-OBSERVATIONS
-    ↓
-ClaimIR
-    ↓
-SERVICE RECORD
-```
-
-This allows re-running improved extractors without re-fetching, auditing changed interpretations, comparing versions over time and reproducing tests.
-
-## 4. Fetch escalation
-
-A headless browser is not the baseline.
-
-### Tier 1 — HTTP
-
-Prefer direct HTTP when it yields useful source content.
-
-Use it for:
-
-- static HTML
-- sitemaps
-- PDFs
-- JSON/API endpoints
-- canonical metadata
-- most traditional municipal CMS pages
-
-### Tier 2 — Headless browser
-
-Escalate when:
-
-- the HTTP response is a JavaScript shell
-- meaningful content appears only after rendering
-- navigation or content depends on client-side state
-- a service directory requires browser execution
-
-### Tier 3 — Agentic browser
-
-Escalate only when a real interaction is necessary:
-
-- multi-step portal navigation
-- menus/forms that cannot be represented by stable selectors
-- dynamic transaction flows needed for discovery
-
-The fetcher records which tier was used and why.
-
-## 5. Agentic boundary
-
-Agentic orchestration is justified where the pipeline must choose among known actions.
-
-Good model tasks:
-
-- classify the municipality/site
-- choose FULL / SECTION / DIRECTORY / DISCOVERY
-- choose relevant language variants
-- rank evidence-bearing links
-- compile extraction rules
-- resolve hard multilingual equivalence
-- decide whether uncertainty warrants escalation
-
-Bad model tasks:
-
-- unconstrained browsing
-- unlimited crawling
-- ignoring deterministic URL/domain policy
-- inventing service facts
-- replacing schema validation
-- deciding freshness from intuition
-
-## 6. Semantic compiler boundary
-
-The large model should emit typed intermediate representations rather than directly performing the entire crawl.
-
-Example:
+For example, for waste collection:
 
 ```json
 {
-  "schema": "municipal-crawl-plan/v1",
-  "strategy": "directory_crawl",
-  "roots": [{"url": "...", "role": "service_directory"}],
-  "languages": ["de"],
-  "fetch_policy": {
-    "prefer": "http",
-    "browser_fallback": true
+  "service_lead_id": "lead_binn_waste",
+  "label": "Abfallentsorgung",
+  "service_type_hint": "waste_collection",
+  "authority": {
+    "municipality": "Binn",
+    "canton": "VS"
   },
-  "budget": {
-    "max_pages": 250,
-    "max_depth": 4
-  },
-  "stop": {
-    "directory_exhausted": true,
-    "novelty_window": 20
-  }
+  "sources": [
+    {"source_ref": "src_12", "role": "service_page"},
+    {"source_ref": "src_18", "role": "calendar_pdf"}
+  ],
+  "confidence": 0.93
 }
 ```
 
-Software validates and executes this plan.
+No normalized collection days, zones or fees are required at this stage.
 
-## 7. Small-model execution
+## 4. Source bundles
 
-The small model receives bounded inputs and strict output schemas.
+A service is often spread across several sources:
 
-Example page classification:
-
-```json
-{
-  "page_role": "service",
-  "service_probability": 0.94,
-  "follow_candidates": []
-}
+```text
+service landing page
++ PDF/form
++ department page
++ external official portal handoff
 ```
 
-Example field extraction:
+Agent 1's main semantic task is to group those sources into one plausible service lead.
+
+This is more important than field extraction.
+
+## 5. Agent 2 contract
+
+Agent 2 receives:
+
+```text
+municipality context
++ service lead
++ authoritative source bundle
+```
+
+and emits a typed capability plan, for example:
 
 ```json
 {
-  "claims": [
+  "schema": "mcp-capability-plan/v1",
+  "service": {
+    "label": "Abfallentsorgung",
+    "municipality": "Binn"
+  },
+  "capabilities": [
     {
-      "field": "fees[0].raw",
-      "value": "CHF 30",
-      "evidence_span": [182, 188]
+      "tool": "get_waste_information",
+      "inputs": [],
+      "source_strategy": "document_lookup"
+    },
+    {
+      "tool": "get_collection_calendar",
+      "inputs": [],
+      "source_strategy": "pdf_table"
     }
+  ],
+  "limitations": [
+    "No address-specific collection API detected."
   ]
 }
 ```
 
-Deterministic code then parses currency/amount, validates schema and attaches provenance.
+The downstream compiler may choose different MCP surfaces for the same broad service in different municipalities.
 
-## 8. Compile successful behavior into rules
+## 6. Important architectural consequence
 
-Unknown sites may initially require model help. Repeated crawls should become cheaper.
-
-```text
-model discovers structure
-        ↓
-typed selector/extraction plan
-        ↓
-validated
-        ↓
-cached site adapter
-        ↓
-future crawl without large model
-```
-
-This is a core design goal: **discover with intelligence, formalize, replay cheaply.**
-
-## 9. Strategy selection signals
-
-Population is only a hint.
-
-Strategy depends on:
+The common abstraction is deliberately small:
 
 ```text
-population
-+ estimated site size
-+ sitemap availability
-+ service directory
-+ search
-+ eGov portal presence
-+ language structure
-+ branching factor
-+ content density
-+ browser requirement
-+ observed crawl cost
+Service Lead
+→ local understanding
+→ MCP capability
 ```
 
-Website evidence overrides demographic expectations.
+We do **not** require:
+
+```text
+all municipalities
+→ identical fully normalized service schema
+```
+
+Cross-municipality normalization (including eCH-0070) may still be useful for indexing, discovery and analytics, but is not required to produce the first useful MCP.
+
+## 7. Discovery runtime
+
+Agent 1 still uses adaptive acquisition:
+
+```text
+cheap reconnaissance
+→ choose FULL / SECTION / DIRECTORY / DISCOVERY
+→ HTTP first
+→ browser only when needed
+→ classify service vs noise
+→ attach related source links
+→ stop
+```
+
+## 8. Model roles
+
+### Deterministic software
+
+- URL normalization
+- redirect/canonical deduplication
+- fetch/cache/snapshot
+- crawl budgets
+- domain policy
+- provenance
+- link graph
+- output validation
+
+### Small model / heuristic layer
+
+- service-vs-noise classification
+- page role
+- service-type hints
+- source relevance
+- source grouping suggestions
+
+### Large model
+
+Use only where needed:
+
+- unfamiliar site architecture
+- ambiguous service grouping
+- difficult portal/source relationships
+- compiling the downstream MCP capability plan
+
+## 9. Core claim
+
+> **The scraper discovers capabilities and their evidence. The Service Compiler understands them. The MCP is where local municipal semantics become a usable machine interface.**
