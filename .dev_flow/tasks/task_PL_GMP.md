@@ -73,6 +73,20 @@ Implementing Phase 1 (Project Setup & Scouting) of the Gemeinde MCP Pipeline fol
 - 23:02 — Started Phase 3 subtask.
 - 23:04 — Implemented data extraction agent, validator, inventory generator, and tests (16 passed). Subtask done.
 
+### Subtask: Phase 4 — MCP Server
+> Author: `antigravity` — Created: 23:08 — Last updated: 23:11 — Status: `done`
+
+**Goal:** Implement `create_mcp_server` and CLI in `src/public_ai_challenge/gemeinde_mcp/server.py` exposing resources and query tools.
+
+**Progress:**
+- [x] Create `src/public_ai_challenge/gemeinde_mcp/server.py`
+- [x] Add functional tests in `tests/test_server.py`
+- [x] Verify Phase 4 criteria (SP_GMP_05_05, SP_GMP_05_06, SP_GMP_05_07, SP_GMP_05_09) (20 tests passed)
+
+**Activity:**
+- 23:08 — Started Phase 4 subtask.
+- 23:11 — Implemented MCPServer with resources and tools, added tests (20 passed). Subtask done.
+
 ## Coordination Notes
 
 - 22:45 [antigravity] — Starting Phase 1 implementation.

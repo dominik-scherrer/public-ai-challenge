@@ -34,7 +34,7 @@ Implement a pipeline that reads scouted services, extracts HTML and PDF content,
 - [x] Phase 1 — Project Setup & Scouting
 - [x] Phase 2 — Content Extraction & Synthesis
 - [x] Phase 3 — Inventory Generation
-- [ ] Phase 4 — MCP Server
+- [x] Phase 4 — MCP Server
 - [ ] Phase 5 — End-to-End Pipeline
 
 ## Phases
@@ -96,7 +96,7 @@ Notes:
 - Output saves to `output/{service.name}_inventory.json`.
 - Minimal file writes when `service.available` is false or retries exhaust.
 
-### Phase 4 — MCP Server [TODO]
+### Phase 4 — MCP Server [DONE]
 **Depends on:** Phase 1
 **Implements:** [SP_GMP_04](./gemeinde_mcp.sp.md#SP_GMP_04)
 **Verify:** SP_GMP_05_05, SP_GMP_05_06, SP_GMP_05_07

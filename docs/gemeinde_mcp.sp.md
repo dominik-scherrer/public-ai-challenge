@@ -203,46 +203,48 @@ def validate_extracted_data(
 ### 02_03. MCP Server Startup  {#SP_GMP_02_03}
 Purpose: Exposes generated Markdown and tools via MCP protocol.
 
+### 02_03. MCP Server Startup  {#SP_GMP_02_03}
+Purpose: Exposes generated Markdown resources and inventory data via MCP protocol.
+
 Input:
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| output_dir | string | Yes | Path to `output/` directory containing `.md` and `_tools.py` files. |
+| output_dir | string | Yes | Path to `output/` directory containing `.md` and `_inventory.json` files. |
 
 Output:
 
 | Return | Type | Description |
 |---|---|---|
-| server | MCPServer | Running server instance exposing resources and tools. |
+| server | FastMCP | Running server instance exposing resources and tools. |
 
 Errors:
 
 | Error | Condition | Result |
 |---|---|---|
-| Import Error | Module fails to import | Skip module, log error. |
+| File Error | File fails to read | Skip file, log error. |
 
 Processing logic pseudocode:
 ```python
+server = FastMCP("Gemeinde-MCP")
 for file in list_files("output/"):
     if file.endswith(".md"):
         register_resource(f"gemeinde://services/{file.stem}", file.read())
-    elif file.endswith("_tools.py") and not file.is_empty():
-        module = dynamic_import(file)
-        for func in module.public_functions:
-            register_tool(func)
-register_builtin_tools()
+    elif file.endswith("_inventory.json"):
+        register_inventory(file.stem, load_json(file))
+register_tools(server)
 ```
 
 ## 03. Validation Rules  {#SP_GMP_03}
 ### 03_01. Input Validation  {#SP_GMP_03_01}
 - `ScoutedService` data must pass JSON schema validation matching section 01_01.
 - `urls` in `ScoutedService` must be valid URL formats.
-- Generated Python code must pass `ast.parse` syntax validation.
+- Extracted JSON data must conform to `mmp-service-inventory/v0`.
 
 ## 04. State Transitions  {#SP_GMP_04}
 ### 04_01. Lifecycle  {#SP_GMP_04_01}
 Per-service processing lifecycle:
-`pending` → `fetching` → `synthesizing` → `generating_tools` → `complete` | `failed`
+`pending` → `fetching` → `synthesizing` → `generating_inventory` → `complete` | `failed`
 
 ## 05. Verification Criteria  {#SP_GMP_05}
 ### 05_01. Functional Expectations  {#SP_GMP_05_01}
@@ -250,12 +252,12 @@ Per-service processing lifecycle:
 | ID | Description |
 |---|---|
 | SP_GMP_05_01 | Synthesized Markdown for available services contains cohesive text without HTML tags. |
-| SP_GMP_05_02 | Synthesized Markdown for unavailable services states the service is unavailable, with an empty `_tools.py` file. |
-| SP_GMP_05_03 | Action tools match form fields, possess semantic names (e.g., `register_move_in`), and specify `kind="action"`. |
-| SP_GMP_05_04 | Informational tools extract correct facts (e.g., office hours), possess semantic names, and specify `kind="informational"`. |
-| SP_GMP_05_05 | MCP server with 5 service files exposes 5 resources with `gemeinde://services/{name}` URIs. |
+| SP_GMP_05_02 | Synthesized Markdown for unavailable services states the service is unavailable, with a minimal inventory file. |
+| SP_GMP_05_03 | Action handoffs match form fields, possess semantic names, and point to valid municipality links. |
+| SP_GMP_05_04 | Informational facts extract correct attributes (e.g., office hours, fees, requirements). |
+| SP_GMP_05_05 | MCP server with service files exposes resources with `gemeinde://services/{name}` URIs. |
 | SP_GMP_05_06 | Reading `gemeinde://services/{name}` returns the correct Markdown content. |
-| SP_GMP_05_07 | MCP server registers all functions from non-empty `_tools.py` files as MCP tools with correct metadata. |
+| SP_GMP_05_07 | MCP server registers query tools reading non-empty `_inventory.json` files with correct metadata. |
 | SP_GMP_05_09 | `list_services()` returns all loaded services. |
 
 ### 05_02. Invariant Checks  {#SP_GMP_05_02}

@@ -16,6 +16,7 @@ from .models import (
     ServiceResource,
     SynthesizedContent,
 )
+from .server import FastMCP, create_mcp_server
 
 __all__ = [
     "ScoutedService",
@@ -32,4 +33,6 @@ __all__ = [
     "data_extraction_agent",
     "process_service_content",
     "generate_inventory",
+    "FastMCP",
+    "create_mcp_server",
 ]
