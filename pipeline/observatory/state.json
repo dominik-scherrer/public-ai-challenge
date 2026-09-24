@@ -1,6 +1,6 @@
 {
   "schema": "scout-observatory/v5",
-  "generated_at": "2026-09-24T19:45:00+02:00",
+  "generated_at": "2026-09-24T20:00:00+02:00",
   "scope": {
     "read": "entire repository + Git metadata",
     "write": "pipeline/observatory/ only",
@@ -273,9 +273,9 @@
             "name": "Compile municipality contract",
             "icon": "file",
             "desc": "Deterministic, typed, validated output.",
-            "status": "needs_refinement",
-            "summary": "run_scout assembles and validates MunicipalityDiscovery and writes discovery.json, sources.jsonl and crawl-report.json. The fixture end-to-end test errors on a test bug (`with A as tmp, (B, C):` makes a tuple); with that one line fixed it passes.",
-            "next": "Fix the with-statement in tests/test_scout.py.",
+            "status": "implemented",
+            "summary": "run_scout assembles and validates MunicipalityDiscovery and writes discovery.json, sources.jsonl and crawl-report.json. The fixture and Binn regression suite now pass locally (10/10); a real deterministic Binn run is committed in PR #13.",
+            "next": "Run the semantic Inspector with a live model on Binn and compare it with the deterministic baseline.",
             "evidence": [
               {
                 "path": "pipeline/scout/src/scout/app.py",
@@ -327,8 +327,8 @@
           "coverage",
           "failures[]"
         ],
-        "status": "in_progress",
-        "summary": "municipality-discovery/v1 is a Pydantic model and is produced in the fixture run. No real municipality output has been committed, and Patrick's plan still describes a differently shaped discovery.json.",
+        "status": "needs_refinement",
+        "summary": "municipality-discovery/v1 is a Pydantic model and is produced in the fixture run. A real Binn municipality-discovery/v1 output is committed in PR #13. Factory contract alignment remains an open integration decision.",
         "next": "Commit a Binn and an Ausserberg discovery.json for the Factory team.",
         "evidence": [
           {
@@ -543,7 +543,7 @@
         "strategy": "broad_small_site",
         "purpose": "Broad small-site coverage",
         "question": "Can Scout reach near-complete coverage on a tiny site cheaply?",
-        "run": "none",
+        "run": "binn-off-v2",
         "note": "Live inspection found the strahlerpatente.binn.ch handoff (PR #13); no run output committed."
       },
       {
@@ -945,7 +945,7 @@
     }
   ],
   "next_actions": [
-    "Fix the with-statement in pipeline/scout/tests/test_scout.py, then merge PR #13 (it includes #12).",
+    "Run Scout on Binn with a live model, then batch the benchmark municipalities and compare edge cases.",
     "Run Scout on Binn and Ausserberg with a live model and commit both discovery.json files.",
     "Close #11, #9, #7, #6 and #5 as superseded; decide what survives from #10's grounding loop.",
     "Add service_directory to recon + strategy and prove it on Dübendorf.",
