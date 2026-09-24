@@ -1,5 +1,7 @@
 # MCP Capability Matrix — ingestion ↔ Patrick's tool surface
 
+> **Grounding status:** the tool names below are capability hypotheses. Real-world maturity is tracked separately in [`pipeline/grounding/tool-grounding-matrix.json`](../grounding/tool-grounding-matrix.json). A tool is not considered grounded merely because dummy code or seed data exists.
+
 Patrick's live `minigmeind` MCP is the application/capability layer. The ingestion pipeline remains the evidence and canonical-data layer.
 
 > **Boundary:** ingestion answers *what do we know, from which official source, and how complete is it?*  

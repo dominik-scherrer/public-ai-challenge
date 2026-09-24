@@ -1,0 +1,335 @@
+{
+  "schema": "tool-grounding-matrix/v1",
+  "generated_at": "2026-09-24",
+  "principle": "Tool contracts begin as hypotheses. Only real Agent Scrap observations advance grounding maturity.",
+  "maturity_levels": {
+    "dummy": "Tool exists as a capability hypothesis; no real municipality has grounded it yet.",
+    "grounded_1": "Supported by authoritative sources from one real municipality.",
+    "grounded_n": "Supported by authoritative sources from multiple real municipalities.",
+    "generalized": "Contract intentionally stabilized as a cross-municipality abstraction after repeated grounding.",
+    "local_only": "Useful capability, but intentionally local/municipality-specific rather than generalized.",
+    "rejected": "Evidence showed this tool abstraction should not remain in the MCP surface."
+  },
+  "tools": [
+    {
+      "tool_id": "list_services",
+      "capability": "service_catalog",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "find_responsible_office",
+      "capability": "authority_routing",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_office_hours",
+      "capability": "office_hours",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_local_notices",
+      "capability": "local_notices",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "list_official_notices",
+      "capability": "official_notices",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "search_regulations",
+      "capability": "regulations",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "list_forms",
+      "capability": "forms",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_form_schema",
+      "capability": "form_schema",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "prefill_form",
+      "capability": "form_prefill",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_move_in_requirements",
+      "capability": "residence_registration",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "register_move_in",
+      "capability": "residence_registration_action",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "register_move_out",
+      "capability": "residence_deregistration_action",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_foreigner_procedure",
+      "capability": "foreign_resident_procedure",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_id_requirements",
+      "capability": "identity_document_guidance",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_passport_process",
+      "capability": "passport_routing",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_road_permit_requirement",
+      "capability": "road_permit",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "calculate_road_permit_price",
+      "capability": "road_permit_pricing",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "parking_permit",
+      "capability": "parking_permit",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_building_application_requirements",
+      "capability": "building_application",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_planning_procedures",
+      "capability": "planning_procedures",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "garbage_collection",
+      "capability": "waste_collection",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "next_waste_collection",
+      "capability": "waste_collection",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "where_dispose",
+      "capability": "waste_disposal",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "recycling_point_hours",
+      "capability": "recycling_points",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "list_facilities",
+      "capability": "facilities",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_facility_options",
+      "capability": "facility_options",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "request_facility_booking",
+      "capability": "facility_request_action",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "list_events",
+      "capability": "events",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_budget",
+      "capability": "municipal_budget",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "get_accounts",
+      "capability": "municipal_accounts",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "list_assembly_agenda",
+      "capability": "assembly_agenda",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    },
+    {
+      "tool_id": "report_issue",
+      "capability": "issue_reporting",
+      "maturity": "dummy",
+      "supported_municipalities": [],
+      "observations": [],
+      "contract_version": 1,
+      "contract_changes": [],
+      "decision_notes": []
+    }
+  ]
+}

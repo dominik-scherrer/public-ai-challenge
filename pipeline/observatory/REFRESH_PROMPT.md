@@ -108,3 +108,17 @@ Avoid timestamp-only commits.
 Commit message when material state changes:
 
 `chore(pipeline): refresh project observatory`
+
+
+## Tool grounding matrix
+
+Read `pipeline/grounding/tool-grounding-matrix.json` on every refresh.
+
+Report:
+- total tools
+- count by maturity: dummy / grounded_1 / grounded_n / generalized / local_only / rejected
+- municipalities contributing supported observations
+- tools with `reshape_contract`, `local_capability`, or `reject_candidate` observations
+- recent contract changes
+
+Never promote a tool because code exists or because a README claims support. Grounding requires a real Agent Scrap observation tied to source refs.

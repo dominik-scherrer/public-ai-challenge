@@ -1,0 +1,37 @@
+{
+  "schema": "agent-scrap-tool-observations/v1",
+  "run_id": "example-binn-001",
+  "municipality": "Binn",
+  "canton": "VS",
+  "observations": [
+    {
+      "tool_id": "garbage_collection",
+      "service_lead_id": "lead_binn_waste",
+      "result": "supported",
+      "source_refs": [
+        "src_binn_waste",
+        "src_binn_calendar"
+      ],
+      "notes": "Example only: waste service and calendar source bundle discovered.",
+      "proposed_change": null
+    },
+    {
+      "tool_id": "get_road_permit_requirement",
+      "service_lead_id": "lead_binn_strahlerpatent",
+      "result": "reshape_contract",
+      "source_refs": [
+        "src_binn_strahlerpatent"
+      ],
+      "notes": "Example of a real local permit that does not fit the road-permit abstraction.",
+      "proposed_change": "Consider a broader permit-routing capability or keep as local capability."
+    },
+    {
+      "tool_id": "parking_permit",
+      "service_lead_id": null,
+      "result": "not_observed",
+      "source_refs": [],
+      "notes": "No parking-permit service discovered in this bounded run; not negative evidence.",
+      "proposed_change": null
+    }
+  ]
+}
