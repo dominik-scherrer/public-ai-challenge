@@ -128,22 +128,47 @@ def call_openai(system_prompt: str, instruction: str) -> Optional[str]:
 # endpoint doesn't need to configure anything twice.
 
 
+# Swisscom's Swiss AI Weeks Apertus endpoint (see docs/Example Curl Swiss API.txt) is the
+# same OpenAI-compatible shape; it is used when PUBLIC_AI_* is not set.
+SWISSCOM_DEFAULT_MODEL = "swiss-ai/Apertus-v1.5-70B"
+
+
+def _swisscom_endpoint() -> str:
+    base = os.getenv("SWISSCOM_BASE_API", "").strip().rstrip("/")
+    return f"{base}/chat/completions" if base and os.getenv("SWISSCOM_API_KEY", "").strip() else ""
+
+
 def _apertus_endpoint() -> str:
     endpoint = os.getenv("PUBLIC_AI_ENDPOINT", "").strip()
     if endpoint:
         return endpoint
     base_url = os.getenv("PUBLIC_AI_BASE_URL", "").strip().rstrip("/")
-    return f"{base_url}/chat/completions" if base_url else ""
+    if base_url:
+        return f"{base_url}/chat/completions"
+    return _swisscom_endpoint()
+
+
+def _apertus_model() -> str:
+    model = os.getenv("PUBLIC_AI_MODEL", "").strip()
+    if model or not _swisscom_endpoint() or _apertus_endpoint() != _swisscom_endpoint():
+        return model
+    return os.getenv("SWISSCOM_MODEL", "").strip() or SWISSCOM_DEFAULT_MODEL
+
+
+def _apertus_key() -> str:
+    if _apertus_endpoint() == _swisscom_endpoint() and _swisscom_endpoint():
+        return os.getenv("SWISSCOM_API_KEY", "").strip()
+    return os.getenv("PUBLIC_AI_API_KEY", "").strip()
 
 
 def apertus_is_configured() -> bool:
-    return bool(_apertus_endpoint()) and bool(os.getenv("PUBLIC_AI_MODEL", "").strip())
+    return bool(_apertus_endpoint()) and bool(_apertus_model())
 
 
 def call_apertus(system_prompt: str, instruction: str) -> Optional[str]:
     endpoint = _apertus_endpoint()
-    model = os.getenv("PUBLIC_AI_MODEL", "").strip()
-    api_key = os.getenv("PUBLIC_AI_API_KEY", "").strip()
+    model = _apertus_model()
+    api_key = _apertus_key()
 
     if not endpoint or not model:
         raise JudgeConfigError(
@@ -160,7 +185,7 @@ def call_apertus(system_prompt: str, instruction: str) -> Optional[str]:
             {"role": "user", "content": instruction},
         ],
     }
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/json", "User-Agent": "MMP-Judge/0.1"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 

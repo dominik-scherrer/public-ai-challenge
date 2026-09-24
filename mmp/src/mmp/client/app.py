@@ -41,7 +41,16 @@ def _model():
 def create_app(mcp_url: str) -> Starlette:
     model, config = _model()
     orchestrator = Orchestrator(mcp_url, model)
-    sovereign = bool(config) and os.getenv("MMP_CHAT_SOVEREIGN", "").lower() in {"1", "true", "yes"}
+    # ADR-0002: the badge may only claim "stays in Switzerland" if that's true. Swisscom's Apertus
+    # endpoint is operated in Switzerland, so it defaults to sovereign; anything else must be declared
+    # by the operator. MMP_CHAT_SOVEREIGN=false/true always overrides.
+    declared = os.getenv("MMP_CHAT_SOVEREIGN", "").strip().lower()
+    if declared in {"1", "true", "yes"}:
+        sovereign = bool(config)
+    elif declared in {"0", "false", "no"}:
+        sovereign = False
+    else:
+        sovereign = bool(config) and config.provider == "swisscom"
     ui_cache: dict[str, str] = {}
 
     async def config_endpoint(request: Request) -> Response:

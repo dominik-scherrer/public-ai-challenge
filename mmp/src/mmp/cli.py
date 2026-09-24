@@ -6,6 +6,7 @@
     mmp serve                                  the shared MMP server (Streamable HTTP, :8765/mcp)
     mmp chat                                   the Reference Client (http://127.0.0.1:8080)
     mmp dev                                    server + client together
+    mmp check-model                            does the chat model (Apertus) plan the Seewil journey? (OQ-2)
     mmp ech0070-import <file.xlsx>             convert the official eCH-0070 list
 """
 
@@ -89,6 +90,53 @@ def cmd_dev(args) -> int:
     return 0
 
 
+def cmd_check_model(args) -> int:
+    """OQ-2 smoke test: can the configured chat model plan the Seewil journey?"""
+    import asyncio
+    import json
+
+    from mmp.client.orchestrator import Orchestrator
+    from mmp.llm import OpenAICompatibleModel, chat_config
+    from mmp.server.app import create_server
+
+    config = chat_config()
+    if config is None:
+        print("No chat model configured: set SWISSCOM_API_KEY + SWISSCOM_BASE_API (or PUBLIC_AI_API_KEY) in .env")
+        return 2
+    print(f"Chat model: {config.model} @ {config.host} (provider: {config.provider})")
+    orchestrator = Orchestrator(create_server(), OpenAICompatibleModel(config))
+    failures = 0
+    for question, expect in [
+        (args.question, {"zuzug_anmelden"}),
+        ("Übernimmt die Gemeinde Umzugskosten für Alleinerziehende?", None),
+    ]:
+        print(f"\n> {question}")
+        result = asyncio.run(orchestrator.turn(args.bfs, [{"role": "user", "content": question}]))
+        print(f"reply: {result.get('reply')}")
+        print(f"situation: {json.dumps(result.get('situation'), ensure_ascii=False)}")
+        for block in result["blocks"]:
+            if block["type"] == "overview":
+                ids = [i["id"] for i in block["items"]]
+                print(f"services: {ids}")
+                if expect and not expect <= set(ids):
+                    print(f"  FAIL: expected {sorted(expect)}")
+                    failures += 1
+            elif block["type"] == "app":
+                print(f"card: {block['arguments']['service_id']}, matched documents: {block['context']['matched_documents']}")
+            elif block["type"] == "gap":
+                print(f"gap: topic={block['topic']!r}, contact={(block['contact'] or {}).get('office')}")
+                if expect is not None:
+                    print("  FAIL: expected services, got a gap")
+                    failures += 1
+            elif block["type"] == "previous":
+                print(f"previous municipality: {block['name']} -> {(block.get('item') or {}).get('id')}")
+        if expect is None and not any(b["type"] == "gap" for b in result["blocks"]):
+            print("  NOTE: expected a gap (no matching Service); the model picked Services instead")
+            failures += 1
+    print(f"\n{'OK' if not failures else f'{failures} problem(s)'}")
+    return 0 if not failures else 1
+
+
 def cmd_ech_import(args) -> int:
     from mmp.build.ech0070 import import_xlsx
 
@@ -129,6 +177,14 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--host", default="127.0.0.1")
     d.add_argument("--port", type=int, default=8080)
     d.set_defaults(func=cmd_dev)
+
+    cm = sub.add_parser("check-model", help="Smoke-test the chat model on the Seewil journey (OQ-2)")
+    cm.add_argument("--bfs", type=int, default=4045)
+    cm.add_argument(
+        "--question",
+        default="Ich ziehe nach einer Trennung mit meinen zwei Kindern per 1. November von Dübendorf nach Wettingen. Was muss ich alles erledigen?",
+    )
+    cm.set_defaults(func=cmd_check_model)
 
     e = sub.add_parser("ech0070-import", help="Import the official eCH-0070 Leistungsinventar XLSX")
     e.add_argument("xlsx", type=Path)

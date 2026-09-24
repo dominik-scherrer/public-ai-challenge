@@ -20,6 +20,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Protocol
 
+SWISSCOM_DEFAULT_MODEL = "swiss-ai/Apertus-v1.5-70B"  # docs/Example Curl Swiss API.txt (Swiss AI Weeks)
 PUBLIC_AI_DEFAULT_BASE_URL = "https://api.publicai.co/v1"
 PUBLIC_AI_DEFAULT_MODEL = "swiss-ai/apertus-v1.5-70b"
 USER_AGENT = "MMP-Reference-Client/0.1"
@@ -41,6 +42,8 @@ class ModelConfig:
     api_key: str
     model: str
 
+    provider: str = "openai-compatible"
+
     @property
     def host(self) -> str:
         return re.sub(r"^https?://", "", self.base_url).split("/")[0]
@@ -50,7 +53,23 @@ def _env(name: str) -> str:
     return os.getenv(name, "").strip()
 
 
+def swisscom_config() -> ModelConfig | None:
+    """Apertus on Swisscom infrastructure (Swiss AI Weeks endpoint), OpenAI-compatible.
+
+    SWISSCOM_BASE_API is the full base URL including /v1, e.g.
+    https://api.swisscom.com/products/swiss-ai-weeks/apertus-1.5-70b/v1
+    """
+    key, base = _env("SWISSCOM_API_KEY"), _env("SWISSCOM_BASE_API").rstrip("/")
+    if not key or not base:
+        return None
+    return ModelConfig(base_url=base, api_key=key, model=_env("SWISSCOM_MODEL") or SWISSCOM_DEFAULT_MODEL, provider="swisscom")
+
+
 def chat_config() -> ModelConfig | None:
+    """Swisscom (Swiss-hosted Apertus) first, then the Public AI Inference Utility."""
+    swisscom = swisscom_config()
+    if swisscom:
+        return swisscom
     key = _env("PUBLIC_AI_API_KEY")
     if not key:
         return None
@@ -58,6 +77,7 @@ def chat_config() -> ModelConfig | None:
         base_url=_env("PUBLIC_AI_BASE_URL") or PUBLIC_AI_DEFAULT_BASE_URL,
         api_key=key,
         model=_env("PUBLIC_AI_MODEL") or PUBLIC_AI_DEFAULT_MODEL,
+        provider="publicai",
     )
 
 

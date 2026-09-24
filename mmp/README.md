@@ -18,7 +18,8 @@ Reference Client (chat) ◀── MCP Streamable HTTP ──▶ shared MMP serve
 ```bash
 cd mmp
 uv sync
-cp ../.env.example ../.env      # add PUBLIC_AI_API_KEY (see below)
+cp ../.env.example ../.env      # add SWISSCOM_API_KEY + SWISSCOM_BASE_API (or PUBLIC_AI_API_KEY)
+uv run mmp check-model          # OQ-2 smoke test: does Apertus plan the Seewil journey correctly?
 uv run mmp dev                  # MMP server on :8765/mcp + Reference Client on http://127.0.0.1:8080
 ```
 
@@ -26,7 +27,7 @@ Open http://127.0.0.1:8080 and type (or click "Umzug nach Wettingen"):
 
 > Ich ziehe nach einer Trennung mit meinen zwei Kindern per 1. November von Dübendorf nach Wettingen. Was muss ich alles erledigen?
 
-Without a key the client runs in a clearly labelled **rule-based demo mode**, so the UI can be developed and tested offline. With `PUBLIC_AI_API_KEY` it uses Apertus via the Public AI Inference Utility (`https://api.publicai.co/v1`).
+Chat model, in order of preference: **Apertus on Swisscom** (`SWISSCOM_API_KEY` + `SWISSCOM_BASE_API`, the Swiss AI Weeks endpoint from `docs/Example Curl Swiss API.txt`; the badge then says "bleibt in der Schweiz" unless `MMP_CHAT_SOVEREIGN=false`), then Apertus via the Public AI Inference Utility (`PUBLIC_AI_*`). Without either, the client runs in a clearly labelled **rule-based demo mode**, so the UI can be developed and tested offline. The same Swisscom endpoint also becomes the Judge's Apertus model when `PUBLIC_AI_*` is unset.
 
 Other commands:
 
