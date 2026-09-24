@@ -31,8 +31,8 @@ The default prompt asks for the capital of Switzerland. The script sends one req
 
 - ...
 
-
 # Work Packages
+
 - Data Akquisition
   -Scrape the Services of the communities
   -Create a Data Model
