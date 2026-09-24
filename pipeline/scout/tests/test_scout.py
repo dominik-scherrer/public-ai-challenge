@@ -9,12 +9,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scout.app import compile_source_bundle, run_scout
+from scout.catalog import load_service_index
 from scout.contracts import (
     Availability,
     HandlingType,
     IndexRelation,
     ReconResult,
 )
+from scout.discovery import discover_findings
 from scout.runtime import PageIR
 
 
@@ -144,6 +146,50 @@ class ScoutIntegrationTests(unittest.TestCase):
             and service.availability == Availability.NOT_OBSERVED
         ]
         self.assertGreaterEqual(len(indexed_missing), 1)
+
+    def test_navigation_text_does_not_match_every_service(self):
+        # Mirrors Binn: every page body starts with the full site navigation and
+        # a 'Webcam' widget heading; a dated news item mentions 'Baugesuch'.
+        now = datetime.now(timezone.utc)
+        nav = "Home Strahlerpatente Verwaltung Bauwesen Abfallbewirtschaftung Formulare Kontakt"
+
+        def page(slug, title, headings=()):
+            return PageIR(
+                source_id=f"src_{slug}",
+                url=f"https://example.ch/gemeinde/{slug}",
+                retrieved_at=now,
+                title=f"{title} | Gemeinde Beispiel",
+                language="de",
+                headings=["Webcam", *headings],
+                text=f"{nav} {title}",
+                links=[],
+                forms=[],
+                documents=[],
+            )
+
+        pages = [
+            page("home", "Gemeinde Beispiel"),
+            page("geschichte", "Geschichte"),
+            page("verwaltung", "Verwaltung", ["Öffnungszeiten"]),
+            page("verwaltung/abfallbewirtschaftung", "Abfallbewirtschaftung"),
+            page("allgemein/strahlerpatente", "Strahlerpatente"),
+            page("aktuelles/28082026-baugesuch-muster-913", "Baugesuch Muster"),
+        ]
+        findings = discover_findings(pages, load_service_index())
+        by_service = {f.service_id: f for f in findings if f.service_id}
+
+        self.assertEqual(by_service["waste_collection"].source_ids, ["src_verwaltung/abfallbewirtschaftung"])
+        self.assertEqual(by_service["waste_collection"].local_name, "Abfallbewirtschaftung")
+        self.assertEqual(by_service["office_hours"].source_ids, ["src_verwaltung"])
+        self.assertNotIn("building_application", by_service)
+        self.assertNotIn("forms", by_service)
+
+        pages_used = [source for f in findings for source in f.source_ids]
+        self.assertEqual(len(pages_used), len(set(pages_used)))
+        self.assertEqual(
+            [f.local_name for f in findings if f.index_relation == IndexRelation.POSSIBLE_NEW],
+            ["Strahlerpatente"],
+        )
 
 
 if __name__ == "__main__":
