@@ -1,58 +1,690 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Project Build Observatory</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Observatory</title>
 <style>
-:root{--bg:#f2f0ea;--card:#fffdf8;--ink:#151515;--muted:#6c675e;--line:#d8d1c5;--green:#207453;--blue:#24638c;--violet:#74509b;--orange:#9b6200;--red:#9d3d34}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{max-width:1480px;margin:auto;padding:26px}.ey{font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;padding-bottom:20px;border-bottom:1px solid var(--line)}
-h1{font-size:clamp(38px,6vw,76px);letter-spacing:-.06em;line-height:.92;margin:7px 0}.meta{text-align:right;font-size:12px;color:var(--muted)}
-.grid2{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:18px}
-.hero{min-height:210px;display:flex;flex-direction:column;justify-content:space-between}.phase{font-size:30px;letter-spacing:-.035em;margin:8px 0}.summary{font-size:16px;line-height:1.55;color:#444;max-width:820px}
-.badge{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:5px 9px;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase}
-.title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.title h2{font-size:17px;margin:0}
-.streams{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stream{border:1px solid var(--line);border-radius:13px;padding:13px;min-height:180px}.stream h3{font-size:14px;margin:8px 0 6px}.stream p{font-size:12.5px;line-height:1.45;color:#555;margin:0 0 10px}.next{border-top:1px solid var(--line);padding-top:8px;font-size:12px;color:#333}
-.status{font:700 9px ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase}.implemented{color:var(--green)}.in_progress{color:var(--blue)}.designed{color:var(--violet)}.not_started,.deferred{color:var(--muted)}.blocked{color:var(--red)}
-.flow{display:flex;gap:7px;overflow:auto;padding-bottom:6px}.step{min-width:125px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#faf7f0;min-height:78px;display:flex;align-items:end;font-size:12px;font-weight:650;position:relative}.step:not(:last-child):after{content:"→";position:absolute;right:-8px;top:28px;background:var(--bg);color:var(--muted)}
-ul,ol{padding-left:20px;margin:0}li{margin:7px 0;line-height:1.4}.q,.tension,.pr{border-top:1px solid var(--line);padding:10px 0}.q:first-child,.tension:first-child,.pr:first-child{border-top:0}.priority{font:700 9px ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;color:var(--orange)}
-.gitgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.sha{font:11px ui-monospace,SFMono-Regular,Menlo,monospace}.pr a{color:inherit;text-decoration:none}.pr a:hover{text-decoration:underline}
-.timeline{padding-left:16px}.ev{border-left:1px solid var(--line);padding:0 0 18px 16px;position:relative}.ev:before{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--ink);left:-4px;top:3px}.ev time{font:10px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted)}.ev h3{font-size:13px;margin:4px 0}.ev p{font-size:12px;color:#555;margin:0;line-height:1.4}
-footer{margin-top:18px;border-top:1px solid var(--line);padding-top:15px;color:var(--muted);font-size:11px}
-@media(max-width:1050px){.streams{grid-template-columns:repeat(2,1fr)}}@media(max-width:800px){.grid2,.gitgrid{grid-template-columns:1fr}.meta{text-align:left}header{flex-direction:column;align-items:flex-start}}@media(max-width:580px){main{padding:14px}.streams{grid-template-columns:1fr}h1{font-size:44px}}
-</style></head><body><main>
-<header><div><div class="ey">Public AI Challenge · Team 34</div><h1>Project Observatory</h1></div><div class="meta"><div id="generated"></div><div>reads whole repo · writes pipeline/observatory only</div></div></header>
+:root{
+  --bg:#f5f5f5; --bar:#ececec; --box:#fff; --zebra:#f7f7f8; --hover:#f0f0f2;
+  --ink:#1d1d1f; --ink2:#6e6e73; --ink3:#a1a1a6;
+  --line:rgba(0,0,0,.09); --line2:rgba(0,0,0,.05); --empty:rgba(0,0,0,.1);
+  --accent:#0a6cff; --accent-ink:#fff;
+  --green:#28a745; --teal:#0f8f7e; --blue:#0a6cff; --purple:#9a55d8; --orange:#e68600; --red:#e5484d; --gray:#9a9aa0;
+  --seg:rgba(0,0,0,.07); --seg-on:#fff; --shadow:0 1px 2px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06);
+  --drawer-shadow:-10px 0 30px rgba(0,0,0,.08);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#1e1e1e; --bar:#2a2a2a; --box:#262626; --zebra:#2b2b2b; --hover:#303030;
+    --ink:#f2f2f2; --ink2:#a0a0a5; --ink3:#6c6c70;
+    --line:rgba(255,255,255,.1); --line2:rgba(255,255,255,.05); --empty:rgba(255,255,255,.12);
+    --accent:#0a84ff; --green:#32d74b; --teal:#40c8b0; --blue:#0a84ff; --purple:#bf5af2; --orange:#ff9f0a; --red:#ff453a; --gray:#8e8e93;
+    --seg:rgba(255,255,255,.08); --seg-on:#5a5a5e; --shadow:0 1px 2px rgba(0,0,0,.4);
+    --drawer-shadow:-10px 0 30px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:13px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:11.5px}
+.muted{color:var(--ink2)}
+[hidden]{display:none!important}
 
-<div class="grid2"><section class="card hero"><div><span class="badge" id="badge"></span><div class="phase" id="phase"></div><div class="summary" id="summary"></div></div><div class="ey">Integrated truth state · Git + docs + code + decisions</div></section>
-<section class="card"><div class="title"><h2>Critical next actions</h2><span class="ey">ordered</span></div><ol id="next"></ol></section></div>
+/* toolbar */
+.toolbar{position:sticky;top:0;z-index:6;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;height:52px;padding:0 20px;background:color-mix(in srgb,var(--bar) 88%,transparent);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.app-title{font-weight:600;font-size:13px;white-space:nowrap}
+.app-title span{display:block;font-weight:400;font-size:11px;color:var(--ink2)}
+.toolbar .right{justify-self:end;font-size:11.5px;color:var(--ink2);white-space:nowrap}
+.seg{display:inline-flex;background:var(--seg);border-radius:7px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;padding:3px 14px;border-radius:5px;font-size:12px;font-weight:500;cursor:default;color:var(--ink)}
+.seg button[aria-selected=true]{background:var(--seg-on);box-shadow:var(--shadow)}
+.seg.small button{padding:2px 10px;font-size:11.5px}
 
-<section class="card" style="margin-top:16px"><div class="title"><h2>Project streams</h2><span class="ey">designed ≠ implemented</span></div><div class="streams" id="streams"></div></section>
+main{max-width:1360px;margin:0 auto;padding:20px 24px 40px}
 
-<section class="card" style="margin-top:16px"><div class="title"><h2>End-to-end operational flow</h2><span class="ey">target build</span></div><div class="flow" id="flow"></div></section>
+/* boxes */
+.box{background:var(--box);border:1px solid var(--line);border-radius:10px;overflow:clip}
+.box-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.box-head h2{margin:0;font-size:13px;font-weight:600}
+.box-head .count{font-size:11.5px;color:var(--ink2);text-align:right}
+.grid{display:grid;gap:16px;margin-top:16px}
+.g-2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.mt{margin-top:16px}
 
-<div class="grid2">
-<section class="card"><div class="title"><h2>Git state</h2><span class="ey">repository evidence</span></div><div class="gitgrid"><div><div class="ey">main head</div><div class="sha" id="head"></div><div id="prs"></div></div><div><div class="ey">recent merged / commits</div><div id="gitrecent"></div></div></div></section>
-<section class="card"><div class="title"><h2>Open questions</h2><span class="ey">needs decisions</span></div><div id="questions"></div></section>
-</div>
+/* summary strip */
+.summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;padding:16px 18px}
+.summary .label{font-size:11.5px;color:var(--ink2)}
+.summary h1{margin:2px 0 6px;font-size:20px;font-weight:600;letter-spacing:-.01em}
+.summary p{margin:0;color:var(--ink2);max-width:78ch}
+.stats{display:flex;align-items:stretch}
+.stat{padding:2px 20px;border-left:1px solid var(--line);min-width:110px}
+.stat b{display:block;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat b small{font-size:15px;font-weight:400;color:var(--ink2)}
+.stat span{font-size:11.5px;color:var(--ink2)}
+.statusbar{grid-column:1/-1}
+.stack{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--line2);gap:2px}
+.stack i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px;font-size:11.5px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:8px;height:8px;border-radius:2px;display:inline-block}
 
-<div class="grid2">
-<section class="card"><div class="title"><h2>Integration tensions</h2><span class="ey">do not silently reconcile</span></div><div id="tensions"></div></section>
-<section class="card"><div class="title"><h2>Build history</h2><span class="ey">material changes</span></div><div class="timeline" id="history"></div></section>
-</div>
+/* story line */
+.story{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin:4px 0 8px;font-size:17px;font-weight:600;letter-spacing:-.01em}
+.story .end{color:var(--ink2);font-weight:500}
+.story .chev{color:var(--ink3);font-weight:400}
 
-<footer>This dashboard is a read model of the whole project. It should only report what repository evidence supports and preserve disagreements until the team resolves them.</footer>
+/* status glyphs */
+.pie{--c:var(--gray);--p:0%;display:inline-block;flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--c);padding:1.5px;background:conic-gradient(var(--c) var(--p),transparent 0) content-box}
+.meter{display:inline-flex;gap:2px;flex:none}
+.meter i{width:9px;height:4px;border-radius:1px;background:var(--empty)}
+.flag{display:inline-block;padding:0 5px;border-radius:4px;font-size:10.5px;font-weight:500;border:1px solid currentColor;line-height:15px}
+.flag.conflict,.flag.blocked{color:var(--red)} .flag.deferred,.flag.superseded{color:var(--ink2)}
+
+/* stage map: Trust wraps the chain */
+.wrap{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:var(--zebra);padding:0 12px 12px}
+.wrap>.stage-head{border-radius:12px 12px 0 0;margin:0 -12px;width:calc(100% + 24px);padding:10px 14px;border-bottom:1px solid var(--line)}
+.wrap>.stage-head .desc{margin-bottom:0}
+.stages{display:grid;grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr) 96px minmax(0,1fr) 96px minmax(0,1fr);margin-top:12px;align-items:start}
+.stage{overflow:visible}
+.stage-head .agent{display:inline-block;margin-left:6px;font-size:11px;color:var(--ink2);font-weight:400}
+.stage-head .q{display:block;font-size:12px;font-weight:500;margin:4px 0 2px;line-height:1.35}
+.stage-head[aria-selected=true] .agent{color:var(--accent-ink);opacity:.85}
+.artifact{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:22px;padding:6px 4px;border:0;background:none;text-align:center;cursor:default;border-radius:8px;font-size:11.5px;line-height:1.25}
+.artifact:hover{background:var(--hover)}
+.artifact[aria-selected=true]{background:var(--accent);color:var(--accent-ink)}
+.artifact .arrow{color:var(--ink3);font-size:18px;line-height:1}
+.artifact b{font-weight:600}
+.artifact .schema{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:10px;color:var(--ink2);word-break:break-word}
+.artifact[aria-selected=true] .schema,.artifact[aria-selected=true] .arrow{color:var(--accent-ink)}
+.artifact[aria-selected=true] .meter i{background:rgba(255,255,255,.3)!important}
+.artifact[aria-selected=true] .meter i.on{background:#fff!important}
+.artifact:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.wrap-mods{margin-top:12px;background:var(--box);border:1px solid var(--line);border-radius:10px}
+.wrap-mods .mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.claim{margin-top:6px!important;color:var(--ink)!important;font-weight:500}
+pre.example{margin:0;padding:10px 12px;border-radius:8px;background:var(--zebra);font:11px/1.5 ui-monospace,"SF Mono",Menlo,monospace;overflow-x:auto;white-space:pre}
+.stage-head{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px 10px;border-bottom:1px solid var(--line);cursor:default;border-radius:10px 10px 0 0}
+.stage-head:hover{background:var(--hover)}
+.stage-head[aria-selected=true]{background:var(--accent);color:var(--accent-ink)}
+.stage-head[aria-selected=true] .desc,.stage-head[aria-selected=true] .n{color:var(--accent-ink);opacity:.85}
+.stage-head .n{font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.stage-head h2{display:inline;margin:0 0 0 4px;font-size:13px;font-weight:600}
+.stage-head .desc{display:block;font-size:11.5px;color:var(--ink2);margin:2px 0 8px;line-height:1.35}
+.stage-head .stack{height:4px}
+.mods{list-style:none;margin:0;padding:4px 0}
+.mod{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 12px;cursor:default}
+.mod:hover{background:var(--hover)}
+.mod:focus-visible,.stage-head:focus-visible,.artifact:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.mod .nm{display:block;font-weight:500;font-size:12.5px;line-height:1.3}
+.mod .lv{display:flex;flex-wrap:wrap;align-items:center;gap:4px 7px;margin-top:4px;font-size:11px;color:var(--ink2)}
+.mod[aria-selected=true]{background:var(--accent);color:var(--accent-ink)}
+.mod[aria-selected=true] .lv{color:var(--accent-ink)}
+.mod[aria-selected=true] .meter i{background:rgba(255,255,255,.3)!important}
+.mod[aria-selected=true] .meter i.on{background:#fff!important}
+.mod[aria-selected=true] .flag{color:#fff}
+.operate .mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));padding:4px 0}
+.operate .stage-head .desc{margin-bottom:8px}
+
+/* rails */
+.scroll-x{overflow-x:auto}
+.rails{min-width:860px}
+.rails th:first-child,.rails td:first-child{width:170px}
+.rails td{vertical-align:top;font-size:12px;color:var(--ink2);border-top:1px solid var(--line2)}
+.rails td:first-child{color:var(--ink)}
+.rails .rn{font-weight:600}
+.rails .ri{font-size:11px;color:var(--ink3);margin-top:2px;line-height:1.35}
+
+/* tables */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-weight:500;font-size:11.5px;color:var(--ink2);padding:6px 14px;border-bottom:1px solid var(--line)}
+td{padding:7px 14px;vertical-align:middle}
+.zebra tbody tr:nth-child(even){background:var(--zebra)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.nowrap{white-space:nowrap}
+
+/* lists */
+.list{margin:0;padding:0;list-style:none}
+.list>li{padding:9px 14px;border-top:1px solid var(--line2)}
+.list>li:first-child{border-top:0}
+.numbered{counter-reset:n}
+.numbered>li{display:grid;grid-template-columns:20px 1fr;counter-increment:n}
+.numbered>li:before{content:counter(n);color:var(--ink3);font-variant-numeric:tabular-nums}
+.group{padding:7px 14px 5px;font-size:11.5px;font-weight:600;color:var(--ink2);background:var(--zebra);border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+.group:first-child{border-top:0}
+.tag{display:inline-block;margin-left:6px;padding:0 6px;border-radius:4px;background:var(--seg);color:var(--ink2);font-size:11px;white-space:nowrap;border:0;line-height:17px;vertical-align:1px}
+button.tag{cursor:pointer} button.tag:hover{color:var(--ink)}
+.detail{color:var(--ink2);margin-top:2px}
+.sub{padding:7px 14px 2px;font-size:11.5px;color:var(--ink2)}
+.row{display:flex;align-items:center;gap:8px}
+.foot{padding:8px 14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink2)}
+
+/* inspector drawer */
+.drawer{position:fixed;top:52px;right:0;bottom:0;width:min(400px,100%);z-index:5;background:var(--box);border-left:1px solid var(--line);box-shadow:var(--drawer-shadow);transform:translateX(105%);transition:transform .18s ease,visibility .18s;overflow:auto;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.drawer-head{position:sticky;top:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px 12px;background:var(--box);border-bottom:1px solid var(--line)}
+.drawer-head .k{font-size:11.5px;color:var(--ink2)}
+.drawer-head h3{margin:2px 0 0;font-size:15px;font-weight:600}
+.close{border:0;background:var(--seg);width:22px;height:22px;border-radius:50%;font-size:12px;line-height:22px;padding:0;color:var(--ink2);cursor:default;flex:none}
+.close:hover{color:var(--ink)}
+.drawer-body{padding:4px 16px 24px}
+.field{margin-top:14px}
+.field .k{font-size:11.5px;color:var(--ink2);margin-bottom:4px}
+.field p{margin:0}
+.field ul,.field ol{margin:0;padding:0;list-style:none}
+.field li{padding:2px 0}
+.ladder li{display:flex;align-items:center;gap:8px;padding:3px 0;color:var(--ink3)}
+.ladder li.done{color:var(--ink2)}
+.ladder li.cur{color:var(--ink);font-weight:600}
+.ladder .dot{width:8px;height:8px;border-radius:50%;border:1.5px solid currentColor;flex:none}
+.ladder li.done .dot,.ladder li.cur .dot{background:currentColor}
+.flowlist{counter-reset:f}
+.flowlist li{counter-increment:f;display:grid;grid-template-columns:20px 1fr}
+.flowlist li:before{content:counter(f);color:var(--ink3);font-variant-numeric:tabular-nums}
+.minirow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0;border:0;border-top:1px solid var(--line2);width:100%;background:none;text-align:left;cursor:default}
+.minirow:first-of-type{border-top:0}
+.minirow:hover{color:var(--accent)}
+.note{padding:10px 12px;border-radius:8px;background:var(--zebra);margin-top:14px;font-size:12px}
+.note b{display:block;margin-bottom:2px;font-weight:600}
+
+/* history */
+.hist-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.search{appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:4px 9px;font:inherit;font-size:12px;width:220px;max-width:100%}
+.search:focus{outline:3px solid color-mix(in srgb,var(--accent) 40%,transparent);outline-offset:0;border-color:var(--accent)}
+.day{position:sticky;top:52px;padding:6px 14px;font-size:11.5px;font-weight:600;color:var(--ink2);background:var(--zebra);border-bottom:1px solid var(--line2);border-top:1px solid var(--line2)}
+.ev{display:grid;grid-template-columns:48px 22px 1fr;gap:10px;padding:10px 14px;border-top:1px solid var(--line2)}
+.day+.ev{border-top:0}
+.ev time{color:var(--ink2);font-variant-numeric:tabular-nums;font-size:12px;padding-top:1px}
+.ev .t{font-weight:500}
+.kind{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;color:#fff}
+.kind svg{width:12px;height:12px}
+.empty{padding:28px 14px;text-align:center;color:var(--ink2)}
+
+@media (max-width:1180px){
+  .stages{grid-template-columns:minmax(0,1fr)}
+  .artifact{flex-direction:row;justify-content:center;margin:2px 0;gap:8px}
+  .artifact .arrow{transform:rotate(90deg)}
+}
+@media (max-width:980px){.g-2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){
+  .toolbar{grid-template-columns:minmax(0,1fr) auto;padding:0 16px}
+  .app-title span,.toolbar .right{display:none}
+  .seg button{padding:3px 9px}
+  main{padding:16px 16px 32px}
+  .summary{grid-template-columns:minmax(0,1fr)}
+  .stats{flex-wrap:wrap;row-gap:10px}
+  .stat{min-width:0;flex:1 1 40%;padding:2px 12px}
+  .hide-sm{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="toolbar">
+  <div class="app-title">Observatory<span>Public AI Challenge · Team 34</span></div>
+  <div class="seg" role="tablist" id="tabs"></div>
+  <div class="right" id="snapshot"></div>
+</header>
+
+<main>
+  <!-- ARCHITECTURE: what is this system? -->
+  <section id="panel-architecture" role="tabpanel" hidden>
+    <div class="box summary">
+      <div>
+        <div class="label">The system, end to end</div>
+        <div class="story" id="story"></div>
+        <p class="claim" id="claim"></p>
+        <p>Click a block, a handoff or a module for details. Maturity runs research → designed → prototype → working → verified → demo ready.</p>
+      </div>
+      <div class="stats" id="arch-stats"></div>
+      <div class="statusbar">
+        <div class="stack" id="arch-stack"></div>
+        <div class="legend" id="arch-legend"></div>
+      </div>
+    </div>
+
+    <div class="wrap" id="wrap"></div>
+    <div class="box operate mt" id="operate"></div>
+
+    <div class="box mt">
+      <div class="box-head"><h2>Cross-cutting rails</h2><span class="count">What each concern means at each stage</span></div>
+      <div class="scroll-x"><table class="rails" id="rails"></table></div>
+    </div>
+  </section>
+
+  <!-- BUILD: how far have we built it? -->
+  <section id="panel-build" role="tabpanel" hidden>
+    <div class="box summary">
+      <div>
+        <div class="label">Current phase</div>
+        <h1 id="phase"></h1>
+        <p id="headline"></p>
+      </div>
+      <div class="stats" id="build-stats"></div>
+    </div>
+    <div class="grid g-2">
+      <div class="box">
+        <div class="box-head"><h2>In flight</h2><span class="count" id="pr-count"></span></div>
+        <div id="inflight"></div>
+      </div>
+      <div class="box">
+        <div class="box-head"><h2>Next actions</h2><span class="count" id="next-count"></span></div>
+        <ol class="list numbered" id="next"></ol>
+      </div>
+      <div class="box">
+        <div class="box-head"><h2>Open decisions</h2><span class="count" id="q-count"></span></div>
+        <div id="questions"></div>
+      </div>
+      <div class="box">
+        <div class="box-head"><h2>Conflicts between docs</h2><span class="count" id="t-count"></span></div>
+        <ul class="list" id="tensions"></ul>
+      </div>
+      <div class="box">
+        <div class="box-head"><h2>Owners</h2><span class="count">Modules per owner</span></div>
+        <ul class="list" id="owners"></ul>
+      </div>
+      <div class="box">
+        <div class="box-head"><h2>Recently merged</h2><span class="count" id="repo-name"></span></div>
+        <ul class="list" id="merged"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EVIDENCE: what proves it? -->
+  <section id="panel-evidence" role="tabpanel" hidden>
+    <div class="box summary">
+      <div>
+        <div class="label">Evidence</div>
+        <h1>What the repository can prove today</h1>
+        <p id="ev-note"></p>
+      </div>
+      <div class="stats" id="ev-stats"></div>
+    </div>
+    <div class="box mt">
+      <div class="box-head"><h2>Benchmark municipalities</h2><span class="count" id="muni-where"></span></div>
+      <div class="scroll-x">
+        <table class="zebra">
+          <thead><tr><th>Municipality</th><th class="hide-sm">Discovery shape</th><th class="hide-sm">What it tests</th><th class="num">Seed sources</th><th class="num">Service Leads</th></tr></thead>
+          <tbody id="munis"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="grid g-2">
+      <div class="box">
+        <div class="box-head"><h2>Tests</h2><span class="count">Run locally</span></div>
+        <ul class="list" id="tests"></ul>
+      </div>
+      <div class="box">
+        <div class="box-head"><h2>Evals</h2><span class="count" id="eval-count"></span></div>
+        <ul class="list" id="evals"></ul>
+      </div>
+    </div>
+    <div class="box mt">
+      <div class="box-head"><h2>Acceptance checks</h2><span class="count" id="acc-count"></span></div>
+      <ul class="list" id="acceptance"></ul>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="panel-history" role="tabpanel" hidden>
+    <div class="box">
+      <div class="hist-tools">
+        <div class="seg small" id="kind-filter"></div>
+        <input class="search" id="search" type="search" placeholder="Search history" aria-label="Search history">
+      </div>
+      <div id="events"></div>
+      <div class="foot" id="hist-foot"></div>
+    </div>
+  </section>
+</main>
+
+<aside class="drawer" id="drawer" aria-label="Details" aria-hidden="true">
+  <div class="drawer-head">
+    <div><div class="k" id="d-kicker"></div><h3 id="d-title"></h3></div>
+    <button class="close" id="d-close" aria-label="Close details">✕</button>
+  </div>
+  <div class="drawer-body" id="d-body"></div>
+</aside>
+
+<!-- Embedded snapshot. The refresh agent replaces this line with the contents of state.json. -->
+<script id="build-state">
+window.__BUILD_STATE__={"schema":"project-build-observatory/v4","generated_at":"2026-09-24T17:30:00+02:00","scope":{"read":"entire repository + Git metadata","write":"pipeline/observatory/ only","repository":"dominik-scherrer/public-ai-challenge"},"maturity_scale":["not_started","research","designed","prototype","working","verified","demo_ready"],"headline":{"phase":"Boundary redrawn: discover leads, compile local MCPs","summary":"Agent 1 no longer normalizes services; it finds them and hands over Service Leads with their authoritative sources. Agent 2 compiles each lead into a municipality-specific MCP capability plan. The new boundary is documented on a branch but not yet in code: the crawler still emits service records, main still ships a normalized seed inventory, and Patrick's minigmeind MCP runs outside the repo with one fixed tool surface on dummy data."},"system":{"claim":"The common standard is the protocol boundary, not the municipal data model.","story":["Municipality website","Discovery","Service Compiler","MCP Builder","Citizen Experience"],"stages":[{"id":"discovery","name":"Discovery","agent":"Agent 1","question":"What services exist here, and where is the authoritative material?","title":"Crawl the municipality, identify services, collect source links — then stop","handoff":"service-leads","flow":["Municipality URL","Reconnaissance","Crawl strategy","HTTP fetch, browser only if needed","Service vs. noise","Source roles","Group into source bundles","Service Leads"],"modules":[{"id":"crawl-strategy","name":"Reconnaissance & crawl strategy","maturity":"designed","owner":"Achim","summary":"Full, section, directory or discovery crawl chosen per site; strategy and stop reason must be visible.","next":"Record chosen strategy and stop reason in the crawl output.","evidence":["pipeline/CRAWL_STRATEGIES.md"]},{"id":"http-crawler","name":"HTTP crawler","maturity":"prototype","owner":"Achim","ref":"fix/pipeline-scraper-baseline","where":"main + PR #7","summary":"Bounded same-origin crawl with private-address rejection, redirect validation and URL deduplication. 3 tests on main, 11 in PR #7.","next":"Merge PR #7; run on Binn end to end.","evidence":["pipeline/prototype/scraper.py","pipeline/prototype/tests/test_scraper.py"]},{"id":"browser-fallback","name":"Browser fallback","maturity":"designed","owner":"Achim","summary":"HTTP → headless browser → agentic browser, only as each proves insufficient. Manual capture helpers exist; the crawler has no browser path.","next":"Add only when an HTTP fetch demonstrably fails on a Batch A site.","evidence":["pipeline/TOOLING_AND_RUNTIME.md","pipeline/scrapping/docs/capture-helpers.js"]},{"id":"service-classifier","name":"Service vs. noise","maturity":"prototype","owner":"Achim","ref":"fix/pipeline-scraper-baseline","where":"main + PR #7","summary":"Heuristic classifier: Strahlerpatente is a service, Webcam Binn is not. Tourism/news negatives tested in PR #7.","next":"Measure precision on Bosco/Gurin.","evidence":["pipeline/prototype/scraper.py","pipeline/prototype/fixtures/binn_sample.html"]},{"id":"source-roles","name":"Source-role classification","maturity":"designed","owner":"Achim","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"Label each source: service_page, form, application_pdf, calendar_pdf, official_portal, external_handoff, contact_page …","next":"Add a role field to PageIR output.","evidence":["pipeline/SERVICE_MODEL.md"]},{"id":"source-grouping","name":"Source bundle grouping","maturity":"designed","owner":"Achim","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"Agent 1's main semantic task: Abfall + Abfallkalender.pdf + Sammelstellen + Gebühren → one lead. Uncertain grouping stays explicit.","next":"Group by link graph + shared labels on Binn first.","evidence":["pipeline/ARCHITECTURE.md","pipeline/SERVICE_MODEL.md"]},{"id":"lead-output","name":"Service Lead output","maturity":"designed","owner":"Achim","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"The prototype still emits partial service records; it should emit the small Service Lead envelope instead.","next":"Simplify pipeline/prototype to write service-leads.jsonl.","evidence":["pipeline/SERVICE_MODEL.md","pipeline/BUILD_PLAN.md"]},{"id":"catalogue-adapter","name":"Structured catalogue adapter","maturity":"research","owner":"Achim","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"Dübendorf's i-web /dienstleistungen/ catalogue: one adapter could cover many municipalities on the same CMS.","next":"Inspect Dübendorf's catalogue structure.","evidence":["pipeline/MUNICIPALITY_BENCHMARK.md"]},{"id":"seed-inventory","name":"Seed inventory (8 municipalities)","maturity":"prototype","owner":"Achim","flag":"superseded","summary":"Normalized mmp-service-inventory/v0 with capability tags, merged in PR #8. Under the new boundary its 22 official sources are best reused as seed Service Leads.","next":"Relabel as seed leads, or retire once Batch A runs.","evidence":["pipeline/handoff/delivery-2026-09-24/manifest.json","pipeline/handoff/compile_inventory.py"]}]},{"id":"compiler","name":"Service Compiler","agent":"Agent 2","question":"What does this service actually require here, and how should an MCP expose it?","title":"Inspect the local sources, understand the local implementation, design the MCP surface","handoff":"capability-plan","flow":["Service Lead + source bundle","Read sources (HTML, PDF)","Understand local implementation","Choose tools, inputs, handoffs","State limitations","Capability plan"],"modules":[{"id":"source-reader","name":"Source reader (HTML, PDF)","maturity":"prototype","owner":"Achim","summary":"PageIR parses HTML today. PDF reading is not implemented, and Binn's waste calendar is a PDF.","next":"Text-PDF extraction for Ausserberg and Binn bundles.","evidence":["pipeline/prototype/scraper.py"]},{"id":"capability-planner","name":"Capability planner","maturity":"designed","owner":"Achim","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"Large model reads one lead + its bundle and decides tools, inputs, source strategy, handoffs and limitations — per municipality.","next":"One Ausserberg lead → one plan, by hand-run prompt.","evidence":["pipeline/SEMANTIC_COMPILER.md"]},{"id":"model-access","name":"Model access","maturity":"prototype","owner":"Patrick / Achim","summary":"OpenAI gpt-6-luna calls work from main (scripts/test_openai.py). The crawler has a separate Apertus-compatible adapter with fallback.","next":"Use one client for the planner; keep the adapter for classification.","evidence":["scripts/test_openai.py","pipeline/prototype/model_adapter.py"]},{"id":"apertus-path","name":"Small Apertus path","maturity":"designed","owner":"Achim","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"Small model / deterministic layer for classification, page roles, type hints and obvious grouping; big model only for compiling plans.","next":"Run the classifier through the adapter against the event endpoint.","evidence":["pipeline/SEMANTIC_COMPILER.md","pipeline/ARCHITECTURE.md"]},{"id":"capability-matrix","name":"Capability ↔ tool mapping","maturity":"designed","owner":"Achim / Patrick","flag":"conflict","summary":"Maps ~30 semantic capabilities to minigmeind's fixed tool names. Written for the normalized-inventory model; needs rethinking if tools become per-village.","next":"Agree with Patrick how a capability plan lands in minigmeind.","evidence":["pipeline/handoff/MCP_CAPABILITY_MATRIX.md"]},{"id":"ech-0070","name":"Cross-municipality normalization","maturity":"research","owner":"Dominik","flag":"deferred","summary":"eCH-0070 and a national ontology are now optional — useful later for indexing and analytics, not needed for the first MCP. ADR-0001 still says canonical.","next":"Record the deferral against ADR-0001.","evidence":["ideas-dominik/docs/adr/0001-ech-0070-as-canonical-service-model.md"]}]},{"id":"builder","name":"MCP Builder","agent":"Deterministic","question":"Does the plan validate, and can it run safely as tools?","title":"Validate the plan, bind allowed sources, generate or configure tools, package the runtime","handoff":"village-mcp","flow":["Capability plan","Validate IR","Bind allowed sources","Generate / configure tools","Contract tests","Package","Village-specific MCP"],"modules":[{"id":"minigmeind","name":"minigmeind MCP (Patrick)","maturity":"prototype","owner":"Patrick","where":"outside the repo","summary":"Live MCP with ~31 tools on dummy data — one fixed surface for every municipality. Not committed here.","next":"Commit it, or link its repo, so the observatory can see it.","evidence":["pipeline/handoff/MCP_CAPABILITY_MATRIX.md"]},{"id":"plan-validator","name":"Plan validator","maturity":"designed","owner":"unassigned","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"The builder, not the model, owns schema validation of mcp-capability-plan/v1.","next":"JSON Schema for the plan.","evidence":["pipeline/SEMANTIC_COMPILER.md","pipeline/BUILD_PLAN.md"]},{"id":"source-binding","name":"Source binding & safety","maturity":"designed","owner":"unassigned","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"Each tool may read only the sources its plan names; budgets and security enforced by the runtime.","next":"Define how a tool references a source_ref at runtime.","evidence":["pipeline/SEMANTIC_COMPILER.md","ideas-dominik/docs/adr/0007-service-inventory-is-typed-data-with-injection-check.md"]},{"id":"tool-generation","name":"Tool generation from plan","maturity":"not_started","owner":"unassigned","summary":"Template or configure tools from a validated plan (document_lookup, pdf_table, handoff …).","next":"One source_strategy (document_lookup) end to end.","evidence":[]},{"id":"contract-tests","name":"Tool contract tests","maturity":"not_started","owner":"unassigned","summary":"Every generated tool answers from its sources or says it can't; no fabricated results.","next":"Write alongside the first generated tool.","evidence":[]},{"id":"package","name":"Package & hosting","maturity":"designed","owner":"unassigned","summary":"Downloadable package and a stateless public HTTPS endpoint, no citizen query logs.","next":"Decide whether minigmeind's hosting is the target.","evidence":["ideas-patrick/hackathon-mvp-plan.md","ideas-dominik/docs/adr/0005-stateless-server-no-citizen-query-logs.md"]}]},{"id":"experience","name":"Citizen Experience","agent":"Host model","question":"Can a citizen get an official answer or the right handoff?","title":"Apertus / Open WebUI calls the village MCP and routes to official channels","handoff":null,"flow":["Citizen question","Host model","MCP tool calls","Answer from official sources","Official handoff"],"modules":[{"id":"scenarios","name":"Ausserberg scenarios","maturity":"designed","owner":"Patrick","summary":"Five German reference questions, including one that must honestly answer 'not available'.","next":"Use as the end-to-end acceptance test.","evidence":["ideas-patrick/hackathon-mvp-plan.md","ideas-patrick/ausserberg_example.md"]},{"id":"host-interop","name":"Host connection","maturity":"prototype","owner":"Patrick","where":"outside the repo","summary":"minigmeind's tool list shows up in a host (16:43 screenshot). No multi-tool scenario recorded.","next":"Record one Ausserberg scenario per host.","evidence":["pipeline/handoff/MCP_CAPABILITY_MATRIX.md"]},{"id":"apertus-host","name":"Apertus as host model","maturity":"research","owner":"unassigned","summary":"Open question OQ-2: does the public model call MCP tools reliably?","next":"Try minigmeind from Apertus.","evidence":["ideas-dominik/docs/OPEN-QUESTIONS.md"]},{"id":"reference-client","name":"Reference client (Open WebUI)","maturity":"designed","owner":"UX work package","flag":"conflict","summary":"ADR-0006 forks Open WebUI with an MCP Apps host; the MVP plan runs it unmodified.","next":"Decide fork vs. unmodified.","evidence":["ideas-dominik/docs/adr/0006-reference-client-is-a-fork-of-open-webui-with-own-mcp-apps-host.md","ideas-patrick/hackathon-mvp-plan.md"]},{"id":"handoff","name":"Official-channel handoff","maturity":"designed","owner":"UX work package","summary":"Actions route or prepare; they never claim a municipal transaction completed.","next":"Include the official URL in every answer.","evidence":["pipeline/handoff/MCP_CAPABILITY_MATRIX.md"]},{"id":"demo","name":"Demo narrative","maturity":"not_started","owner":"unassigned","summary":"Same capability, two villages, two different MCP surfaces — the story the new boundary makes possible.","next":"Draft once Binn and Zürich-style plans exist.","evidence":[]}]}],"artifacts":[{"id":"service-leads","name":"Service Leads","schema":"ServiceLead[]","from":"discovery","to":"compiler","maturity":"designed","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"Which services exist and which authoritative sources to read for each. Small on purpose.","fields":["service_lead_id","labels (original language)","service_type_hint — a hint, not truth","authority (canton, municipality, department)","sources: source_ref + role","discovery: confidence, method, evidence","status"],"absent":["fees","eligibility","required documents","opening hours","procedures","eCH-0070 mapping"],"example":"{\n  \"service_lead_id\": \"lead_binn_waste\",\n  \"labels\": {\"de\": \"Abfallentsorgung\"},\n  \"service_type_hint\": \"waste_collection\",\n  \"authority\": {\"canton\": \"VS\", \"municipality\": \"Binn\"},\n  \"sources\": [\n    {\"source_ref\": \"src_12\", \"role\": \"service_page\"},\n    {\"source_ref\": \"src_18\", \"role\": \"calendar_pdf\"}\n  ],\n  \"discovery\": {\"confidence\": 0.93}\n}","evidence":["pipeline/SERVICE_MODEL.md","pipeline/ARCHITECTURE.md"]},{"id":"capability-plan","name":"Capability plan","schema":"mcp-capability-plan/v1","from":"compiler","to":"builder","maturity":"designed","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"The typed IR of the semantic compiler: which tools this village should get for this service, fed by which sources.","fields":["service_lead_ref","capabilities: tool, description, inputs, source_strategy","handoffs","limitations"],"absent":["generated code","a national tool catalogue"],"example":"{\n  \"schema\": \"mcp-capability-plan/v1\",\n  \"service_lead_ref\": \"lead_binn_waste\",\n  \"capabilities\": [\n    {\"tool\": \"get_waste_information\", \"inputs\": [], \"source_strategy\": \"document_lookup\"},\n    {\"tool\": \"get_collection_calendar\", \"inputs\": [], \"source_strategy\": \"pdf_table\"}\n  ],\n  \"limitations\": [\"No address-specific collection API detected.\"]\n}","evidence":["pipeline/SEMANTIC_COMPILER.md"]},{"id":"village-mcp","name":"Village MCP","schema":"MCP server per municipality","from":"builder","to":"experience","maturity":"prototype","where":"minigmeind, outside the repo","summary":"An MCP tailored to one municipality. Binn might get get_collection_calendar; Zürich might get get_collection_date(address). Today only minigmeind exists: one fixed surface, dummy data.","fields":["tools compiled from capability plans","bound official sources","handoff URLs","stated limitations"],"absent":["citizen query logs (ADR-0005)"],"example":"","evidence":["pipeline/handoff/MCP_CAPABILITY_MATRIX.md","ideas-dominik/docs/adr/0005-stateless-server-no-citizen-query-logs.md"]}],"wrap":{"id":"trust","name":"Trust · provenance · Judge","title":"Wraps the whole chain — why do we believe this, and from which source?","flow":["Source provenance","Service-lead provenance","Classification (official / observed / derived / inferred / dynamic)","Evidence checks","Judge","Injection safety","Evals"],"modules":[{"id":"source-provenance","name":"Source provenance","maturity":"prototype","owner":"Achim","summary":"Publisher, canonical URL, retrieval time, content hash per source; schema and snapshots exist.","next":"Write source records from the crawler, not by hand.","evidence":["pipeline/scrapping/schemas/source.schema.json","pipeline/prototype/scraper.py"]},{"id":"lead-provenance","name":"Service-lead provenance","maturity":"designed","owner":"Achim","ref":"docs/pipeline-service-lead-boundary","where":"docs branch","summary":"Where was the service found, was the grouping inferred, which pages were inaccessible. Replaces field-level provenance at this stage.","next":"Emit discovery evidence with every lead.","evidence":["pipeline/PROVENANCE_AND_TRUST.md"]},{"id":"field-validator","name":"Field provenance validator","maturity":"prototype","owner":"Achim","flag":"superseded","summary":"finalize.py enforces provenance on every populated field of a normalized record. Now a downstream concern for Agent 2, not Agent 1.","next":"Reuse its checks for capability-plan sources.","evidence":["pipeline/scrapping/tools/finalize.py"]},{"id":"quote-check","name":"Evidence quote check","maturity":"prototype","owner":"Achim","summary":"Quotes are not_checked until a browser pass confirms them.","next":"Apply to lead discovery evidence.","evidence":["pipeline/scrapping/tools/bh.py"]},{"id":"judge","name":"Judge","maturity":"designed","owner":"QA work package","summary":"Checks capability plans and answers against their sources; build floor decides what ships.","next":"Judge one capability plan against its bundle.","evidence":["ideas-dominik/CONTEXT.md","pipeline/EVALS.md"]},{"id":"injection","name":"Injection safety","maturity":"designed","owner":"QA work package","summary":"Page text is data, never instructions — matters more now that a model reads whole source bundles.","next":"Fixture page with embedded instructions.","evidence":["ideas-dominik/docs/adr/0007-service-inventory-is-typed-data-with-injection-check.md"]},{"id":"discovery-evals","name":"Discovery evals","maturity":"designed","owner":"Achim","summary":"Lead recall and precision against hand-labelled service lists; bundle completeness.","next":"Hand-label Binn's services.","evidence":["pipeline/EVALS.md","pipeline/BUILD_PLAN.md"]}]},"operate":{"id":"operate","name":"Operate","title":"Keep it alive — rebuild, refresh, deploy, govern","flow":["Build","Immutable artifact","Deploy","Refresh","Compare","Promote / reject"],"modules":[{"id":"build-lifecycle","name":"Build lifecycle","maturity":"designed","owner":"Achim","summary":"A build produces data, not code — now: leads + plans; only the builder produces runtime.","next":"Give each discovery run a build id.","evidence":["ideas-dominik/docs/adr/0003-a-build-produces-data-not-code.md"]},{"id":"refresh","name":"Refresh & last-good","maturity":"designed","owner":"unassigned","summary":"Rediscover on schedule; a failed rebuild keeps the last good MCP.","next":"After the first village MCP exists.","evidence":["ideas-patrick/hackathon-mvp-plan.md"]},{"id":"deployment","name":"Deployment","maturity":"not_started","owner":"unassigned","summary":"minigmeind is hosted somewhere; nothing from this repo is deployed.","next":"Document where minigmeind runs.","evidence":[]},{"id":"governance","name":"Governance & sign-off","maturity":"research","owner":"Dominik","summary":"Does a municipality sign off before publish, and who is publisher of record (OQ-1)?","next":"Answer OQ-1.","evidence":["ideas-dominik/docs/OPEN-QUESTIONS.md"]},{"id":"gtm","name":"Adoption / GTM","maturity":"research","owner":"Deployment work package","summary":"Pitch line: we compile local MCPs instead of building one national dataset.","next":"One-page adoption story.","evidence":["README.md"]}]},"rails":[{"id":"trust","name":"Trust","items":["authority","provenance","confidence","evidence","limitations"],"cells":{"discovery":"Publisher, fetch time and hash per source; confidence and evidence per lead","compiler":"Every capability names its sources; limitations stated, not hidden","builder":"Tools may only read their bound sources","experience":"Answers cite official sources or hand off"}},{"id":"intelligence","name":"AI / models","items":["deterministic","small Apertus","large planner","host LLM"],"cells":{"discovery":"Deterministic crawl + small model / heuristics","compiler":"Large planner (gpt-6-luna baseline; Apertus target)","builder":"No model — validation and generation are deterministic","experience":"Host model: Apertus, Open WebUI, ChatGPT, Claude"}},{"id":"standards","name":"Standards","items":["MCP protocol","Service Lead","capability plan","canton / municipality","eCH-0070 (deferred)"],"cells":{"discovery":"Small shared envelope: Service Lead","compiler":"mcp-capability-plan/v1; no national service schema required","builder":"MCP Streamable HTTP — the real common standard","experience":"Any MCP host; handoff to the responsible authority"}}]},"evidence":{"municipalities":[{"slug":"ausserberg","name":"Ausserberg","canton":"VS","batch":"A","shape":"Administrative pages + PDFs, forms, handoffs","test":"Matches the MVP reference scenarios","seed_sources":6,"leads":null},{"slug":"binn","name":"Binn","canton":"VS","batch":"A","shape":"Tiny traditional site","test":"Near-complete discovery by broad crawl","seed_sources":3,"leads":null},{"slug":"duebendorf","name":"Dübendorf","canton":"ZH","batch":"A","shape":"Structured i-web service catalogue","test":"One adapter, many municipalities","seed_sources":null,"leads":null},{"slug":"bosco-gurin","name":"Bosco/Gurin","canton":"TI","batch":"A","shape":"Municipal + tourism + associations mixed","test":"Precision under noise","seed_sources":1,"leads":null},{"slug":"lugano","name":"Lugano","canton":"TI","batch":"B","shape":"Italian portal / form patterns","test":"Informational page vs. eGov transaction","seed_sources":3,"leads":null},{"slug":"biel-bienne","name":"Biel/Bienne","canton":"BE","batch":"B","shape":"Bilingual city","test":"DE/FR source grouping","seed_sources":0,"leads":null,"note":"Official site could not be retrieved for the seed."},{"slug":"zurich","name":"Zürich","canton":"ZH","batch":"B","shape":"Very large site","test":"Selective discovery at scale","seed_sources":3,"leads":null},{"slug":"lausanne","name":"Lausanne","canton":"VD","batch":"B","shape":"French city portal","test":"Language / structure","seed_sources":3,"leads":null},{"slug":"ilanz-glion","name":"Ilanz/Glion","canton":"GR","batch":"B","shape":"Merged regional municipality","test":"Language / structure","seed_sources":3,"leads":null}],"municipalities_source":{"ref":"docs/pipeline-service-lead-boundary","where":"docs branch","path":"pipeline/MUNICIPALITY_BENCHMARK.md","note":"No Service Leads have been produced by the crawler yet. Seed sources come from the normalized seed inventory merged in PR #8."},"tests":[{"name":"Prototype unit tests","where":"main","path":"pipeline/prototype/tests/test_scraper.py","count":3,"result":"pass","command":"python3 -m unittest discover -s pipeline/prototype/tests"},{"name":"Prototype unit tests","where":"PR #7","ref":"fix/pipeline-scraper-baseline","path":"pipeline/prototype/tests/test_scraper.py","count":11,"result":"pass","command":"python3 -m unittest discover -s pipeline/prototype/tests"},{"name":"Baseline validator","where":"main","path":"pipeline/scrapping/tools/finalize.py","count":null,"result":"no_data","note":"No baseline municipality directories committed; validates the superseded normalized record shape."},{"name":"OpenAI smoke test","where":"main","path":"scripts/test_openai.py","count":null,"result":"none","note":"Manual script with a live API key; not a test suite."},{"name":"CI","where":"main","path":null,"count":null,"result":"none","note":"No CI workflow in the repository."}],"evals":[{"metric":"Lead recall","target":"vs. hand-labelled service list (Binn first)","status":"not_measured"},{"metric":"Lead precision","target":"no tourism / news / webcam leads (Bosco/Gurin)","status":"not_measured"},{"metric":"Bundle completeness","target":"forms, PDFs and handoffs attached to the right lead","status":"not_measured"},{"metric":"Crawl efficiency","target":"leads per 100 pages; no final URL fetched twice","status":"not_measured"},{"metric":"Plan usefulness","target":"Agent 2 can build a working tool from the lead alone","status":"not_measured"}],"acceptance":[{"group":"Batch A discovery","check":"Each Service Lead points to at least one authoritative source","status":"open"},{"group":"Batch A discovery","check":"Obvious non-services are excluded","status":"partial","note":"Tourism/news negatives tested in PR #7; not run on a real site."},{"group":"Batch A discovery","check":"Source bundles keep links to PDFs, forms and handoffs","status":"open"},{"group":"Batch A discovery","check":"No final URL is processed repeatedly","status":"partial","note":"Redirect de-duplication tested in PR #7."},{"group":"Batch A discovery","check":"Crawl strategy and stop reason are visible","status":"open"},{"group":"Batch A discovery","check":"Binn approaches broad coverage without complex orchestration","status":"open"},{"group":"Batch A discovery","check":"Dübendorf demonstrates a reusable structured-directory pattern","status":"open"},{"group":"Batch A discovery","check":"Bosco/Gurin demonstrates precision under noisy content","status":"open"},{"group":"Batch A discovery","check":"Ausserberg leads line up with the MVP reference scenarios","status":"open"},{"group":"End to end","check":"One Ausserberg lead compiles into a validated capability plan","status":"open"},{"group":"End to end","check":"A plan becomes a working MCP tool without hand-editing","status":"open"},{"group":"End to end","check":"A host completes an Ausserberg scenario through that tool","status":"open"},{"group":"End to end","check":"Malicious page text stays inert; crawl can't reach internal addresses","status":"partial","note":"Private-address and redirect rejection tested in PR #7; injection untested."},{"group":"End to end","check":"A failed rebuild keeps the last good MCP","status":"open"}]},"git":{"main_head":{"sha":"dc9ce67","message":"chore: formatting","at":"2026-09-24T17:25:00+02:00"},"branches":[{"branch":"docs/pipeline-service-lead-boundary","author":"Achim Imboden","stages":["discovery","compiler","builder"],"note":"Rewrites 7 pipeline docs to the service-lead boundary. No PR yet."}],"open_prs":[{"number":7,"title":"fix(pipeline): strengthen prototype crawler baseline","author":"blackmath88","branch":"fix/pipeline-scraper-baseline","stages":["discovery"],"url":"https://github.com/dominik-scherrer/public-ai-challenge/pull/7"},{"number":6,"title":"docs: clarify project, pipeline and pilot municipalities","author":"blackmath88","branch":"docs/readme-project-pipeline","stages":[],"url":"https://github.com/dominik-scherrer/public-ai-challenge/pull/6","note":"Pilot list predates Batch A."},{"number":5,"title":"feat(pipeline): add first scraper prototype","author":"blackmath88","branch":"feat/pipeline-scraper-prototype","stages":["discovery"],"url":"https://github.com/dominik-scherrer/public-ai-challenge/pull/5","note":"Files already on main."}],"merged_prs":[{"number":8,"title":"feat(handoff): compile crawler output into MCP Service Inventory","author":"blackmath88","merged_at":"2026-09-24T15:09:52Z"},{"number":4,"title":"feat(pipeline): add living build observatory","author":"blackmath88","merged_at":"2026-09-24T14:32:07Z"},{"number":3,"title":"docs(pipeline): define adaptive scraping runtime and semantic compiler","author":"blackmath88","merged_at":"2026-09-24T14:31:20Z"},{"number":2,"title":"info classification from Mark","author":"MarkYav","merged_at":"2026-09-24T12:12:19Z"},{"number":1,"title":"docs: add MMP glossary, ADRs and open questions (ideas-dominik)","author":"dominik-scherrer","merged_at":"2026-09-24T12:01:08Z"}],"recent_commits":[{"sha":"dc9ce67","author":"Patrick Arnecke","message":"chore: formatting","at":"2026-09-24T17:25:00+02:00"},{"sha":"3a839bd","author":"Patrick Arnecke","message":"feat: setup openai API calling","at":"2026-09-24T17:11:00+02:00"},{"sha":"7fc855d","author":"Achim Imboden","message":"feat(handoff): align ingestion with minigmeind MCP capabilities","at":"2026-09-24T17:09:52+02:00"},{"sha":"a402527","author":"Patrick Arnecke","message":"feat: add gitignore","at":"2026-09-24T17:05:00+02:00"}]},"open_questions":[{"priority":"now","area":"builder","question":"One fixed tool surface for every village (minigmeind today), or per-village tools compiled from capability plans?"},{"priority":"now","area":"builder","question":"Where does minigmeind live, and can it be committed or linked so the builder targets it?"},{"priority":"now","area":"discovery","question":"Retire the normalized seed inventory on main, or relabel it as seed Service Leads?"},{"priority":"now","area":"compiler","question":"Agent 2 on gpt-6-luna as the baseline, Apertus as the replacement experiment — agreed?"},{"priority":"next","area":"experience","question":"Reference client: fork Open WebUI (ADR-0006) or run it unmodified (MVP plan)?"},{"priority":"next","area":"experience","question":"Can Apertus call MCP tools reliably (OQ-2)?"},{"priority":"next","area":"compiler","question":"Update ADR-0001: is eCH-0070 now deferred to indexing/analytics?"},{"priority":"next","area":"operate","question":"Does a municipality sign off before publication (OQ-1)?"}],"next_actions":["Open a PR for docs/pipeline-service-lead-boundary so the new boundary lands on main.","Simplify pipeline/prototype to emit Service Leads (labels, hint, authority, source roles, discovery evidence) instead of service records.","Run discovery on Batch A — Ausserberg, Binn, Dübendorf, Bosco/Gurin — and hand-label Binn for recall.","Hand one Ausserberg lead and its bundle to gpt-6-luna and get a first mcp-capability-plan/v1.","Agree with Patrick how a capability plan lands in minigmeind: fixed tools or per-village tools.","Relabel or retire pipeline/handoff's normalized inventory; update MCP_CAPABILITY_MATRIX to the new boundary.","Merge PR #7; close PR #5; refresh or close PR #6.","Delete or re-sync the stale copies in pipeline/scrapping/docs/."],"tensions":[{"title":"Handoff on main still ships normalized data","stages":["discovery","compiler"],"detail":"pipeline/handoff (PR #8, 7fc855d) publishes mmp-service-inventory/v0 and calls ingestion 'the evidence and canonical-data layer'. The docs branch says Agent 1 hands over Service Leads and Agent 2 does the understanding."},{"title":"Fixed tool surface vs. per-village tools","stages":["builder","compiler"],"detail":"minigmeind exposes one ~31-tool surface for every municipality, and the capability matrix maps data onto it. The new compiler lets Binn and Zürich get different tools for the same service. Both can coexist only if someone decides where the plan lands."},{"title":"Commercial baseline vs. Apertus","stages":["compiler"],"detail":"Main now calls gpt-6-luna; the pipeline targets a small-Apertus / large-planner split. Fine as baseline → replacement, but it should be written down."},{"title":"eCH-0070 canonical vs. deferred","stages":["compiler"],"detail":"ADR-0001 (accepted) makes eCH-0070 canonical; the new architecture makes cross-municipality normalization optional."},{"title":"Reference client: fork vs. unmodified","stages":["experience"],"detail":"ADR-0006 forks Open WebUI with an MCP Apps host; the MVP plan runs it unmodified with no MCP Apps cards."},{"title":"Stale duplicated docs","stages":["discovery"],"detail":"pipeline/scrapping/docs/ holds older copies of ARCHITECTURE, BUILD_PLAN, CRAWL_STRATEGIES, SERVICE_MODEL and others; after the service-lead rewrite they contradict the top-level docs."}],"history":[{"at":"2026-09-24T11:52:45Z","kind":"pr","title":"MMP architecture contribution opened","detail":"Dominik's glossary, ADRs and open questions entered through PR #1 and were merged."},{"at":"2026-09-24T12:11:52Z","kind":"pr","title":"Information classification contribution","detail":"Mark's static/dynamic information classification entered through PR #2 and was merged."},{"at":"2026-09-24T12:45:28Z","kind":"commit","title":"Work packages added","detail":"Repository README gained Data Acquisition, UX, System Architecture, QA and Deployment/GTM work packages."},{"at":"2026-09-24T13:19:15Z","kind":"commit","title":"Pipeline concept docs committed","detail":"Adaptive ingestion, provenance, municipality benchmark, service model and build plan were added under pipeline/."},{"at":"2026-09-24T13:32:42Z","kind":"pr","title":"Pipeline semantic-compiler PR opened","detail":"PR #3 proposes HTTP-first runtime, browser escalation, OSS tooling choices and large-planner/small-Apertus execution."},{"at":"2026-09-24T13:40:20Z","kind":"pr","title":"Living observatory PR opened","detail":"PR #4 introduced the first static build-state dashboard."},{"at":"2026-09-24T14:18:23Z","kind":"pr","title":"Scraper prototype opened","detail":"PR #5 adds the first executable slice: bounded HTTP crawl, snapshots, PageIR, heuristic detection and a model adapter.","stages":["discovery"]},{"at":"2026-09-24T14:27:00Z","kind":"analysis","title":"Observatory widened to project scope","detail":"The dashboard integrated repository-wide project streams and Git metadata while keeping pipeline/observatory as the only write location."},{"at":"2026-09-24T14:31:20Z","kind":"pr","title":"PR #3 and #4 merged","detail":"Semantic compiler / runtime docs and the observatory landed on main."},{"at":"2026-09-24T14:35:30Z","kind":"pr","title":"README clarification opened","detail":"PR #6 clarifies project, pipeline and pilot municipalities in the root README."},{"at":"2026-09-24T14:44:24Z","kind":"commit","title":"Scrapping baseline tooling on main","detail":"Service, source, municipality and crawl-report schemas, a provenance validator and browser capture helpers were committed.","stages":["discovery","trust"]},{"at":"2026-09-24T14:47:54Z","kind":"pr","title":"Crawler hardened","detail":"PR #7 grows the prototype test suite from 3 to 11 passing tests: URL normalization, redirects, model fallback, tourism negatives.","stages":["discovery"]},{"at":"2026-09-24T14:48:25Z","kind":"pr","title":"First Service Inventory handoff","detail":"PR #8 defines mmp-service-inventory/v0 and ships a seed batch: 26 services from 22 official sources across 7 of 8 municipalities.","stages":["discovery","compiler"]},{"at":"2026-09-24T15:05:00Z","kind":"analysis","title":"Architecture restructured into six stages","detail":"The observatory modelled the system as Discover → Compile → Verify → Serve → Experience, with Operate spanning all stages and a seven-level maturity scale per module."},{"at":"2026-09-24T15:09:52Z","kind":"pr","title":"Handoff merged and aligned with minigmeind","detail":"PR #8 merged. A capability matrix maps inventory capabilities onto Patrick's live minigmeind MCP (~31 tools, dummy data).","stages":["compiler","builder"]},{"at":"2026-09-24T15:11:00Z","kind":"commit","title":"OpenAI API calling set up","detail":"Patrick added the openai client, a .env setup and scripts/test_openai.py calling gpt-6-luna.","stages":["compiler"]},{"at":"2026-09-24T15:27:46Z","kind":"commit","title":"Boundary shifted to Service Leads","detail":"docs/pipeline-service-lead-boundary rewrites 7 pipeline docs: Agent 1 discovers services and source bundles; Agent 2 compiles each into a local MCP capability plan. Normalization becomes optional.","stages":["discovery","compiler","builder"]},{"at":"2026-09-24T15:30:00Z","kind":"analysis","title":"Observatory redrawn around four blocks","detail":"Discovery → Service Compiler → MCP Builder → Citizen Experience, with the handoff artifacts between them (Service Leads, capability plan, village MCP) and Trust wrapping the chain."}]};
+</script>
 <script>
-window.__BUILD_STATE__={"schema":"project-build-observatory/v2","generated_at":"2026-09-24T16:27:00+02:00","scope":{"read":"entire repository + Git metadata","write":"pipeline/observatory/ only","repository":"dominik-scherrer/public-ai-challenge"},"headline":{"phase":"Convergence → implementation","status":"architecture_converging","summary":"The project has substantial research, an MVP implementation plan, service/domain framing and a provenance-aware ingestion architecture. The main gap is convergence into executable code: most core components are still documented rather than implemented."},"project_streams":[{"id":"product","name":"Product / MMP concept","status":"designed","owner_signal":"Dominik","sources":["ideas-dominik/CONTEXT.md","ideas-dominik/docs/adr/"],"summary":"MMP vocabulary, service tiers, sovereign reference-client framing, build semantics and ADRs are documented.","next":"Resolve governance/verification questions and align terminology with the MVP plan."},{"id":"research","name":"Municipality/service research","status":"implemented","owner_signal":"team research","sources":["ideas/mmp-swiss-municipality-service-research.md","ideas-patrick/servicelist_patrick.md","ideas-patrick/ausserberg_example.md"],"summary":"A 19-municipality qualitative survey, service taxonomy and Ausserberg/reference-service material exist.","next":"Turn research into fixtures/baseline corpus and acceptance scenarios."},{"id":"pipeline","name":"Data acquisition / ingestion pipeline","status":"designed","owner_signal":"Achim","sources":["pipeline/ARCHITECTURE.md","pipeline/BUILD_PLAN.md","pipeline/PROVENANCE_AND_TRUST.md","pipeline/SEMANTIC_COMPILER.md"],"summary":"Adaptive crawling, provenance, semantic compiler, Apertus execution model and evaluation criteria are designed; runtime code is not yet committed.","next":"Baseline corpus → SourceSnapshot → PageIR → HTTP-first fetch → typed planner/executor."},{"id":"mvp","name":"Hackathon MVP implementation","status":"designed","owner_signal":"shared","sources":["docs/hackathon-mvp-plan.md","src/public_ai_challenge/__init__.py","pyproject.toml"],"summary":"A detailed 24-hour plan defines URL→inventory→review→MCP package, but the repository currently has only a minimal Python package skeleton.","next":"Start executable vertical slice using Ausserberg + second municipality."},{"id":"mcp","name":"MCP runtime","status":"not_started","owner_signal":"runtime work package","sources":["docs/hackathon-mvp-plan.md"],"summary":"Tool contract and runtime shape are planned; no MCP server implementation is visible in main.","next":"Fixture-backed four-tool MCP server, then wire generated inventory."},{"id":"ux","name":"Citizen / team UX","status":"designed","owner_signal":"UX work package","sources":["docs/hackathon-mvp-plan.md","ideas-dominik/CONTEXT.md"],"summary":"Open WebUI/reference-client and a minimal builder page are proposed; no UI implementation is visible.","next":"Validate host integration first; keep builder UI minimal."},{"id":"qa","name":"Quality / trust / Judge","status":"designed","owner_signal":"QA work package","sources":["ideas-dominik/CONTEXT.md","ideas-dominik/docs/OPEN-QUESTIONS.md","pipeline/EVALS.md","pipeline/PROVENANCE_AND_TRUST.md"],"summary":"Evidence discipline, withheld attributes, build floor and eval criteria are well described but not automated.","next":"Turn evidence checks and acceptance criteria into executable tests."},{"id":"deployment","name":"Deployment / go-to-market","status":"designed","owner_signal":"deployment work package","sources":["README.md","docs/hackathon-mvp-plan.md"],"summary":"Hosted HTTPS demo, downloadable package and adoption framing are planned; no deployment artifact is visible.","next":"Choose hosting and prove clean package launch before polish."}],"pipeline_flow":["Municipality URL","Context + reconnaissance","CrawlPlan / semantic compiler","HTTP-first fetch + browser fallback","SourceSnapshot + PageIR","Small Apertus extraction","ClaimIR + provenance","Service inventory","Review / Judge","MCP runtime","Citizen client"],"git":{"main_head":{"sha":"a1e557bcb00edc165f09bb2cf1282e58998700b4","message":"Updated the concept docs","at":"2026-09-24T13:19:15Z"},"open_prs":[{"number":3,"title":"docs(pipeline): define adaptive scraping runtime and semantic compiler","author":"blackmath88","state":"open","scope":"pipeline","url":"https://github.com/dominik-scherrer/public-ai-challenge/pull/3"},{"number":4,"title":"feat(pipeline): add living build observatory","author":"blackmath88","state":"open","scope":"pipeline/observatory","url":"https://github.com/dominik-scherrer/public-ai-challenge/pull/4"}],"merged_prs":[{"number":1,"title":"docs: add MMP glossary, ADRs and open questions (ideas-dominik)","author":"dominik-scherrer","merged_at":"2026-09-24T12:01:08Z"},{"number":2,"title":"info classification from Mark","author":"MarkYav","merged_at":"2026-09-24T12:12:19Z"}],"recent_commits":[{"sha":"a1e557b","author":"blackmath88","message":"Updated the concept docs","at":"2026-09-24T13:19:15Z"},{"sha":"d347d65","author":"Dominik Scherrer","message":"Add work packages section to README","at":"2026-09-24T12:45:28Z"}]},"open_questions":[{"priority":"now","area":"convergence","question":"Which architectural source is authoritative when the MVP plan and MMP/ADR documents differ?"},{"priority":"now","area":"implementation","question":"Who owns the first end-to-end executable slice: crawl/extraction, MCP runtime, and integration?"},{"priority":"now","area":"model","question":"Can Apertus reliably call the MCP tools and perform constrained extraction/classification at the required quality?"},{"priority":"now","area":"baseline","question":"When will the municipality baseline/reference corpus be committed and linked to acceptance tests?"},{"priority":"next","area":"standards","question":"Is eCH-0070 a hackathon dependency, later enrichment, or canonical identity layer? Current docs are not fully aligned."},{"priority":"next","area":"governance","question":"Does a municipality need sign-off before publication, and who is publisher of record?"},{"priority":"next","area":"runtime","question":"Which crawler/runtime do we standardize on for the first slice: Crawl4AI or thinner HTTP + Playwright?"}],"next_actions":["Converge the team on one MVP contract: URL → evidence-backed service inventory → MCP.","Merge/review PR #3 and make its ingestion boundaries part of the shared implementation plan.","Commit the baseline/reference corpus and convert Ausserberg + selected municipalities into fixtures.","Build the first executable vertical slice: fetch → snapshot → extract → validate → inventory.","Bring up a fixture MCP server with the four planned tools and test a real host/model.","Turn provenance/Judge principles into automated acceptance checks.","Keep the observatory repo-wide and refresh it from Git + project evidence, not manual optimism."],"tensions":[{"title":"MVP scope vs. richer MMP architecture","detail":"The MVP plan explicitly excludes Dominik's documents from its design, while the wider project contains MMP vocabulary, ADRs and quality/governance concepts. The team needs to decide which parts converge now versus remain post-hackathon."},{"title":"Commercial baseline vs. Apertus goal","detail":"The MVP plan uses commercial LLMs for build-time extraction first; the pipeline design aims for a large-planner/small-Apertus execution architecture. This is compatible if treated as baseline → replacement experiment, but should be stated explicitly."},{"title":"eCH-0070 timing","detail":"Research recommends eCH-0070 as canonical service identity; the MVP plan treats it as later enrichment. This is an explicit architectural decision still needing alignment."}],"history":[{"at":"2026-09-24T11:52:45Z","kind":"pr","title":"MMP architecture contribution opened","detail":"Dominik's glossary, ADRs and open questions entered through PR #1 and were merged."},{"at":"2026-09-24T12:11:52Z","kind":"pr","title":"Information classification contribution","detail":"Mark's static/dynamic information classification entered through PR #2 and was merged."},{"at":"2026-09-24T12:45:28Z","kind":"commit","title":"Work packages added","detail":"Repository README gained Data Acquisition, UX, System Architecture, QA and Deployment/GTM work packages."},{"at":"2026-09-24T13:19:15Z","kind":"commit","title":"Pipeline concept docs committed","detail":"Adaptive ingestion, provenance, municipality benchmark, service model and build plan were added under pipeline/."},{"at":"2026-09-24T13:32:42Z","kind":"pr","title":"Pipeline semantic-compiler PR opened","detail":"PR #3 proposes HTTP-first runtime, browser escalation, OSS tooling choices and large-planner/small-Apertus execution."},{"at":"2026-09-24T13:40:20Z","kind":"pr","title":"Living observatory PR opened","detail":"PR #4 introduced the first static build-state dashboard."},{"at":"2026-09-24T16:27:00+02:00","kind":"analysis","title":"Observatory widened to project scope","detail":"The dashboard now integrates repository-wide project streams and Git metadata while preserving pipeline/observatory as the only write location."}]};const s=window.__BUILD_STATE__;
-const e=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-document.getElementById('generated').textContent='snapshot '+new Date(s.generated_at).toLocaleString();
-document.getElementById('badge').textContent=s.headline.status.replaceAll('_',' ');
-document.getElementById('phase').textContent=s.headline.phase;document.getElementById('summary').textContent=s.headline.summary;
-document.getElementById('next').innerHTML=s.next_actions.map(x=>'<li>'+e(x)+'</li>').join('');
-document.getElementById('streams').innerHTML=s.project_streams.map(x=>'<article class="stream"><span class="status '+x.status+'">'+e(x.status.replaceAll('_',' '))+'</span><h3>'+e(x.name)+'</h3><p>'+e(x.summary)+'</p><div class="next"><span class="ey">next</span><br>'+e(x.next)+'</div></article>').join('');
-document.getElementById('flow').innerHTML=s.pipeline_flow.map((x,i)=>'<div class="step"><span><span class="ey">'+String(i+1).padStart(2,'0')+'</span><br>'+e(x)+'</span></div>').join('');
-document.getElementById('head').innerHTML=e(s.git.main_head.sha.slice(0,10))+'<br>'+e(s.git.main_head.message);
-document.getElementById('prs').innerHTML='<div class="ey" style="margin-top:14px">open PRs</div>'+s.git.open_prs.map(p=>'<div class="pr"><a href="'+e(p.url)+'" target="_blank">#'+p.number+' '+e(p.title)+'</a><br><span class="sha">'+e(p.author)+' · '+e(p.scope)+'</span></div>').join('');
-document.getElementById('gitrecent').innerHTML=s.git.merged_prs.map(p=>'<div class="pr">merged #'+p.number+' · '+e(p.title)+'</div>').join('')+'<div class="ey" style="margin-top:12px">commits</div>'+s.git.recent_commits.map(c=>'<div class="pr"><span class="sha">'+e(c.sha)+'</span> '+e(c.message)+'</div>').join('');
-document.getElementById('questions').innerHTML=s.open_questions.map(q=>'<div class="q"><span class="priority">'+e(q.priority)+' · '+e(q.area)+'</span><div>'+e(q.question)+'</div></div>').join('');
-document.getElementById('tensions').innerHTML=s.tensions.map(t=>'<div class="tension"><strong>'+e(t.title)+'</strong><div style="font-size:12.5px;color:#555;line-height:1.45;margin-top:4px">'+e(t.detail)+'</div></div>').join('');
-document.getElementById('history').innerHTML=[...s.history].reverse().map(x=>'<div class="ev"><time>'+e(x.at)+'</time><h3>'+e(x.title)+'</h3><p>'+e(x.detail)+'</p></div>').join('');
-</script></main></body></html>
+(() => {
+const s = window.__BUILD_STATE__;
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDateTime = iso => new Date(iso).toLocaleString(undefined, {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+const fmtTime = iso => new Date(iso).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'});
+const fmtDay = iso => new Date(iso).toLocaleDateString(undefined, {weekday:'long', day:'numeric', month:'long'});
+const repo = s.scope?.repository;
+const fileUrl = (p, ref) => repo ? `https://github.com/${repo}/${p.endsWith('/') ? 'tree' : 'blob'}/${ref || 'main'}/${p}` : '#';
+const fileLink = (p, ref) => `<a class="mono" href="${esc(fileUrl(p, ref))}" target="_blank" rel="noopener">${esc(p)}</a>`;
+const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
+
+/* ---------- maturity ---------- */
+const SCALE = s.maturity_scale || ['not_started','research','designed','prototype','working','verified','demo_ready'];
+const MAT = {
+  not_started: {label:'Not started', color:'var(--gray)'},
+  research:    {label:'Research',    color:'var(--gray)'},
+  designed:    {label:'Designed',    color:'var(--purple)'},
+  prototype:   {label:'Prototype',   color:'var(--orange)'},
+  working:     {label:'Working',     color:'var(--blue)'},
+  verified:    {label:'Verified',    color:'var(--green)'},
+  demo_ready:  {label:'Demo ready',  color:'var(--teal)'},
+};
+const mat = k => MAT[k] || {label:String(k).replaceAll('_',' '), color:'var(--gray)'};
+const level = k => Math.max(0, SCALE.indexOf(k));
+const fillOf = k => k === 'not_started' ? 'var(--empty)' : mat(k).color;
+const meter = k => {
+  const n = level(k), c = mat(k).color;
+  return `<span class="meter" aria-hidden="true">${SCALE.slice(1).map((_, i) =>
+    i < n ? `<i class="on" style="background:${c}"></i>` : '<i></i>').join('')}</span>`;
+};
+const flag = f => f ? `<span class="flag ${esc(f)}">${esc(f)}</span>` : '';
+const countBy = mods => { const c = {}; mods.forEach(m => c[m.maturity] = (c[m.maturity] || 0) + 1); return c; };
+const stackHtml = mods => { const c = countBy(mods); return SCALE.filter(k => c[k]).map(k =>
+  `<i style="flex:${c[k]};background:${fillOf(k)}" title="${mat(k).label}: ${c[k]}"></i>`).join(''); };
+
+const sys = s.system;
+const stages = sys.stages;
+const wrap = sys.wrap;
+const operate = sys.operate;
+const artifacts = sys.artifacts || [];
+const artById = Object.fromEntries(artifacts.map(a => [a.id, a]));
+const allStages = [...stages, wrap, operate].filter(Boolean);
+const stageById = Object.fromEntries(allStages.map(st => [st.id, st]));
+const modules = allStages.flatMap(st => st.modules.map(m => ({...m, stage: st.id})));
+const modById = Object.fromEntries(modules.map(m => [m.id, m]));
+const stageName = id => stageById[id]?.name || id;
+
+/* ---------- tabs ---------- */
+const TABS = [['architecture','Architecture'],['build','Build'],['evidence','Evidence'],['history','History']];
+$('tabs').innerHTML = TABS.map(([k, l]) => `<button role="tab" id="tab-${k}" aria-controls="panel-${k}" aria-selected="false">${l}</button>`).join('');
+function show(name) {
+  if (!TABS.some(([k]) => k === name)) name = 'architecture';
+  for (const [k] of TABS) {
+    $('tab-' + k).setAttribute('aria-selected', k === name);
+    $('panel-' + k).hidden = k !== name;
+  }
+  if (name !== 'architecture') closeDrawer();
+  if (location.hash.slice(1) !== name) history.replaceState(null, '', '#' + name);
+}
+TABS.forEach(([k]) => $('tab-' + k).onclick = () => show(k));
+window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+$('snapshot').textContent = 'Snapshot ' + fmtDateTime(s.generated_at);
+
+// Stage tags and module links anywhere on the page open that item in the architecture view.
+const stageTag = id => stageById[id] ? `<button class="tag" data-stage="${esc(id)}">${esc(stageName(id))}</button>` : '';
+document.addEventListener('click', e => {
+  const mod = e.target.closest('[data-mod],[data-open-mod]');
+  const art = e.target.closest('[data-art]');
+  const stg = e.target.closest('[data-stage]');
+  if (!mod && !art && !stg) return;
+  e.preventDefault();
+  show('architecture');
+  if (mod) openModule(mod.dataset.mod || mod.dataset.openMod);
+  else if (art) openArtifact(art.dataset.art);
+  else openStage(stg.dataset.stage);
+});
+
+/* ---------- architecture ---------- */
+$('claim').textContent = sys.claim || '';
+$('story').innerHTML = sys.story.map((x, i) => {
+  const isStage = stages.some(st => st.name === x);
+  return (i ? '<span class="chev" aria-hidden="true">→</span>' : '') + `<span class="${isStage ? '' : 'end'}">${esc(x)}</span>`;
+}).join('');
+
+const archCounts = countBy(modules);
+const atLeast = k => modules.filter(m => level(m.maturity) >= level(k)).length;
+$('arch-stats').innerHTML = [
+  [`${atLeast('prototype')}<small> / ${modules.length}</small>`, 'Modules with code'],
+  [atLeast('working'), 'Working or better'],
+  [archCounts.not_started || 0, 'Not started'],
+].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+$('arch-stack').innerHTML = stackHtml(modules);
+$('arch-legend').innerHTML = SCALE.filter(k => archCounts[k]).map(k =>
+  `<span><i class="swatch" style="background:${fillOf(k)}"></i>${archCounts[k]} ${mat(k).label.toLowerCase()}</span>`).join('');
+
+const modButton = m => `<li><button class="mod" data-mod="${esc(m.id)}" aria-selected="false">
+  <span class="nm">${esc(m.name)}</span>
+  <span class="lv">${meter(m.maturity)}${mat(m.maturity).label}${flag(m.flag)}</span></button></li>`;
+const stageHead = (st, i) => `<button class="stage-head" data-stage="${esc(st.id)}" aria-selected="false">
+  ${i != null ? `<span class="n">${i + 1}</span>` : ''}<h2>${esc(st.name)}</h2>${st.agent ? `<span class="agent">${esc(st.agent)}</span>` : ''}
+  ${st.question ? `<span class="q">${esc(st.question)}</span>` : ''}
+  <span class="desc">${esc(st.title)}</span>
+  <span class="stack">${stackHtml(st.modules)}</span></button>`;
+const artButton = a => a ? `<button class="artifact" data-art="${esc(a.id)}" aria-selected="false">
+  <span class="arrow" aria-hidden="true">→</span><b>${esc(a.name)}</b><span class="schema">${esc(a.schema)}</span>${meter(a.maturity)}</button>` : '<span></span>';
+
+$('wrap').innerHTML = (wrap ? stageHead(wrap, null) : '') +
+  `<div class="stages">${stages.map((st, i) =>
+    (i ? artButton(artById[stages[i - 1].handoff]) : '') +
+    `<section class="box stage">${stageHead(st, i)}<ul class="mods">${st.modules.map(modButton).join('')}</ul></section>`).join('')}</div>` +
+  (wrap ? `<div class="wrap-mods"><ul class="mods">${wrap.modules.map(modButton).join('')}</ul></div>` : '');
+$('operate').innerHTML = stageHead(operate, null) + `<ul class="mods">${operate.modules.map(modButton).join('')}</ul>`;
+
+$('rails').innerHTML = `<thead><tr><th>Rail</th>${stages.map(st => `<th>${esc(st.name)}</th>`).join('')}</tr></thead>
+  <tbody>${sys.rails.map(r => `<tr><td><div class="rn">${esc(r.name)}</div><div class="ri">${esc(r.items.join(' · '))}</div></td>
+  ${stages.map(st => `<td>${esc(r.cells?.[st.id] || '—')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+/* ---------- inspector ---------- */
+const drawer = $('drawer');
+let lastFocus = null;
+function markSelected(sel) {
+  document.querySelectorAll('.mod,.stage-head,.artifact').forEach(b => b.setAttribute('aria-selected', b.matches(sel)));
+}
+function openDrawer(kicker, title, body) {
+  if (!drawer.classList.contains('open')) lastFocus = document.activeElement;
+  $('d-kicker').textContent = kicker; $('d-title').textContent = title; $('d-body').innerHTML = body;
+  drawer.classList.add('open'); drawer.setAttribute('aria-hidden', 'false');
+  drawer.scrollTop = 0;
+}
+function closeDrawer() {
+  if (!drawer.classList.contains('open')) return;
+  drawer.classList.remove('open'); drawer.setAttribute('aria-hidden', 'true');
+  markSelected(':not(*)');
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+}
+$('d-close').onclick = closeDrawer;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+const tensionNotes = id => (s.tensions || []).filter(t => (t.stages || []).includes(id))
+  .map(t => `<div class="note"><b>Conflict · ${esc(t.title)}</b>${esc(t.detail)}</div>`).join('');
+
+function openModule(id) {
+  const m = modById[id]; if (!m) return;
+  markSelected(`.mod[data-mod="${CSS.escape(id)}"]`);
+  const n = level(m.maturity), c = mat(m.maturity).color;
+  const ladder = SCALE.slice(1).map((k, i) => {
+    const cls = i + 1 < n ? 'done' : i + 1 === n ? 'cur' : '';
+    return `<li class="${cls}"><span class="dot" style="${cls ? `color:${c}` : ''}"></span>${mat(k).label}</li>`;
+  }).join('');
+  openDrawer(`${stageName(m.stage)} · module`, m.name, `
+    <div class="field row">${meter(m.maturity)}<span>${mat(m.maturity).label}</span>${flag(m.flag)}</div>
+    <div class="field"><div class="k">Owner · where</div><p>${esc(m.owner || 'unassigned')} · ${esc(m.where || 'main')}</p></div>
+    <div class="field"><div class="k">Where it stands</div><p>${esc(m.summary)}</p></div>
+    <div class="field"><div class="k">Next step</div><p>${esc(m.next)}</p></div>
+    <div class="field"><div class="k">Evidence</div>${(m.evidence || []).length
+      ? `<ul>${m.evidence.map(p => `<li>${fileLink(p, m.ref)}</li>`).join('')}</ul>`
+      : '<p class="muted">Nothing in the repository yet.</p>'}</div>
+    <div class="field"><div class="k">Maturity</div><ul class="ladder">${ladder}</ul></div>
+    ${m.flag === 'conflict' ? tensionNotes(m.stage) : ''}`);
+}
+
+function openStage(id) {
+  const st = stageById[id]; if (!st) return;
+  markSelected(`.stage-head[data-stage="${CSS.escape(id)}"]`);
+  const rails = !stages.includes(st) ? '' : `<div class="field"><div class="k">Rails at this stage</div><ul>${sys.rails.map(r =>
+    `<li><span style="font-weight:500">${esc(r.name)}:</span> <span class="muted">${esc(r.cells?.[st.id] || '—')}</span></li>`).join('')}</ul></div>`;
+  const into = artifacts.find(a => a.to === st.id), out = artifacts.find(a => a.from === st.id);
+  const io = (into || out) ? `<div class="field"><div class="k">Handoffs</div>${[into && ['In', into], out && ['Out', out]].filter(Boolean).map(([k, a]) =>
+    `<button class="minirow" data-art="${esc(a.id)}"><span>${k}: ${esc(a.name)}</span><span class="mono muted">${esc(a.schema)}</span></button>`).join('')}</div>` : '';
+  const kicker = st === wrap ? 'Wraps the whole chain' : st === operate ? 'Spans every stage' : `Block ${stages.indexOf(st) + 1} of ${stages.length}${st.agent ? ' · ' + st.agent : ''}`;
+  openDrawer(kicker, st.name, `
+    ${st.question ? `<div class="field"><p style="font-weight:500">${esc(st.question)}</p></div>` : ''}
+    <div class="field"><p>${esc(st.title)}</p></div>
+    ${io}
+    <div class="field"><div class="k">Flow</div><ol class="flowlist">${st.flow.map(f => `<li>${esc(f)}</li>`).join('')}</ol></div>
+    <div class="field"><div class="k">Modules</div>${st.modules.map(m =>
+      `<button class="minirow" data-open-mod="${esc(m.id)}"><span>${esc(m.name)}</span><span class="row muted" style="font-size:11px">${meter(m.maturity)}${mat(m.maturity).label}</span></button>`).join('')}</div>
+    ${rails}
+    ${tensionNotes(st.id)}`);
+}
+
+function openArtifact(id) {
+  const a = artById[id]; if (!a) return;
+  markSelected(`.artifact[data-art="${CSS.escape(id)}"]`);
+  openDrawer(`Handoff · ${stageName(a.from)} → ${stageName(a.to)}`, a.name, `
+    <div class="field"><span class="mono">${esc(a.schema)}</span></div>
+    <div class="field row">${meter(a.maturity)}<span>${mat(a.maturity).label}</span><span class="muted">· ${esc(a.where || 'main')}</span></div>
+    <div class="field"><p>${esc(a.summary)}</p></div>
+    ${(a.fields || []).length ? `<div class="field"><div class="k">Contains</div><ul>${a.fields.map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>` : ''}
+    ${(a.absent || []).length ? `<div class="field"><div class="k">Deliberately absent</div><ul>${a.absent.map(f => `<li class="muted">${esc(f)}</li>`).join('')}</ul></div>` : ''}
+    ${a.example ? `<div class="field"><div class="k">Example</div><pre class="example">${esc(a.example)}</pre></div>` : ''}
+    ${(a.evidence || []).length ? `<div class="field"><div class="k">Evidence</div><ul>${a.evidence.map(p => `<li>${fileLink(p, a.ref)}</li>`).join('')}</ul></div>` : ''}`);
+}
+
+/* ---------- build ---------- */
+$('phase').textContent = s.headline.phase;
+$('headline').textContent = s.headline.summary;
+const g = s.git || {};
+const qs = s.open_questions || [];
+const ts = s.tensions || [];
+const unowned = modules.filter(m => !m.owner || m.owner === 'unassigned');
+$('build-stats').innerHTML = [
+  [(g.open_prs || []).length, 'Open pull requests'],
+  [qs.filter(q => q.priority === 'now').length, 'Decisions due now'],
+  [ts.length, 'Unresolved conflicts'],
+  [unowned.length, 'Modules without owner'],
+].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+
+$('pr-count').textContent = [plural((g.open_prs || []).length, 'open PR'), (g.branches || []).length && plural(g.branches.length, 'branch', 'branches') + ' without PR'].filter(Boolean).join(' · ');
+$('inflight').innerHTML = `${(g.branches || []).length ? `<ul class="list">${g.branches.map(b => `<li>
+    <span class="mono">${esc(b.branch)}</span>${(b.stages || []).map(stageTag).join('')}
+    <div class="detail">${esc(b.author)}${b.note ? ' · ' + esc(b.note) : ''}</div></li>`).join('')}</ul><div class="sub" style="border-top:1px solid var(--line)">Pull requests</div>` : ''}<ul class="list">${(g.open_prs || []).map(p => `<li>
+    <a href="${esc(p.url)}" target="_blank" rel="noopener">#${p.number}</a> ${esc(p.title)}${(p.stages || []).map(stageTag).join('')}
+    <div class="detail"><span class="mono">${esc(p.branch || '')}</span> · ${esc(p.author)}${p.note ? ' · ' + esc(p.note) : ''}</div></li>`).join('')}</ul>
+  ${g.main_head ? `<div class="sub" style="border-top:1px solid var(--line)">Latest on main</div><ul class="list">${(g.recent_commits || [g.main_head]).map(c =>
+    `<li><span class="mono muted">${esc(c.sha.slice(0, 7))}</span> ${esc(c.message)}<div class="detail">${c.author ? esc(c.author) + ' · ' : ''}${fmtDateTime(c.at)}</div></li>`).join('')}</ul>` : ''}`;
+
+const next = s.next_actions || [];
+$('next-count').textContent = plural(next.length, 'item');
+$('next').innerHTML = next.map(x => `<li><span>${esc(x)}</span></li>`).join('');
+
+$('q-count').textContent = qs.length + ' open';
+$('questions').innerHTML = [...new Set(qs.map(q => q.priority))].map(p => {
+  const items = qs.filter(q => q.priority === p);
+  const title = p === 'now' ? 'Needed now' : p === 'next' ? 'Needed next' : p;
+  return `<div class="group">${esc(title)} · ${items.length}</div><ul class="list">${items.map(q =>
+    `<li>${esc(q.question)}${stageById[q.area] ? stageTag(q.area) : `<span class="tag">${esc(q.area)}</span>`}</li>`).join('')}</ul>`;
+}).join('');
+
+$('t-count').textContent = ts.length + ' unresolved';
+$('tensions').innerHTML = ts.map(t => `<li><div style="font-weight:500">${esc(t.title)}${(t.stages || []).map(stageTag).join('')}</div><div class="detail">${esc(t.detail)}</div></li>`).join('');
+
+const owners = {};
+modules.forEach(m => (owners[m.owner || 'unassigned'] ||= []).push(m));
+$('owners').innerHTML = Object.entries(owners)
+  .sort(([a, x], [b, y]) => (a === 'unassigned') - (b === 'unassigned') || y.length - x.length)
+  .map(([o, ms]) => `<li><div class="row" style="justify-content:space-between"><span style="font-weight:500;${o === 'unassigned' ? 'color:var(--red)' : ''}">${esc(o)}</span><span class="muted">${ms.length}</span></div>
+    <div class="detail">${ms.map(m => `<a href="#architecture" data-open-mod="${esc(m.id)}">${esc(m.name)}</a>`).join(', ')}</div></li>`).join('');
+
+$('repo-name').textContent = repo || '';
+$('merged').innerHTML = (g.merged_prs || []).map(p =>
+  `<li><span class="muted">#${p.number}</span> ${esc(p.title)}<div class="detail">${esc(p.author)} · ${fmtDateTime(p.merged_at)}</div></li>`).join('');
+
+/* ---------- evidence ---------- */
+const ev = s.evidence || {};
+const munis = ev.municipalities || [];
+const src = ev.municipalities_source || {};
+const sum = k => munis.reduce((a, m) => a + (m[k] || 0), 0);
+const bestTests = Math.max(0, ...(ev.tests || []).filter(t => t.result === 'pass').map(t => t.count || 0));
+const batches = [...new Set(munis.map(m => m.batch))];
+const leadsTotal = munis.some(m => m.leads != null) ? sum('leads') : 0;
+$('ev-stats').innerHTML = [
+  [munis.filter(m => m.batch === batches[0]).length, `Batch ${batches[0] || ''} municipalities`],
+  [leadsTotal, 'Service Leads produced'],
+  [sum('seed_sources'), 'Seed sources'],
+  [bestTests, 'Tests passing'],
+].map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('');
+$('ev-note').textContent = src.note || '';
+$('muni-where').innerHTML = src.path ? `${esc(src.where || '')} · ${fileLink(src.path, src.ref)}` : '';
+const dash = v => v == null ? '<span class="muted">—</span>' : v;
+$('munis').innerHTML = batches.map(b => `<tr><td colspan="5" class="group">Batch ${esc(b)} · ${munis.filter(m => m.batch === b).length}</td></tr>` +
+  munis.filter(m => m.batch === b).map(m => `<tr>
+  <td><div style="font-weight:500">${esc(m.name)} <span class="muted" style="font-weight:400">${esc(m.canton)}</span></div>${m.note ? `<div class="detail" style="font-size:11.5px">${esc(m.note)}</div>` : ''}</td>
+  <td class="hide-sm muted">${esc(m.shape)}</td>
+  <td class="hide-sm muted">${esc(m.test)}</td>
+  <td class="num">${dash(m.seed_sources)}</td><td class="num">${dash(m.leads)}</td></tr>`).join('')).join('');
+
+const RESULT = {
+  pass:    ['var(--green)',  '100%', t => `${t.count} passing`],
+  fail:    ['var(--red)',    '100%', () => 'Failing'],
+  no_data: ['var(--orange)', '50%',  () => 'Nothing to run on'],
+  none:    ['var(--gray)',   '0%',   () => 'None'],
+};
+$('tests').innerHTML = (ev.tests || []).map(t => { const [c, p, l] = RESULT[t.result] || RESULT.none; return `<li>
+  <div class="row" style="justify-content:space-between"><span class="row"><span class="pie" style="--c:${c};--p:${p}"></span><span style="font-weight:500">${esc(t.name)}</span><span class="tag" style="margin:0">${esc(t.where)}</span></span><span class="muted">${esc(l(t))}</span></div>
+  ${t.path ? `<div class="detail">${fileLink(t.path, t.ref)}</div>` : ''}${t.note ? `<div class="detail">${esc(t.note)}</div>` : ''}</li>`; }).join('');
+
+const evals = ev.evals || [];
+$('eval-count').textContent = `${evals.filter(e => e.status !== 'not_measured').length} of ${evals.length} measured`;
+$('evals').innerHTML = evals.map(e => `<li><div class="row" style="justify-content:space-between"><span style="font-weight:500">${esc(e.metric)}</span><span class="muted">${esc(e.value ?? e.status.replaceAll('_', ' '))}</span></div><div class="detail">Target: ${esc(e.target)}</div></li>`).join('');
+
+const ACC = {met: ['var(--green)', '100%', 'Met'], partial: ['var(--orange)', '50%', 'Partial'], open: ['var(--gray)', '0%', 'Open']};
+const acc = ev.acceptance || [];
+$('acc-count').textContent = ['met', 'partial', 'open'].map(k => `${acc.filter(a => a.status === k).length} ${k}`).join(' · ');
+const accRow = a => { const [c, p, l] = ACC[a.status] || ACC.open; return `<li style="display:grid;grid-template-columns:20px 1fr auto;gap:8px">
+  <span class="pie" style="--c:${c};--p:${p};margin-top:2px"></span>
+  <div>${esc(a.check)}${a.note ? `<div class="detail">${esc(a.note)}</div>` : ''}</div><span class="muted">${l}</span></li>`; };
+$('acceptance').innerHTML = [...new Set(acc.map(a => a.group || ''))].map(gr =>
+  (gr ? `<li class="group">${esc(gr)}</li>` : '') + acc.filter(a => (a.group || '') === gr).map(accRow).join('')).join('');
+
+/* ---------- history ---------- */
+const ICON = {
+  pr:       {color:'var(--purple)', label:'Pull requests', svg:'<circle cx="4" cy="3" r="1.6"/><circle cx="4" cy="13" r="1.6"/><circle cx="12" cy="13" r="1.6"/><path d="M4 4.6v6.8M12 11.4V7a3 3 0 0 0-3-3H7"/>'},
+  commit:   {color:'var(--blue)',   label:'Commits',       svg:'<circle cx="8" cy="8" r="2.6"/><path d="M1 8h4.4M10.6 8H15"/>'},
+  analysis: {color:'var(--orange)', label:'Notes',         svg:'<path d="M3 2h7l3 3v9H3z"/><path d="M6 8h4M6 11h4"/>'},
+};
+const icon = k => {
+  const d = ICON[k] || {color:'var(--gray)', svg:'<circle cx="8" cy="8" r="3"/>'};
+  return `<span class="kind" style="background:${d.color}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d.svg}</svg></span>`;
+};
+const events = [...(s.history || [])].sort((a, b) => new Date(b.at) - new Date(a.at));
+const kinds = ['all', ...Object.keys(ICON).filter(k => events.some(e => e.kind === k))];
+let kind = 'all', query = '';
+$('kind-filter').innerHTML = kinds.map(k => `<button data-k="${k}" aria-selected="${k === kind}">${k === 'all' ? 'All' : ICON[k].label}</button>`).join('');
+$('kind-filter').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  kind = b.dataset.k;
+  $('kind-filter').querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+  renderHistory();
+};
+$('search').oninput = e => { query = e.target.value.trim().toLowerCase(); renderHistory(); };
+function renderHistory() {
+  const list = events.filter(e => (kind === 'all' || e.kind === kind) &&
+    (!query || [e.title, e.detail, ...(e.stages || []).map(stageName)].join(' ').toLowerCase().includes(query)));
+  let lastDay = '', html = '';
+  for (const e of list) {
+    const day = fmtDay(e.at);
+    if (day !== lastDay) { html += `<div class="day">${esc(day)}</div>`; lastDay = day; }
+    html += `<div class="ev"><time datetime="${esc(e.at)}">${fmtTime(e.at)}</time>${icon(e.kind)}
+      <div><div class="t">${esc(e.title)}${(e.stages || []).map(stageTag).join('')}</div><div class="detail">${esc(e.detail)}</div></div></div>`;
+  }
+  $('events').innerHTML = html || '<div class="empty">No matching events</div>';
+  $('hist-foot').textContent = list.length === events.length ? `${events.length} events` : `${list.length} of ${events.length} events`;
+}
+renderHistory();
+
+show(location.hash.slice(1));
+})();
+</script>
+</body>
+</html>

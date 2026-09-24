@@ -10,27 +10,28 @@ This preserves ownership boundaries while giving the team one integrated view.
 
 ## It tracks
 
-- product/MMP concept
-- municipality/service research
-- data acquisition pipeline
-- MVP implementation
-- MCP runtime
-- UX/reference client
-- QA/Judge/provenance
-- deployment/GTM
-- Git commits and PRs
-- cross-stream tensions and open decisions
+- the system as four blocks — **Discovery → Service Compiler → MCP Builder → Citizen Experience** — and the typed handoffs between them (Service Leads, capability plan, village MCP)
+- **Trust · provenance · Judge** wrapping the whole chain, and **Operate** alongside it
+- modules inside each block, on one maturity scale: research → designed → prototype → working → verified → demo ready
+- three cross-cutting rails: Trust, AI / models, Standards
+- benchmark municipalities (Batch A / B), tests, evals and acceptance checks
+- Git commits, PRs and unmerged branches, owners, open decisions and conflicts between docs
 - project history and next actions
 
 ## What it is not
 
 It is not a task tracker that guesses completion from filenames.
 
-A document can prove that something is **designed**. Only runtime/code/test evidence should move implementation modules to **implemented**.
+A document can prove that something is **designed**. Only code that runs moves a module to **prototype** or beyond, and only real benchmark runs and passing checks move it past that.
 
 ## Files
 
-- `index.html` — project-wide visual dashboard
+- `index.html` — the dashboard, four tabs:
+  - **Architecture**: *what is this system?* Four blocks with their handoffs, Trust wrapping the chain, Operate, cross-cutting rails, and a maturity meter per module. Click a block, handoff or module for the inspector.
+  - **Build**: *how far have we built it?* Open PRs, next actions, decisions, conflicts, owners.
+  - **Evidence**: benchmark municipalities, tests, evals and MVP acceptance checks.
+  - **History**: day-grouped log with filter and search.
+  Open it straight from disk; `#build`, `#evidence` and `#history` link to tabs.
 - `state.json` — current machine-readable integrated state
 - `history.jsonl` — material project history
 - `REFRESH_PROMPT.md` — agentic repo-analysis contract

@@ -1,287 +1,311 @@
 {
-  "schema": "project-build-observatory/v2",
-  "generated_at": "2026-09-24T16:27:00+02:00",
+  "schema": "project-build-observatory/v4",
+  "generated_at": "2026-09-24T17:30:00+02:00",
   "scope": {
     "read": "entire repository + Git metadata",
     "write": "pipeline/observatory/ only",
     "repository": "dominik-scherrer/public-ai-challenge"
   },
+  "maturity_scale": ["not_started", "research", "designed", "prototype", "working", "verified", "demo_ready"],
   "headline": {
-    "phase": "Convergence → implementation",
-    "status": "architecture_converging",
-    "summary": "The project has substantial research, an MVP implementation plan, service/domain framing and a provenance-aware ingestion architecture. The main gap is convergence into executable code: most core components are still documented rather than implemented."
+    "phase": "Boundary redrawn: discover leads, compile local MCPs",
+    "summary": "Agent 1 no longer normalizes services; it finds them and hands over Service Leads with their authoritative sources. Agent 2 compiles each lead into a municipality-specific MCP capability plan. The new boundary is documented on a branch but not yet in code: the crawler still emits service records, main still ships a normalized seed inventory, and Patrick's minigmeind MCP runs outside the repo with one fixed tool surface on dummy data."
   },
-  "project_streams": [
-    {
-      "id": "product",
-      "name": "Product / MMP concept",
-      "status": "designed",
-      "owner_signal": "Dominik",
-      "sources": [
-        "ideas-dominik/CONTEXT.md",
-        "ideas-dominik/docs/adr/"
-      ],
-      "summary": "MMP vocabulary, service tiers, sovereign reference-client framing, build semantics and ADRs are documented.",
-      "next": "Resolve governance/verification questions and align terminology with the MVP plan."
-    },
-    {
-      "id": "research",
-      "name": "Municipality/service research",
-      "status": "implemented",
-      "owner_signal": "team research",
-      "sources": [
-        "ideas/mmp-swiss-municipality-service-research.md",
-        "ideas-patrick/servicelist_patrick.md",
-        "ideas-patrick/ausserberg_example.md"
-      ],
-      "summary": "A 19-municipality qualitative survey, service taxonomy and Ausserberg/reference-service material exist.",
-      "next": "Turn research into fixtures/baseline corpus and acceptance scenarios."
-    },
-    {
-      "id": "pipeline",
-      "name": "Data acquisition / ingestion pipeline",
-      "status": "designed",
-      "owner_signal": "Achim",
-      "sources": [
-        "pipeline/ARCHITECTURE.md",
-        "pipeline/BUILD_PLAN.md",
-        "pipeline/PROVENANCE_AND_TRUST.md",
-        "pipeline/SEMANTIC_COMPILER.md"
-      ],
-      "summary": "Adaptive crawling, provenance, semantic compiler, Apertus execution model and evaluation criteria are designed; runtime code is not yet committed.",
-      "next": "Baseline corpus → SourceSnapshot → PageIR → HTTP-first fetch → typed planner/executor."
-    },
-    {
-      "id": "mvp",
-      "name": "Hackathon MVP implementation",
-      "status": "designed",
-      "owner_signal": "shared",
-      "sources": [
-        "docs/hackathon-mvp-plan.md",
-        "src/public_ai_challenge/__init__.py",
-        "pyproject.toml"
-      ],
-      "summary": "A detailed 24-hour plan defines URL→inventory→review→MCP package, but the repository currently has only a minimal Python package skeleton.",
-      "next": "Start executable vertical slice using Ausserberg + second municipality."
-    },
-    {
-      "id": "mcp",
-      "name": "MCP runtime",
-      "status": "not_started",
-      "owner_signal": "runtime work package",
-      "sources": [
-        "docs/hackathon-mvp-plan.md"
-      ],
-      "summary": "Tool contract and runtime shape are planned; no MCP server implementation is visible in main.",
-      "next": "Fixture-backed four-tool MCP server, then wire generated inventory."
-    },
-    {
-      "id": "ux",
-      "name": "Citizen / team UX",
-      "status": "designed",
-      "owner_signal": "UX work package",
-      "sources": [
-        "docs/hackathon-mvp-plan.md",
-        "ideas-dominik/CONTEXT.md"
-      ],
-      "summary": "Open WebUI/reference-client and a minimal builder page are proposed; no UI implementation is visible.",
-      "next": "Validate host integration first; keep builder UI minimal."
-    },
-    {
-      "id": "qa",
-      "name": "Quality / trust / Judge",
-      "status": "designed",
-      "owner_signal": "QA work package",
-      "sources": [
-        "ideas-dominik/CONTEXT.md",
-        "ideas-dominik/docs/OPEN-QUESTIONS.md",
-        "pipeline/EVALS.md",
-        "pipeline/PROVENANCE_AND_TRUST.md"
-      ],
-      "summary": "Evidence discipline, withheld attributes, build floor and eval criteria are well described but not automated.",
-      "next": "Turn evidence checks and acceptance criteria into executable tests."
-    },
-    {
-      "id": "deployment",
-      "name": "Deployment / go-to-market",
-      "status": "designed",
-      "owner_signal": "deployment work package",
-      "sources": [
-        "README.md",
-        "docs/hackathon-mvp-plan.md"
-      ],
-      "summary": "Hosted HTTPS demo, downloadable package and adoption framing are planned; no deployment artifact is visible.",
-      "next": "Choose hosting and prove clean package launch before polish."
-    }
-  ],
-  "pipeline_flow": [
-    "Municipality URL",
-    "Context + reconnaissance",
-    "CrawlPlan / semantic compiler",
-    "HTTP-first fetch + browser fallback",
-    "SourceSnapshot + PageIR",
-    "Small Apertus extraction",
-    "ClaimIR + provenance",
-    "Service inventory",
-    "Review / Judge",
-    "MCP runtime",
-    "Citizen client"
-  ],
-  "git": {
-    "main_head": {
-      "sha": "a1e557bcb00edc165f09bb2cf1282e58998700b4",
-      "message": "Updated the concept docs",
-      "at": "2026-09-24T13:19:15Z"
-    },
-    "open_prs": [
+  "system": {
+    "claim": "The common standard is the protocol boundary, not the municipal data model.",
+    "story": ["Municipality website", "Discovery", "Service Compiler", "MCP Builder", "Citizen Experience"],
+    "stages": [
       {
-        "number": 3,
-        "title": "docs(pipeline): define adaptive scraping runtime and semantic compiler",
-        "author": "blackmath88",
-        "state": "open",
-        "scope": "pipeline",
-        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/3"
+        "id": "discovery",
+        "name": "Discovery",
+        "agent": "Agent 1",
+        "question": "What services exist here, and where is the authoritative material?",
+        "title": "Crawl the municipality, identify services, collect source links — then stop",
+        "handoff": "service-leads",
+        "flow": ["Municipality URL", "Reconnaissance", "Crawl strategy", "HTTP fetch, browser only if needed", "Service vs. noise", "Source roles", "Group into source bundles", "Service Leads"],
+        "modules": [
+          {"id": "crawl-strategy", "name": "Reconnaissance & crawl strategy", "maturity": "designed", "owner": "Achim", "summary": "Full, section, directory or discovery crawl chosen per site; strategy and stop reason must be visible.", "next": "Record chosen strategy and stop reason in the crawl output.", "evidence": ["pipeline/CRAWL_STRATEGIES.md"]},
+          {"id": "http-crawler", "name": "HTTP crawler", "maturity": "prototype", "owner": "Achim", "ref": "fix/pipeline-scraper-baseline", "where": "main + PR #7", "summary": "Bounded same-origin crawl with private-address rejection, redirect validation and URL deduplication. 3 tests on main, 11 in PR #7.", "next": "Merge PR #7; run on Binn end to end.", "evidence": ["pipeline/prototype/scraper.py", "pipeline/prototype/tests/test_scraper.py"]},
+          {"id": "browser-fallback", "name": "Browser fallback", "maturity": "designed", "owner": "Achim", "summary": "HTTP → headless browser → agentic browser, only as each proves insufficient. Manual capture helpers exist; the crawler has no browser path.", "next": "Add only when an HTTP fetch demonstrably fails on a Batch A site.", "evidence": ["pipeline/TOOLING_AND_RUNTIME.md", "pipeline/scrapping/docs/capture-helpers.js"]},
+          {"id": "service-classifier", "name": "Service vs. noise", "maturity": "prototype", "owner": "Achim", "ref": "fix/pipeline-scraper-baseline", "where": "main + PR #7", "summary": "Heuristic classifier: Strahlerpatente is a service, Webcam Binn is not. Tourism/news negatives tested in PR #7.", "next": "Measure precision on Bosco/Gurin.", "evidence": ["pipeline/prototype/scraper.py", "pipeline/prototype/fixtures/binn_sample.html"]},
+          {"id": "source-roles", "name": "Source-role classification", "maturity": "designed", "owner": "Achim", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "Label each source: service_page, form, application_pdf, calendar_pdf, official_portal, external_handoff, contact_page …", "next": "Add a role field to PageIR output.", "evidence": ["pipeline/SERVICE_MODEL.md"]},
+          {"id": "source-grouping", "name": "Source bundle grouping", "maturity": "designed", "owner": "Achim", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "Agent 1's main semantic task: Abfall + Abfallkalender.pdf + Sammelstellen + Gebühren → one lead. Uncertain grouping stays explicit.", "next": "Group by link graph + shared labels on Binn first.", "evidence": ["pipeline/ARCHITECTURE.md", "pipeline/SERVICE_MODEL.md"]},
+          {"id": "lead-output", "name": "Service Lead output", "maturity": "designed", "owner": "Achim", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "The prototype still emits partial service records; it should emit the small Service Lead envelope instead.", "next": "Simplify pipeline/prototype to write service-leads.jsonl.", "evidence": ["pipeline/SERVICE_MODEL.md", "pipeline/BUILD_PLAN.md"]},
+          {"id": "catalogue-adapter", "name": "Structured catalogue adapter", "maturity": "research", "owner": "Achim", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "Dübendorf's i-web /dienstleistungen/ catalogue: one adapter could cover many municipalities on the same CMS.", "next": "Inspect Dübendorf's catalogue structure.", "evidence": ["pipeline/MUNICIPALITY_BENCHMARK.md"]},
+          {"id": "seed-inventory", "name": "Seed inventory (8 municipalities)", "maturity": "prototype", "owner": "Achim", "flag": "superseded", "summary": "Normalized mmp-service-inventory/v0 with capability tags, merged in PR #8. Under the new boundary its 22 official sources are best reused as seed Service Leads.", "next": "Relabel as seed leads, or retire once Batch A runs.", "evidence": ["pipeline/handoff/delivery-2026-09-24/manifest.json", "pipeline/handoff/compile_inventory.py"]}
+        ]
       },
       {
-        "number": 4,
-        "title": "feat(pipeline): add living build observatory",
-        "author": "blackmath88",
-        "state": "open",
-        "scope": "pipeline/observatory",
-        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/4"
+        "id": "compiler",
+        "name": "Service Compiler",
+        "agent": "Agent 2",
+        "question": "What does this service actually require here, and how should an MCP expose it?",
+        "title": "Inspect the local sources, understand the local implementation, design the MCP surface",
+        "handoff": "capability-plan",
+        "flow": ["Service Lead + source bundle", "Read sources (HTML, PDF)", "Understand local implementation", "Choose tools, inputs, handoffs", "State limitations", "Capability plan"],
+        "modules": [
+          {"id": "source-reader", "name": "Source reader (HTML, PDF)", "maturity": "prototype", "owner": "Achim", "summary": "PageIR parses HTML today. PDF reading is not implemented, and Binn's waste calendar is a PDF.", "next": "Text-PDF extraction for Ausserberg and Binn bundles.", "evidence": ["pipeline/prototype/scraper.py"]},
+          {"id": "capability-planner", "name": "Capability planner", "maturity": "designed", "owner": "Achim", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "Large model reads one lead + its bundle and decides tools, inputs, source strategy, handoffs and limitations — per municipality.", "next": "One Ausserberg lead → one plan, by hand-run prompt.", "evidence": ["pipeline/SEMANTIC_COMPILER.md"]},
+          {"id": "model-access", "name": "Model access", "maturity": "prototype", "owner": "Patrick / Achim", "summary": "OpenAI gpt-6-luna calls work from main (scripts/test_openai.py). The crawler has a separate Apertus-compatible adapter with fallback.", "next": "Use one client for the planner; keep the adapter for classification.", "evidence": ["scripts/test_openai.py", "pipeline/prototype/model_adapter.py"]},
+          {"id": "apertus-path", "name": "Small Apertus path", "maturity": "designed", "owner": "Achim", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "Small model / deterministic layer for classification, page roles, type hints and obvious grouping; big model only for compiling plans.", "next": "Run the classifier through the adapter against the event endpoint.", "evidence": ["pipeline/SEMANTIC_COMPILER.md", "pipeline/ARCHITECTURE.md"]},
+          {"id": "capability-matrix", "name": "Capability ↔ tool mapping", "maturity": "designed", "owner": "Achim / Patrick", "flag": "conflict", "summary": "Maps ~30 semantic capabilities to minigmeind's fixed tool names. Written for the normalized-inventory model; needs rethinking if tools become per-village.", "next": "Agree with Patrick how a capability plan lands in minigmeind.", "evidence": ["pipeline/handoff/MCP_CAPABILITY_MATRIX.md"]},
+          {"id": "ech-0070", "name": "Cross-municipality normalization", "maturity": "research", "owner": "Dominik", "flag": "deferred", "summary": "eCH-0070 and a national ontology are now optional — useful later for indexing and analytics, not needed for the first MCP. ADR-0001 still says canonical.", "next": "Record the deferral against ADR-0001.", "evidence": ["ideas-dominik/docs/adr/0001-ech-0070-as-canonical-service-model.md"]}
+        ]
+      },
+      {
+        "id": "builder",
+        "name": "MCP Builder",
+        "agent": "Deterministic",
+        "question": "Does the plan validate, and can it run safely as tools?",
+        "title": "Validate the plan, bind allowed sources, generate or configure tools, package the runtime",
+        "handoff": "village-mcp",
+        "flow": ["Capability plan", "Validate IR", "Bind allowed sources", "Generate / configure tools", "Contract tests", "Package", "Village-specific MCP"],
+        "modules": [
+          {"id": "minigmeind", "name": "minigmeind MCP (Patrick)", "maturity": "prototype", "owner": "Patrick", "where": "outside the repo", "summary": "Live MCP with ~31 tools on dummy data — one fixed surface for every municipality. Not committed here.", "next": "Commit it, or link its repo, so the observatory can see it.", "evidence": ["pipeline/handoff/MCP_CAPABILITY_MATRIX.md"]},
+          {"id": "plan-validator", "name": "Plan validator", "maturity": "designed", "owner": "unassigned", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "The builder, not the model, owns schema validation of mcp-capability-plan/v1.", "next": "JSON Schema for the plan.", "evidence": ["pipeline/SEMANTIC_COMPILER.md", "pipeline/BUILD_PLAN.md"]},
+          {"id": "source-binding", "name": "Source binding & safety", "maturity": "designed", "owner": "unassigned", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "Each tool may read only the sources its plan names; budgets and security enforced by the runtime.", "next": "Define how a tool references a source_ref at runtime.", "evidence": ["pipeline/SEMANTIC_COMPILER.md", "ideas-dominik/docs/adr/0007-service-inventory-is-typed-data-with-injection-check.md"]},
+          {"id": "tool-generation", "name": "Tool generation from plan", "maturity": "not_started", "owner": "unassigned", "summary": "Template or configure tools from a validated plan (document_lookup, pdf_table, handoff …).", "next": "One source_strategy (document_lookup) end to end.", "evidence": []},
+          {"id": "contract-tests", "name": "Tool contract tests", "maturity": "not_started", "owner": "unassigned", "summary": "Every generated tool answers from its sources or says it can't; no fabricated results.", "next": "Write alongside the first generated tool.", "evidence": []},
+          {"id": "package", "name": "Package & hosting", "maturity": "designed", "owner": "unassigned", "summary": "Downloadable package and a stateless public HTTPS endpoint, no citizen query logs.", "next": "Decide whether minigmeind's hosting is the target.", "evidence": ["ideas-patrick/hackathon-mvp-plan.md", "ideas-dominik/docs/adr/0005-stateless-server-no-citizen-query-logs.md"]}
+        ]
+      },
+      {
+        "id": "experience",
+        "name": "Citizen Experience",
+        "agent": "Host model",
+        "question": "Can a citizen get an official answer or the right handoff?",
+        "title": "Apertus / Open WebUI calls the village MCP and routes to official channels",
+        "handoff": null,
+        "flow": ["Citizen question", "Host model", "MCP tool calls", "Answer from official sources", "Official handoff"],
+        "modules": [
+          {"id": "scenarios", "name": "Ausserberg scenarios", "maturity": "designed", "owner": "Patrick", "summary": "Five German reference questions, including one that must honestly answer 'not available'.", "next": "Use as the end-to-end acceptance test.", "evidence": ["ideas-patrick/hackathon-mvp-plan.md", "ideas-patrick/ausserberg_example.md"]},
+          {"id": "host-interop", "name": "Host connection", "maturity": "prototype", "owner": "Patrick", "where": "outside the repo", "summary": "minigmeind's tool list shows up in a host (16:43 screenshot). No multi-tool scenario recorded.", "next": "Record one Ausserberg scenario per host.", "evidence": ["pipeline/handoff/MCP_CAPABILITY_MATRIX.md"]},
+          {"id": "apertus-host", "name": "Apertus as host model", "maturity": "research", "owner": "unassigned", "summary": "Open question OQ-2: does the public model call MCP tools reliably?", "next": "Try minigmeind from Apertus.", "evidence": ["ideas-dominik/docs/OPEN-QUESTIONS.md"]},
+          {"id": "reference-client", "name": "Reference client (Open WebUI)", "maturity": "designed", "owner": "UX work package", "flag": "conflict", "summary": "ADR-0006 forks Open WebUI with an MCP Apps host; the MVP plan runs it unmodified.", "next": "Decide fork vs. unmodified.", "evidence": ["ideas-dominik/docs/adr/0006-reference-client-is-a-fork-of-open-webui-with-own-mcp-apps-host.md", "ideas-patrick/hackathon-mvp-plan.md"]},
+          {"id": "handoff", "name": "Official-channel handoff", "maturity": "designed", "owner": "UX work package", "summary": "Actions route or prepare; they never claim a municipal transaction completed.", "next": "Include the official URL in every answer.", "evidence": ["pipeline/handoff/MCP_CAPABILITY_MATRIX.md"]},
+          {"id": "demo", "name": "Demo narrative", "maturity": "not_started", "owner": "unassigned", "summary": "Same capability, two villages, two different MCP surfaces — the story the new boundary makes possible.", "next": "Draft once Binn and Zürich-style plans exist.", "evidence": []}
+        ]
       }
     ],
-    "merged_prs": [
+    "artifacts": [
       {
-        "number": 1,
-        "title": "docs: add MMP glossary, ADRs and open questions (ideas-dominik)",
-        "author": "dominik-scherrer",
-        "merged_at": "2026-09-24T12:01:08Z"
+        "id": "service-leads",
+        "name": "Service Leads",
+        "schema": "ServiceLead[]",
+        "from": "discovery", "to": "compiler",
+        "maturity": "designed",
+        "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch",
+        "summary": "Which services exist and which authoritative sources to read for each. Small on purpose.",
+        "fields": ["service_lead_id", "labels (original language)", "service_type_hint — a hint, not truth", "authority (canton, municipality, department)", "sources: source_ref + role", "discovery: confidence, method, evidence", "status"],
+        "absent": ["fees", "eligibility", "required documents", "opening hours", "procedures", "eCH-0070 mapping"],
+        "example": "{\n  \"service_lead_id\": \"lead_binn_waste\",\n  \"labels\": {\"de\": \"Abfallentsorgung\"},\n  \"service_type_hint\": \"waste_collection\",\n  \"authority\": {\"canton\": \"VS\", \"municipality\": \"Binn\"},\n  \"sources\": [\n    {\"source_ref\": \"src_12\", \"role\": \"service_page\"},\n    {\"source_ref\": \"src_18\", \"role\": \"calendar_pdf\"}\n  ],\n  \"discovery\": {\"confidence\": 0.93}\n}",
+        "evidence": ["pipeline/SERVICE_MODEL.md", "pipeline/ARCHITECTURE.md"]
       },
       {
-        "number": 2,
-        "title": "info classification from Mark",
-        "author": "MarkYav",
-        "merged_at": "2026-09-24T12:12:19Z"
+        "id": "capability-plan",
+        "name": "Capability plan",
+        "schema": "mcp-capability-plan/v1",
+        "from": "compiler", "to": "builder",
+        "maturity": "designed",
+        "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch",
+        "summary": "The typed IR of the semantic compiler: which tools this village should get for this service, fed by which sources.",
+        "fields": ["service_lead_ref", "capabilities: tool, description, inputs, source_strategy", "handoffs", "limitations"],
+        "absent": ["generated code", "a national tool catalogue"],
+        "example": "{\n  \"schema\": \"mcp-capability-plan/v1\",\n  \"service_lead_ref\": \"lead_binn_waste\",\n  \"capabilities\": [\n    {\"tool\": \"get_waste_information\", \"inputs\": [], \"source_strategy\": \"document_lookup\"},\n    {\"tool\": \"get_collection_calendar\", \"inputs\": [], \"source_strategy\": \"pdf_table\"}\n  ],\n  \"limitations\": [\"No address-specific collection API detected.\"]\n}",
+        "evidence": ["pipeline/SEMANTIC_COMPILER.md"]
+      },
+      {
+        "id": "village-mcp",
+        "name": "Village MCP",
+        "schema": "MCP server per municipality",
+        "from": "builder", "to": "experience",
+        "maturity": "prototype",
+        "where": "minigmeind, outside the repo",
+        "summary": "An MCP tailored to one municipality. Binn might get get_collection_calendar; Zürich might get get_collection_date(address). Today only minigmeind exists: one fixed surface, dummy data.",
+        "fields": ["tools compiled from capability plans", "bound official sources", "handoff URLs", "stated limitations"],
+        "absent": ["citizen query logs (ADR-0005)"],
+        "example": "",
+        "evidence": ["pipeline/handoff/MCP_CAPABILITY_MATRIX.md", "ideas-dominik/docs/adr/0005-stateless-server-no-citizen-query-logs.md"]
       }
     ],
-    "recent_commits": [
+    "wrap": {
+      "id": "trust",
+      "name": "Trust · provenance · Judge",
+      "title": "Wraps the whole chain — why do we believe this, and from which source?",
+      "flow": ["Source provenance", "Service-lead provenance", "Classification (official / observed / derived / inferred / dynamic)", "Evidence checks", "Judge", "Injection safety", "Evals"],
+      "modules": [
+        {"id": "source-provenance", "name": "Source provenance", "maturity": "prototype", "owner": "Achim", "summary": "Publisher, canonical URL, retrieval time, content hash per source; schema and snapshots exist.", "next": "Write source records from the crawler, not by hand.", "evidence": ["pipeline/scrapping/schemas/source.schema.json", "pipeline/prototype/scraper.py"]},
+        {"id": "lead-provenance", "name": "Service-lead provenance", "maturity": "designed", "owner": "Achim", "ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "summary": "Where was the service found, was the grouping inferred, which pages were inaccessible. Replaces field-level provenance at this stage.", "next": "Emit discovery evidence with every lead.", "evidence": ["pipeline/PROVENANCE_AND_TRUST.md"]},
+        {"id": "field-validator", "name": "Field provenance validator", "maturity": "prototype", "owner": "Achim", "flag": "superseded", "summary": "finalize.py enforces provenance on every populated field of a normalized record. Now a downstream concern for Agent 2, not Agent 1.", "next": "Reuse its checks for capability-plan sources.", "evidence": ["pipeline/scrapping/tools/finalize.py"]},
+        {"id": "quote-check", "name": "Evidence quote check", "maturity": "prototype", "owner": "Achim", "summary": "Quotes are not_checked until a browser pass confirms them.", "next": "Apply to lead discovery evidence.", "evidence": ["pipeline/scrapping/tools/bh.py"]},
+        {"id": "judge", "name": "Judge", "maturity": "designed", "owner": "QA work package", "summary": "Checks capability plans and answers against their sources; build floor decides what ships.", "next": "Judge one capability plan against its bundle.", "evidence": ["ideas-dominik/CONTEXT.md", "pipeline/EVALS.md"]},
+        {"id": "injection", "name": "Injection safety", "maturity": "designed", "owner": "QA work package", "summary": "Page text is data, never instructions — matters more now that a model reads whole source bundles.", "next": "Fixture page with embedded instructions.", "evidence": ["ideas-dominik/docs/adr/0007-service-inventory-is-typed-data-with-injection-check.md"]},
+        {"id": "discovery-evals", "name": "Discovery evals", "maturity": "designed", "owner": "Achim", "summary": "Lead recall and precision against hand-labelled service lists; bundle completeness.", "next": "Hand-label Binn's services.", "evidence": ["pipeline/EVALS.md", "pipeline/BUILD_PLAN.md"]}
+      ]
+    },
+    "operate": {
+      "id": "operate",
+      "name": "Operate",
+      "title": "Keep it alive — rebuild, refresh, deploy, govern",
+      "flow": ["Build", "Immutable artifact", "Deploy", "Refresh", "Compare", "Promote / reject"],
+      "modules": [
+        {"id": "build-lifecycle", "name": "Build lifecycle", "maturity": "designed", "owner": "Achim", "summary": "A build produces data, not code — now: leads + plans; only the builder produces runtime.", "next": "Give each discovery run a build id.", "evidence": ["ideas-dominik/docs/adr/0003-a-build-produces-data-not-code.md"]},
+        {"id": "refresh", "name": "Refresh & last-good", "maturity": "designed", "owner": "unassigned", "summary": "Rediscover on schedule; a failed rebuild keeps the last good MCP.", "next": "After the first village MCP exists.", "evidence": ["ideas-patrick/hackathon-mvp-plan.md"]},
+        {"id": "deployment", "name": "Deployment", "maturity": "not_started", "owner": "unassigned", "summary": "minigmeind is hosted somewhere; nothing from this repo is deployed.", "next": "Document where minigmeind runs.", "evidence": []},
+        {"id": "governance", "name": "Governance & sign-off", "maturity": "research", "owner": "Dominik", "summary": "Does a municipality sign off before publish, and who is publisher of record (OQ-1)?", "next": "Answer OQ-1.", "evidence": ["ideas-dominik/docs/OPEN-QUESTIONS.md"]},
+        {"id": "gtm", "name": "Adoption / GTM", "maturity": "research", "owner": "Deployment work package", "summary": "Pitch line: we compile local MCPs instead of building one national dataset.", "next": "One-page adoption story.", "evidence": ["README.md"]}
+      ]
+    },
+    "rails": [
       {
-        "sha": "a1e557b",
-        "author": "blackmath88",
-        "message": "Updated the concept docs",
-        "at": "2026-09-24T13:19:15Z"
+        "id": "trust",
+        "name": "Trust",
+        "items": ["authority", "provenance", "confidence", "evidence", "limitations"],
+        "cells": {
+          "discovery": "Publisher, fetch time and hash per source; confidence and evidence per lead",
+          "compiler": "Every capability names its sources; limitations stated, not hidden",
+          "builder": "Tools may only read their bound sources",
+          "experience": "Answers cite official sources or hand off"
+        }
       },
       {
-        "sha": "d347d65",
-        "author": "Dominik Scherrer",
-        "message": "Add work packages section to README",
-        "at": "2026-09-24T12:45:28Z"
+        "id": "intelligence",
+        "name": "AI / models",
+        "items": ["deterministic", "small Apertus", "large planner", "host LLM"],
+        "cells": {
+          "discovery": "Deterministic crawl + small model / heuristics",
+          "compiler": "Large planner (gpt-6-luna baseline; Apertus target)",
+          "builder": "No model — validation and generation are deterministic",
+          "experience": "Host model: Apertus, Open WebUI, ChatGPT, Claude"
+        }
+      },
+      {
+        "id": "standards",
+        "name": "Standards",
+        "items": ["MCP protocol", "Service Lead", "capability plan", "canton / municipality", "eCH-0070 (deferred)"],
+        "cells": {
+          "discovery": "Small shared envelope: Service Lead",
+          "compiler": "mcp-capability-plan/v1; no national service schema required",
+          "builder": "MCP Streamable HTTP — the real common standard",
+          "experience": "Any MCP host; handoff to the responsible authority"
+        }
       }
     ]
   },
+  "evidence": {
+    "municipalities": [
+      {"slug": "ausserberg", "name": "Ausserberg", "canton": "VS", "batch": "A", "shape": "Administrative pages + PDFs, forms, handoffs", "test": "Matches the MVP reference scenarios", "seed_sources": 6, "leads": null},
+      {"slug": "binn", "name": "Binn", "canton": "VS", "batch": "A", "shape": "Tiny traditional site", "test": "Near-complete discovery by broad crawl", "seed_sources": 3, "leads": null},
+      {"slug": "duebendorf", "name": "Dübendorf", "canton": "ZH", "batch": "A", "shape": "Structured i-web service catalogue", "test": "One adapter, many municipalities", "seed_sources": null, "leads": null},
+      {"slug": "bosco-gurin", "name": "Bosco/Gurin", "canton": "TI", "batch": "A", "shape": "Municipal + tourism + associations mixed", "test": "Precision under noise", "seed_sources": 1, "leads": null},
+      {"slug": "lugano", "name": "Lugano", "canton": "TI", "batch": "B", "shape": "Italian portal / form patterns", "test": "Informational page vs. eGov transaction", "seed_sources": 3, "leads": null},
+      {"slug": "biel-bienne", "name": "Biel/Bienne", "canton": "BE", "batch": "B", "shape": "Bilingual city", "test": "DE/FR source grouping", "seed_sources": 0, "leads": null, "note": "Official site could not be retrieved for the seed."},
+      {"slug": "zurich", "name": "Zürich", "canton": "ZH", "batch": "B", "shape": "Very large site", "test": "Selective discovery at scale", "seed_sources": 3, "leads": null},
+      {"slug": "lausanne", "name": "Lausanne", "canton": "VD", "batch": "B", "shape": "French city portal", "test": "Language / structure", "seed_sources": 3, "leads": null},
+      {"slug": "ilanz-glion", "name": "Ilanz/Glion", "canton": "GR", "batch": "B", "shape": "Merged regional municipality", "test": "Language / structure", "seed_sources": 3, "leads": null}
+    ],
+    "municipalities_source": {"ref": "docs/pipeline-service-lead-boundary", "where": "docs branch", "path": "pipeline/MUNICIPALITY_BENCHMARK.md", "note": "No Service Leads have been produced by the crawler yet. Seed sources come from the normalized seed inventory merged in PR #8."},
+    "tests": [
+      {"name": "Prototype unit tests", "where": "main", "path": "pipeline/prototype/tests/test_scraper.py", "count": 3, "result": "pass", "command": "python3 -m unittest discover -s pipeline/prototype/tests"},
+      {"name": "Prototype unit tests", "where": "PR #7", "ref": "fix/pipeline-scraper-baseline", "path": "pipeline/prototype/tests/test_scraper.py", "count": 11, "result": "pass", "command": "python3 -m unittest discover -s pipeline/prototype/tests"},
+      {"name": "Baseline validator", "where": "main", "path": "pipeline/scrapping/tools/finalize.py", "count": null, "result": "no_data", "note": "No baseline municipality directories committed; validates the superseded normalized record shape."},
+      {"name": "OpenAI smoke test", "where": "main", "path": "scripts/test_openai.py", "count": null, "result": "none", "note": "Manual script with a live API key; not a test suite."},
+      {"name": "CI", "where": "main", "path": null, "count": null, "result": "none", "note": "No CI workflow in the repository."}
+    ],
+    "evals": [
+      {"metric": "Lead recall", "target": "vs. hand-labelled service list (Binn first)", "status": "not_measured"},
+      {"metric": "Lead precision", "target": "no tourism / news / webcam leads (Bosco/Gurin)", "status": "not_measured"},
+      {"metric": "Bundle completeness", "target": "forms, PDFs and handoffs attached to the right lead", "status": "not_measured"},
+      {"metric": "Crawl efficiency", "target": "leads per 100 pages; no final URL fetched twice", "status": "not_measured"},
+      {"metric": "Plan usefulness", "target": "Agent 2 can build a working tool from the lead alone", "status": "not_measured"}
+    ],
+    "acceptance": [
+      {"group": "Batch A discovery", "check": "Each Service Lead points to at least one authoritative source", "status": "open"},
+      {"group": "Batch A discovery", "check": "Obvious non-services are excluded", "status": "partial", "note": "Tourism/news negatives tested in PR #7; not run on a real site."},
+      {"group": "Batch A discovery", "check": "Source bundles keep links to PDFs, forms and handoffs", "status": "open"},
+      {"group": "Batch A discovery", "check": "No final URL is processed repeatedly", "status": "partial", "note": "Redirect de-duplication tested in PR #7."},
+      {"group": "Batch A discovery", "check": "Crawl strategy and stop reason are visible", "status": "open"},
+      {"group": "Batch A discovery", "check": "Binn approaches broad coverage without complex orchestration", "status": "open"},
+      {"group": "Batch A discovery", "check": "Dübendorf demonstrates a reusable structured-directory pattern", "status": "open"},
+      {"group": "Batch A discovery", "check": "Bosco/Gurin demonstrates precision under noisy content", "status": "open"},
+      {"group": "Batch A discovery", "check": "Ausserberg leads line up with the MVP reference scenarios", "status": "open"},
+      {"group": "End to end", "check": "One Ausserberg lead compiles into a validated capability plan", "status": "open"},
+      {"group": "End to end", "check": "A plan becomes a working MCP tool without hand-editing", "status": "open"},
+      {"group": "End to end", "check": "A host completes an Ausserberg scenario through that tool", "status": "open"},
+      {"group": "End to end", "check": "Malicious page text stays inert; crawl can't reach internal addresses", "status": "partial", "note": "Private-address and redirect rejection tested in PR #7; injection untested."},
+      {"group": "End to end", "check": "A failed rebuild keeps the last good MCP", "status": "open"}
+    ]
+  },
+  "git": {
+    "main_head": {"sha": "dc9ce67", "message": "chore: formatting", "at": "2026-09-24T17:25:00+02:00"},
+    "branches": [
+      {"branch": "docs/pipeline-service-lead-boundary", "author": "Achim Imboden", "stages": ["discovery", "compiler", "builder"], "note": "Rewrites 7 pipeline docs to the service-lead boundary. No PR yet."}
+    ],
+    "open_prs": [
+      {"number": 7, "title": "fix(pipeline): strengthen prototype crawler baseline", "author": "blackmath88", "branch": "fix/pipeline-scraper-baseline", "stages": ["discovery"], "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/7"},
+      {"number": 6, "title": "docs: clarify project, pipeline and pilot municipalities", "author": "blackmath88", "branch": "docs/readme-project-pipeline", "stages": [], "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/6", "note": "Pilot list predates Batch A."},
+      {"number": 5, "title": "feat(pipeline): add first scraper prototype", "author": "blackmath88", "branch": "feat/pipeline-scraper-prototype", "stages": ["discovery"], "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/5", "note": "Files already on main."}
+    ],
+    "merged_prs": [
+      {"number": 8, "title": "feat(handoff): compile crawler output into MCP Service Inventory", "author": "blackmath88", "merged_at": "2026-09-24T15:09:52Z"},
+      {"number": 4, "title": "feat(pipeline): add living build observatory", "author": "blackmath88", "merged_at": "2026-09-24T14:32:07Z"},
+      {"number": 3, "title": "docs(pipeline): define adaptive scraping runtime and semantic compiler", "author": "blackmath88", "merged_at": "2026-09-24T14:31:20Z"},
+      {"number": 2, "title": "info classification from Mark", "author": "MarkYav", "merged_at": "2026-09-24T12:12:19Z"},
+      {"number": 1, "title": "docs: add MMP glossary, ADRs and open questions (ideas-dominik)", "author": "dominik-scherrer", "merged_at": "2026-09-24T12:01:08Z"}
+    ],
+    "recent_commits": [
+      {"sha": "dc9ce67", "author": "Patrick Arnecke", "message": "chore: formatting", "at": "2026-09-24T17:25:00+02:00"},
+      {"sha": "3a839bd", "author": "Patrick Arnecke", "message": "feat: setup openai API calling", "at": "2026-09-24T17:11:00+02:00"},
+      {"sha": "7fc855d", "author": "Achim Imboden", "message": "feat(handoff): align ingestion with minigmeind MCP capabilities", "at": "2026-09-24T17:09:52+02:00"},
+      {"sha": "a402527", "author": "Patrick Arnecke", "message": "feat: add gitignore", "at": "2026-09-24T17:05:00+02:00"}
+    ]
+  },
   "open_questions": [
-    {
-      "priority": "now",
-      "area": "convergence",
-      "question": "Which architectural source is authoritative when the MVP plan and MMP/ADR documents differ?"
-    },
-    {
-      "priority": "now",
-      "area": "implementation",
-      "question": "Who owns the first end-to-end executable slice: crawl/extraction, MCP runtime, and integration?"
-    },
-    {
-      "priority": "now",
-      "area": "model",
-      "question": "Can Apertus reliably call the MCP tools and perform constrained extraction/classification at the required quality?"
-    },
-    {
-      "priority": "now",
-      "area": "baseline",
-      "question": "When will the municipality baseline/reference corpus be committed and linked to acceptance tests?"
-    },
-    {
-      "priority": "next",
-      "area": "standards",
-      "question": "Is eCH-0070 a hackathon dependency, later enrichment, or canonical identity layer? Current docs are not fully aligned."
-    },
-    {
-      "priority": "next",
-      "area": "governance",
-      "question": "Does a municipality need sign-off before publication, and who is publisher of record?"
-    },
-    {
-      "priority": "next",
-      "area": "runtime",
-      "question": "Which crawler/runtime do we standardize on for the first slice: Crawl4AI or thinner HTTP + Playwright?"
-    }
+    {"priority": "now", "area": "builder", "question": "One fixed tool surface for every village (minigmeind today), or per-village tools compiled from capability plans?"},
+    {"priority": "now", "area": "builder", "question": "Where does minigmeind live, and can it be committed or linked so the builder targets it?"},
+    {"priority": "now", "area": "discovery", "question": "Retire the normalized seed inventory on main, or relabel it as seed Service Leads?"},
+    {"priority": "now", "area": "compiler", "question": "Agent 2 on gpt-6-luna as the baseline, Apertus as the replacement experiment — agreed?"},
+    {"priority": "next", "area": "experience", "question": "Reference client: fork Open WebUI (ADR-0006) or run it unmodified (MVP plan)?"},
+    {"priority": "next", "area": "experience", "question": "Can Apertus call MCP tools reliably (OQ-2)?"},
+    {"priority": "next", "area": "compiler", "question": "Update ADR-0001: is eCH-0070 now deferred to indexing/analytics?"},
+    {"priority": "next", "area": "operate", "question": "Does a municipality sign off before publication (OQ-1)?"}
   ],
   "next_actions": [
-    "Converge the team on one MVP contract: URL → evidence-backed service inventory → MCP.",
-    "Merge/review PR #3 and make its ingestion boundaries part of the shared implementation plan.",
-    "Commit the baseline/reference corpus and convert Ausserberg + selected municipalities into fixtures.",
-    "Build the first executable vertical slice: fetch → snapshot → extract → validate → inventory.",
-    "Bring up a fixture MCP server with the four planned tools and test a real host/model.",
-    "Turn provenance/Judge principles into automated acceptance checks.",
-    "Keep the observatory repo-wide and refresh it from Git + project evidence, not manual optimism."
+    "Open a PR for docs/pipeline-service-lead-boundary so the new boundary lands on main.",
+    "Simplify pipeline/prototype to emit Service Leads (labels, hint, authority, source roles, discovery evidence) instead of service records.",
+    "Run discovery on Batch A — Ausserberg, Binn, Dübendorf, Bosco/Gurin — and hand-label Binn for recall.",
+    "Hand one Ausserberg lead and its bundle to gpt-6-luna and get a first mcp-capability-plan/v1.",
+    "Agree with Patrick how a capability plan lands in minigmeind: fixed tools or per-village tools.",
+    "Relabel or retire pipeline/handoff's normalized inventory; update MCP_CAPABILITY_MATRIX to the new boundary.",
+    "Merge PR #7; close PR #5; refresh or close PR #6.",
+    "Delete or re-sync the stale copies in pipeline/scrapping/docs/."
   ],
   "tensions": [
-    {
-      "title": "MVP scope vs. richer MMP architecture",
-      "detail": "The MVP plan explicitly excludes Dominik's documents from its design, while the wider project contains MMP vocabulary, ADRs and quality/governance concepts. The team needs to decide which parts converge now versus remain post-hackathon."
-    },
-    {
-      "title": "Commercial baseline vs. Apertus goal",
-      "detail": "The MVP plan uses commercial LLMs for build-time extraction first; the pipeline design aims for a large-planner/small-Apertus execution architecture. This is compatible if treated as baseline → replacement experiment, but should be stated explicitly."
-    },
-    {
-      "title": "eCH-0070 timing",
-      "detail": "Research recommends eCH-0070 as canonical service identity; the MVP plan treats it as later enrichment. This is an explicit architectural decision still needing alignment."
-    }
+    {"title": "Handoff on main still ships normalized data", "stages": ["discovery", "compiler"], "detail": "pipeline/handoff (PR #8, 7fc855d) publishes mmp-service-inventory/v0 and calls ingestion 'the evidence and canonical-data layer'. The docs branch says Agent 1 hands over Service Leads and Agent 2 does the understanding."},
+    {"title": "Fixed tool surface vs. per-village tools", "stages": ["builder", "compiler"], "detail": "minigmeind exposes one ~31-tool surface for every municipality, and the capability matrix maps data onto it. The new compiler lets Binn and Zürich get different tools for the same service. Both can coexist only if someone decides where the plan lands."},
+    {"title": "Commercial baseline vs. Apertus", "stages": ["compiler"], "detail": "Main now calls gpt-6-luna; the pipeline targets a small-Apertus / large-planner split. Fine as baseline → replacement, but it should be written down."},
+    {"title": "eCH-0070 canonical vs. deferred", "stages": ["compiler"], "detail": "ADR-0001 (accepted) makes eCH-0070 canonical; the new architecture makes cross-municipality normalization optional."},
+    {"title": "Reference client: fork vs. unmodified", "stages": ["experience"], "detail": "ADR-0006 forks Open WebUI with an MCP Apps host; the MVP plan runs it unmodified with no MCP Apps cards."},
+    {"title": "Stale duplicated docs", "stages": ["discovery"], "detail": "pipeline/scrapping/docs/ holds older copies of ARCHITECTURE, BUILD_PLAN, CRAWL_STRATEGIES, SERVICE_MODEL and others; after the service-lead rewrite they contradict the top-level docs."}
   ],
   "history": [
-    {
-      "at": "2026-09-24T11:52:45Z",
-      "kind": "pr",
-      "title": "MMP architecture contribution opened",
-      "detail": "Dominik's glossary, ADRs and open questions entered through PR #1 and were merged."
-    },
-    {
-      "at": "2026-09-24T12:11:52Z",
-      "kind": "pr",
-      "title": "Information classification contribution",
-      "detail": "Mark's static/dynamic information classification entered through PR #2 and was merged."
-    },
-    {
-      "at": "2026-09-24T12:45:28Z",
-      "kind": "commit",
-      "title": "Work packages added",
-      "detail": "Repository README gained Data Acquisition, UX, System Architecture, QA and Deployment/GTM work packages."
-    },
-    {
-      "at": "2026-09-24T13:19:15Z",
-      "kind": "commit",
-      "title": "Pipeline concept docs committed",
-      "detail": "Adaptive ingestion, provenance, municipality benchmark, service model and build plan were added under pipeline/."
-    },
-    {
-      "at": "2026-09-24T13:32:42Z",
-      "kind": "pr",
-      "title": "Pipeline semantic-compiler PR opened",
-      "detail": "PR #3 proposes HTTP-first runtime, browser escalation, OSS tooling choices and large-planner/small-Apertus execution."
-    },
-    {
-      "at": "2026-09-24T13:40:20Z",
-      "kind": "pr",
-      "title": "Living observatory PR opened",
-      "detail": "PR #4 introduced the first static build-state dashboard."
-    },
-    {
-      "at": "2026-09-24T16:27:00+02:00",
-      "kind": "analysis",
-      "title": "Observatory widened to project scope",
-      "detail": "The dashboard now integrates repository-wide project streams and Git metadata while preserving pipeline/observatory as the only write location."
-    }
+    {"at": "2026-09-24T11:52:45Z", "kind": "pr", "title": "MMP architecture contribution opened", "detail": "Dominik's glossary, ADRs and open questions entered through PR #1 and were merged."},
+    {"at": "2026-09-24T12:11:52Z", "kind": "pr", "title": "Information classification contribution", "detail": "Mark's static/dynamic information classification entered through PR #2 and was merged."},
+    {"at": "2026-09-24T12:45:28Z", "kind": "commit", "title": "Work packages added", "detail": "Repository README gained Data Acquisition, UX, System Architecture, QA and Deployment/GTM work packages."},
+    {"at": "2026-09-24T13:19:15Z", "kind": "commit", "title": "Pipeline concept docs committed", "detail": "Adaptive ingestion, provenance, municipality benchmark, service model and build plan were added under pipeline/."},
+    {"at": "2026-09-24T13:32:42Z", "kind": "pr", "title": "Pipeline semantic-compiler PR opened", "detail": "PR #3 proposes HTTP-first runtime, browser escalation, OSS tooling choices and large-planner/small-Apertus execution."},
+    {"at": "2026-09-24T13:40:20Z", "kind": "pr", "title": "Living observatory PR opened", "detail": "PR #4 introduced the first static build-state dashboard."},
+    {"at": "2026-09-24T14:18:23Z", "kind": "pr", "title": "Scraper prototype opened", "detail": "PR #5 adds the first executable slice: bounded HTTP crawl, snapshots, PageIR, heuristic detection and a model adapter.", "stages": ["discovery"]},
+    {"at": "2026-09-24T14:27:00Z", "kind": "analysis", "title": "Observatory widened to project scope", "detail": "The dashboard integrated repository-wide project streams and Git metadata while keeping pipeline/observatory as the only write location."},
+    {"at": "2026-09-24T14:31:20Z", "kind": "pr", "title": "PR #3 and #4 merged", "detail": "Semantic compiler / runtime docs and the observatory landed on main."},
+    {"at": "2026-09-24T14:35:30Z", "kind": "pr", "title": "README clarification opened", "detail": "PR #6 clarifies project, pipeline and pilot municipalities in the root README."},
+    {"at": "2026-09-24T14:44:24Z", "kind": "commit", "title": "Scrapping baseline tooling on main", "detail": "Service, source, municipality and crawl-report schemas, a provenance validator and browser capture helpers were committed.", "stages": ["discovery", "trust"]},
+    {"at": "2026-09-24T14:47:54Z", "kind": "pr", "title": "Crawler hardened", "detail": "PR #7 grows the prototype test suite from 3 to 11 passing tests: URL normalization, redirects, model fallback, tourism negatives.", "stages": ["discovery"]},
+    {"at": "2026-09-24T14:48:25Z", "kind": "pr", "title": "First Service Inventory handoff", "detail": "PR #8 defines mmp-service-inventory/v0 and ships a seed batch: 26 services from 22 official sources across 7 of 8 municipalities.", "stages": ["discovery", "compiler"]},
+    {"at": "2026-09-24T15:05:00Z", "kind": "analysis", "title": "Architecture restructured into six stages", "detail": "The observatory modelled the system as Discover → Compile → Verify → Serve → Experience, with Operate spanning all stages and a seven-level maturity scale per module."},
+    {"at": "2026-09-24T15:09:52Z", "kind": "pr", "title": "Handoff merged and aligned with minigmeind", "detail": "PR #8 merged. A capability matrix maps inventory capabilities onto Patrick's live minigmeind MCP (~31 tools, dummy data).", "stages": ["compiler", "builder"]},
+    {"at": "2026-09-24T15:11:00Z", "kind": "commit", "title": "OpenAI API calling set up", "detail": "Patrick added the openai client, a .env setup and scripts/test_openai.py calling gpt-6-luna.", "stages": ["compiler"]},
+    {"at": "2026-09-24T15:27:46Z", "kind": "commit", "title": "Boundary shifted to Service Leads", "detail": "docs/pipeline-service-lead-boundary rewrites 7 pipeline docs: Agent 1 discovers services and source bundles; Agent 2 compiles each into a local MCP capability plan. Normalization becomes optional.", "stages": ["discovery", "compiler", "builder"]},
+    {"at": "2026-09-24T15:30:00Z", "kind": "analysis", "title": "Observatory redrawn around four blocks", "detail": "Discovery → Service Compiler → MCP Builder → Citizen Experience, with the handoff artifacts between them (Service Leads, capability plan, village MCP) and Trust wrapping the chain."}
   ]
 }
