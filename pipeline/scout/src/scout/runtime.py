@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import heapq
 import ipaddress
 import re
 import socket
@@ -209,17 +210,69 @@ def recon(entrypoint: str) -> tuple[ReconResult, PageIR]:
     return result, page
 
 
-def broad_crawl(root: PageIR, strategy: ScoutStrategy) -> list[PageIR]:
-    pages = [root]
-    queue: list[tuple[str, int]] = [
-        (str(link["url"]), 1)
-        for link in root.links
-        if link["internal"]
-    ]
-    seen = {root.url}
+ASSET_EXTENSIONS = (
+    ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".ico",
+    ".css", ".js", ".zip", ".mp4", ".mp3",
+)
+ADMIN_SIGNALS = (
+    "verwaltung", "kanzlei", "schalter", "dienstleistung", "formular",
+    "reglement", "bauwesen", "abfall", "kontakt", "gemeindesaal",
+    "belegung", "öffnungszeit", "oeffnungszeit", "patent", "gesuch",
+    "bewilligung", "anmeld", "gebühr", "gebuehr",
+)
+NOISE_SIGNALS = (
+    "wetter", "webcam", "luftaufnahme", "geschichte", "siedlung",
+    "verein", "galerie", "immobilien", "anschlagbrett", "tourismus",
+    "dorfleben", "impressum", "datenschutz", "partnergemeinde",
+    "museum", "skilift", "skiclub",
+)
+# Dated news / notice detail pages, e.g. /gemeindeinfos/28082026-baugesuch-...-913
+NEWS_ITEM = re.compile(r"/\d{6,8}-|-\d{2,5}$")
 
+
+def is_asset_url(url: str) -> bool:
+    return urllib.parse.urlsplit(url).path.lower().endswith(ASSET_EXTENSIONS)
+
+
+def is_news_item(url: str) -> bool:
+    return bool(NEWS_ITEM.search(urllib.parse.urlsplit(url).path.lower()))
+
+
+def link_priority(link: dict, terms: list[str]) -> int:
+    """Higher is fetched first: indexed-service and admin wording up, noise and news items down."""
+    haystack = f"{link['text']} {urllib.parse.unquote(str(link['url']))}".lower()
+    score = 3 * sum(1 for term in terms if term in haystack)
+    score += 2 * sum(1 for signal in ADMIN_SIGNALS if signal in haystack)
+    score -= 3 * sum(1 for signal in NOISE_SIGNALS if signal in haystack)
+    if is_news_item(str(link["url"])):
+        score -= 6
+    return score
+
+
+def broad_crawl(
+    root: PageIR,
+    strategy: ScoutStrategy,
+    terms_by_service: dict[str, list[str]] | None = None,
+) -> list[PageIR]:
+    terms = [term for values in (terms_by_service or {}).values() for term in values]
+    pages = [root]
+    seen = {root.url}
+    seen_bodies = {root.source_id}
+    queue: list[tuple[int, int, int, str]] = []
+    counter = 0
+
+    def enqueue(page: PageIR, depth: int) -> None:
+        nonlocal counter
+        for link in page.links:
+            url = str(link["url"])
+            if not link["internal"] or url in seen or is_asset_url(url):
+                continue
+            counter += 1
+            heapq.heappush(queue, (depth, -link_priority(link, terms), counter, url))
+
+    enqueue(root, 1)
     while queue and len(pages) < strategy.max_pages:
-        url, depth = queue.pop(0)
+        depth, _, _, url = heapq.heappop(queue)
         url = normalize_url(url)
         if url in seen or depth > strategy.max_depth:
             continue
@@ -228,11 +281,14 @@ def broad_crawl(root: PageIR, strategy: ScoutStrategy) -> list[PageIR]:
             page = fetch_page(url)
         except Exception:
             continue
+        # Redirects and aliases can land on a page we already have.
+        if page.url in seen and page.url != url or page.source_id in seen_bodies:
+            continue
+        seen.add(page.url)
+        seen_bodies.add(page.source_id)
         pages.append(page)
         if depth < strategy.max_depth:
-            for link in page.links:
-                if link["internal"] and str(link["url"]) not in seen:
-                    queue.append((str(link["url"]), depth + 1))
+            enqueue(page, depth + 1)
     return pages
 
 
@@ -274,5 +330,5 @@ def execute_strategy(
     terms_by_service: dict[str, list[str]],
 ) -> list[PageIR]:
     if strategy.mode == StrategyMode.BROAD_SMALL_SITE:
-        return broad_crawl(root, strategy)
+        return broad_crawl(root, strategy, terms_by_service)
     return targeted_crawl(root, strategy, terms_by_service)
