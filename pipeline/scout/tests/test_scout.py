@@ -95,7 +95,8 @@ class ScoutIntegrationTests(unittest.TestCase):
             sampled_links=["Abfall", "Verwaltung"],
         )
 
-        with tempfile.TemporaryDirectory() as tmp, (
+        with (
+            tempfile.TemporaryDirectory() as tmp,
             patch("scout.app.recon", return_value=(recon_result, root)),
             patch("scout.app.execute_strategy", return_value=[root, waste, patent]),
         ):
