@@ -3,14 +3,6 @@
   "build_id": "lausanne-seed-20260924",
   "built_at": "2026-09-24T14:55:00Z",
   "build_status": "partial",
-  "runtime_compatibility": {
-    "tools": [
-      "list_services",
-      "find_service",
-      "get_service",
-      "search_documents"
-    ]
-  },
   "municipality": {
     "name": "Lausanne",
     "canton": "VD",
@@ -53,7 +45,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "residence_registration"
+      ]
     },
     {
       "id": "ch.vd.lausanne.residence_declaration",
@@ -88,7 +83,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "residence_certificate"
+      ]
     },
     {
       "id": "ch.vd.lausanne.waste_calendar",
@@ -123,7 +121,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "waste_collection"
+      ]
     }
   ],
   "sources": [
@@ -167,5 +168,11 @@
   "generation": {
     "method": "source-backed-seed",
     "native_crawler_execution": false
-  }
+  },
+  "capabilities": [
+    "residence_certificate",
+    "residence_registration",
+    "service_catalog",
+    "waste_collection"
+  ]
 }
