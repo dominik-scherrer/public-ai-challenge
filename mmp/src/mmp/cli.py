@@ -122,7 +122,11 @@ def cmd_check_model(args) -> int:
                     print(f"  FAIL: expected {sorted(expect)}")
                     failures += 1
             elif block["type"] == "app":
-                print(f"card: {block['arguments']['service_id']}, matched documents: {block['context']['matched_documents']}")
+                matched = [m["id"] for m in block["context"]["matched_documents"]]
+                print(f"card: {block['arguments']['service_id']}, matched documents: {matched}")
+                if expect and matched != ["sorgerechtsentscheid"]:
+                    print("  FAIL: a separation should add exactly the Sorgerechtsentscheid")
+                    failures += 1
             elif block["type"] == "gap":
                 print(f"gap: topic={block['topic']!r}, contact={(block['contact'] or {}).get('office')}")
                 if expect is not None:

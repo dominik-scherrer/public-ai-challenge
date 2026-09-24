@@ -5,7 +5,12 @@
     "address": "Alberich Zwyssig-Strasse 76, 5430 Wettingen",
     "phone": "056 437 71 11",
     "email": "gemeinde@wettingen.ch",
-    "evidence": [{"source_id": "zuzug", "quote": "Gemeinde Wettingen Kontakt Alberich Zwyssig-Strasse 76 5430 Wettingen Telefon 056 437 71 11 Mail gemeinde@wettingen.ch"}]
+    "evidence": [
+      {
+        "source_id": "zuzug",
+        "quote": "Gemeinde Wettingen Kontakt Alberich Zwyssig-Strasse 76 5430 Wettingen Telefon 056 437 71 11 Mail gemeinde@wettingen.ch"
+      }
+    ]
   },
   "services": [
     {
@@ -13,62 +18,252 @@
       "title": "Zuzug anmelden",
       "tier": "wayfinding",
       "summary": "Wer neu nach Wettingen zieht, meldet sich innert 14 Tagen ab Einzugsdatum an – nachdem die Abmeldung bei der früheren Wohngemeinde erfolgt ist.",
-      "summary_evidence": [{"source_id": "zuzug", "quote": "Bitte nehmen Sie die Anmeldung innert 14 Tagen ab Einzugsdatum vor. Beachten Sie, dass zuvor bei der früheren Wohngemeinde die Abmeldung erfolgen muss."}],
-      "categories": ["residence_registration"],
-      "keywords": ["Zuzug", "Anmeldung", "Umzug", "neu zugezogen", "Wohnsitz", "eUmzug", "Einwohnerdienste"],
+      "summary_evidence": [
+        {
+          "source_id": "zuzug",
+          "quote": "Bitte nehmen Sie die Anmeldung innert 14 Tagen ab Einzugsdatum vor. Beachten Sie, dass zuvor bei der früheren Wohngemeinde die Abmeldung erfolgen muss."
+        }
+      ],
+      "categories": [
+        "residence_registration"
+      ],
+      "keywords": [
+        "Zuzug",
+        "Anmeldung",
+        "Umzug",
+        "neu zugezogen",
+        "Wohnsitz",
+        "eUmzug",
+        "Einwohnerdienste"
+      ],
       "responsible": {
         "office": "Einwohnerdienste",
         "address": "Alberich Zwyssig-Strasse 76, 5430 Wettingen",
         "phone": "056 437 77 40",
         "email": "einwohnerdienste@wettingen.ch",
-        "evidence": [{"source_id": "einwohnerdienste", "quote": "Einwohnerdienste Alberich Zwyssig-Strasse 76 5430 Wettingen Tel. 056 437 77 40 einwohnerdienste@wettingen.ch"}]
+        "evidence": [
+          {
+            "source_id": "einwohnerdienste",
+            "quote": "Einwohnerdienste Alberich Zwyssig-Strasse 76 5430 Wettingen Tel. 056 437 77 40 einwohnerdienste@wettingen.ch"
+          }
+        ]
       },
       "deadline": {
-        "days": 14, "relative_to": "move_in", "label": "innert 14 Tagen ab Einzugsdatum",
-        "evidence": [{"source_id": "zuzug", "quote": "Bitte nehmen Sie die Anmeldung innert 14 Tagen ab Einzugsdatum vor."}]
+        "days": 14,
+        "relative_to": "move_in",
+        "label": "innert 14 Tagen ab Einzugsdatum",
+        "evidence": [
+          {
+            "source_id": "zuzug",
+            "quote": "Bitte nehmen Sie die Anmeldung innert 14 Tagen ab Einzugsdatum vor."
+          }
+        ]
       },
       "documents": [
-        {"id": "heimatschein", "label": "Heimatschein", "audience": "swiss", "applies_to": "each_person", "condition": "wenn vorhanden",
-         "evidence": [{"source_id": "zuzug", "quote": "Schweizer Staatsangehörige Heimatschein (wenn vorhanden)"}]},
-        {"id": "pass_oder_identitaetskarte", "label": "Pass oder Identitätskarte", "audience": "swiss", "applies_to": "each_person",
-         "evidence": [{"source_id": "zuzug", "quote": "Pass oder Identitätskarte"}]},
-        {"id": "krankenkassenausweis", "label": "Krankenkassenversicherungsausweis, bei Familien für alle Personen", "audience": "all", "applies_to": "household",
-         "evidence": [{"source_id": "zuzug", "quote": "Krankenkassenversicherungsausweis, bei Familien für alle Personen"}]},
-        {"id": "mietvertrag", "label": "Mietvertrag (Kopie) / bei Untermiete: Bestätigung Hauptmieter und Liegenschaftsverwaltung", "audience": "all", "applies_to": "household",
-         "evidence": [{"source_id": "zuzug", "quote": "*Mietvertrag (Kopie) / Bei Untermietverhältnissen: Bestätigung Hauptmieter und Liegenschaftsverwaltung"}]},
-        {"id": "sorgerechtsentscheid", "label": "Sorgerechtsentscheid", "audience": "all", "applies_to": "child", "condition": "für Kinder von getrennt lebenden Eltern",
-         "evidence": [{"source_id": "zuzug", "quote": "Sorgerechtsentscheid für Kinder von getrennt lebenden Eltern"}]},
-        {"id": "pass", "label": "Pass", "audience": "foreign", "applies_to": "each_person",
-         "evidence": [{"source_id": "zuzug", "quote": "Ausländische Staatsangehörigkeit Pass Ausländerausweis"}]},
-        {"id": "auslaenderausweis", "label": "Ausländerausweis", "audience": "foreign", "applies_to": "each_person",
-         "evidence": [{"source_id": "zuzug", "quote": "Ausländische Staatsangehörigkeit Pass Ausländerausweis"}]},
-        {"id": "geburtsschein", "label": "Geburtsschein (bei verheirateten Personen: Familienschein)", "audience": "foreign", "applies_to": "each_person",
-         "evidence": [{"source_id": "zuzug", "quote": "Geburtsschein (bei verheirateten Personen: Familienschein)"}]},
-        {"id": "eheschein", "label": "Eheschein", "audience": "foreign", "applies_to": "adult", "condition": "falls verheiratet",
-         "evidence": [{"source_id": "zuzug", "quote": "Eheschein (falls verheiratet)"}]},
-        {"id": "scheidungsurteil", "label": "Scheidungsurteil", "audience": "foreign", "applies_to": "adult", "condition": "falls geschieden",
-         "evidence": [{"source_id": "zuzug", "quote": "Scheidungsurteil (falls geschieden)"}]},
-        {"id": "arbeitsbewilligung", "label": "Arbeitsbewilligung oder Arbeitsvertrag (sofern bereits vorhanden)", "audience": "foreign", "applies_to": "adult", "condition": "falls Sie vom Ausland zuziehen",
-         "evidence": [{"source_id": "zuzug", "quote": "falls Sie vom Ausland zuziehen: Arbeitsbewilligung oder Arbeitsvertrag (sofern bereits vorhanden)"}]}
+        {
+          "id": "heimatschein",
+          "label": "Heimatschein",
+          "audience": "swiss",
+          "applies_to": "each_person",
+          "condition": "wenn vorhanden",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Schweizer Staatsangehörige Heimatschein (wenn vorhanden)"
+            }
+          ],
+          "condition_key": "if_available"
+        },
+        {
+          "id": "pass_oder_identitaetskarte",
+          "label": "Pass oder Identitätskarte",
+          "audience": "swiss",
+          "applies_to": "each_person",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Pass oder Identitätskarte"
+            }
+          ]
+        },
+        {
+          "id": "krankenkassenausweis",
+          "label": "Krankenkassenversicherungsausweis, bei Familien für alle Personen",
+          "audience": "all",
+          "applies_to": "household",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Krankenkassenversicherungsausweis, bei Familien für alle Personen"
+            }
+          ]
+        },
+        {
+          "id": "mietvertrag",
+          "label": "Mietvertrag (Kopie) / bei Untermiete: Bestätigung Hauptmieter und Liegenschaftsverwaltung",
+          "audience": "all",
+          "applies_to": "household",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "*Mietvertrag (Kopie) / Bei Untermietverhältnissen: Bestätigung Hauptmieter und Liegenschaftsverwaltung"
+            }
+          ]
+        },
+        {
+          "id": "sorgerechtsentscheid",
+          "label": "Sorgerechtsentscheid",
+          "audience": "all",
+          "applies_to": "child",
+          "condition": "für Kinder von getrennt lebenden Eltern",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Sorgerechtsentscheid für Kinder von getrennt lebenden Eltern"
+            }
+          ],
+          "condition_key": "separated_parents"
+        },
+        {
+          "id": "pass",
+          "label": "Pass",
+          "audience": "foreign",
+          "applies_to": "each_person",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Ausländische Staatsangehörigkeit Pass Ausländerausweis"
+            }
+          ]
+        },
+        {
+          "id": "auslaenderausweis",
+          "label": "Ausländerausweis",
+          "audience": "foreign",
+          "applies_to": "each_person",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Ausländische Staatsangehörigkeit Pass Ausländerausweis"
+            }
+          ]
+        },
+        {
+          "id": "geburtsschein",
+          "label": "Geburtsschein (bei verheirateten Personen: Familienschein)",
+          "audience": "foreign",
+          "applies_to": "each_person",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Geburtsschein (bei verheirateten Personen: Familienschein)"
+            }
+          ]
+        },
+        {
+          "id": "eheschein",
+          "label": "Eheschein",
+          "audience": "foreign",
+          "applies_to": "adult",
+          "condition": "falls verheiratet",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Eheschein (falls verheiratet)"
+            }
+          ],
+          "condition_key": "married"
+        },
+        {
+          "id": "scheidungsurteil",
+          "label": "Scheidungsurteil",
+          "audience": "foreign",
+          "applies_to": "adult",
+          "condition": "falls geschieden",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Scheidungsurteil (falls geschieden)"
+            }
+          ],
+          "condition_key": "divorced"
+        },
+        {
+          "id": "arbeitsbewilligung",
+          "label": "Arbeitsbewilligung oder Arbeitsvertrag (sofern bereits vorhanden)",
+          "audience": "foreign",
+          "applies_to": "adult",
+          "condition": "falls Sie vom Ausland zuziehen",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "falls Sie vom Ausland zuziehen: Arbeitsbewilligung oder Arbeitsvertrag (sofern bereits vorhanden)"
+            }
+          ],
+          "condition_key": "from_abroad"
+        }
       ],
       "opening_hours": {
         "office": "Gemeindeverwaltung (Einwohnerdienste)",
         "entries": [
-          {"days": "Montag", "times": ["08.30 - 12.00", "13.30 - 18.30"]},
-          {"days": "Dienstag - Freitag", "times": ["08.30 - 12.00", "13.30 - 16.00"]}
+          {
+            "days": "Montag",
+            "times": [
+              "08.30 - 12.00",
+              "13.30 - 18.30"
+            ]
+          },
+          {
+            "days": "Dienstag - Freitag",
+            "times": [
+              "08.30 - 12.00",
+              "13.30 - 16.00"
+            ]
+          }
         ],
-        "evidence": [{"source_id": "oeffnungszeiten", "quote": "Die Büros der Gemeindeverwaltung (ausgenommen Betreibungsamt Wettingen, siehe unten) sind wie folgt erreichbar: Montag 08.30 - 12.00 Uhr 13.30 - 18.30 Uhr Dienstag - Freitag 08.30 - 12.00 Uhr 13.30 - 16.00 Uhr"}]
+        "evidence": [
+          {
+            "source_id": "oeffnungszeiten",
+            "quote": "Die Büros der Gemeindeverwaltung (ausgenommen Betreibungsamt Wettingen, siehe unten) sind wie folgt erreichbar: Montag 08.30 - 12.00 Uhr 13.30 - 18.30 Uhr Dienstag - Freitag 08.30 - 12.00 Uhr 13.30 - 16.00 Uhr"
+          }
+        ]
       },
       "handoffs": [
-        {"kind": "eumzug", "label": "Online melden mit eUmzug", "url": "https://ag.eumzug.swiss/",
-         "fields": [
-           {"key": "move_date", "label": "Zuzugsdatum"},
-           {"key": "household_size", "label": "Anzahl umziehende Personen"},
-           {"key": "previous_municipality", "label": "Bisherige Wohngemeinde"}
-         ],
-         "evidence": [{"source_id": "zuzug", "quote": "Nutzen Sie die Möglichkeit von eUmzug um die Adressänderung elektronisch zu melden. Die Meldung und alle notwendigen Informationen erhalten Sie unter folgendem Link: eUmzug"}]},
-        {"kind": "counter", "label": "Am Schalter der Einwohnerdienste",
-         "evidence": [{"source_id": "zuzug", "quote": "Für die Anmeldung am Schalter sind folgende Unterlagen notwendig:"}]}
+        {
+          "kind": "eumzug",
+          "label": "Online melden mit eUmzug",
+          "url": "https://ag.eumzug.swiss/",
+          "fields": [
+            {
+              "key": "move_date",
+              "label": "Zuzugsdatum"
+            },
+            {
+              "key": "household_size",
+              "label": "Anzahl umziehende Personen"
+            },
+            {
+              "key": "previous_municipality",
+              "label": "Bisherige Wohngemeinde"
+            }
+          ],
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Nutzen Sie die Möglichkeit von eUmzug um die Adressänderung elektronisch zu melden. Die Meldung und alle notwendigen Informationen erhalten Sie unter folgendem Link: eUmzug"
+            }
+          ]
+        },
+        {
+          "kind": "counter",
+          "label": "Am Schalter der Einwohnerdienste",
+          "evidence": [
+            {
+              "source_id": "zuzug",
+              "quote": "Für die Anmeldung am Schalter sind folgende Unterlagen notwendig:"
+            }
+          ]
+        }
       ]
     },
     {
@@ -76,25 +271,69 @@
       "title": "Schuleintritt / Schulwechsel bei Zuzug",
       "tier": "wayfinding",
       "summary": "Die Schulverwaltung (Abteilung Bildung) ist Ansprechstelle bei Neuzuzügen von Schulkindern.",
-      "summary_evidence": [{"source_id": "schulverwaltung", "quote": "führt die Schulverwaltung und ist Ansprechsperson bei Neuzuzügen"}],
-      "categories": ["school_enrolment"],
-      "keywords": ["Schule", "Schulwechsel", "Einschulung", "Kindergarten", "Kinder", "Schulverwaltung", "Neuzuzug"],
+      "summary_evidence": [
+        {
+          "source_id": "schulverwaltung",
+          "quote": "führt die Schulverwaltung und ist Ansprechsperson bei Neuzuzügen"
+        }
+      ],
+      "categories": [
+        "school_enrolment"
+      ],
+      "keywords": [
+        "Schule",
+        "Schulwechsel",
+        "Einschulung",
+        "Kindergarten",
+        "Kinder",
+        "Schulverwaltung",
+        "Neuzuzug"
+      ],
       "responsible": {
         "office": "Schulverwaltung (Abteilung Bildung)",
         "phone": "056 437 72 21",
         "url": "https://www.schule-wettingen.ch/organisation/schulverwaltung",
-        "evidence": [{"source_id": "schulverwaltung", "quote": "Die Abteilung Bildung ist die zentrale Drehscheibe in der Schulverwaltung. Wir danken Ihnen für Ihre Anfragen per E-Mail oder rufen Sie uns an: 056 437 72 21."}]
+        "evidence": [
+          {
+            "source_id": "schulverwaltung",
+            "quote": "Die Abteilung Bildung ist die zentrale Drehscheibe in der Schulverwaltung. Wir danken Ihnen für Ihre Anfragen per E-Mail oder rufen Sie uns an: 056 437 72 21."
+          }
+        ]
       },
       "opening_hours": {
         "office": "Schulverwaltung",
-        "entries": [{"days": "Montag - Freitag", "times": ["08:30 - 12:00", "13:30 - 16:00"]}],
+        "entries": [
+          {
+            "days": "Montag - Freitag",
+            "times": [
+              "08:30 - 12:00",
+              "13:30 - 16:00"
+            ]
+          }
+        ],
         "note": "Während der Herbstferien nur sporadisch besetzt – Termin per E-Mail oder Telefon vereinbaren.",
-        "evidence": [{"source_id": "schulverwaltung", "quote": "Öffnungszeiten Schulverwaltung Montag - Freitag, 08:30 - 12:00 und 13:30 - 16:00 Uhr"},
-                     {"source_id": "schulverwaltung", "quote": "Während der Herbstferien ist die Schulverwaltung nur sporadisch besetzt. Bitte vereinbaren Sie via E-Mail oder Telefon einen Termin."}]
+        "evidence": [
+          {
+            "source_id": "schulverwaltung",
+            "quote": "Öffnungszeiten Schulverwaltung Montag - Freitag, 08:30 - 12:00 und 13:30 - 16:00 Uhr"
+          },
+          {
+            "source_id": "schulverwaltung",
+            "quote": "Während der Herbstferien ist die Schulverwaltung nur sporadisch besetzt. Bitte vereinbaren Sie via E-Mail oder Telefon einen Termin."
+          }
+        ]
       },
       "handoffs": [
-        {"kind": "phone", "label": "Schulverwaltung anrufen: 056 437 72 21",
-         "evidence": [{"source_id": "schulverwaltung", "quote": "Wir danken Ihnen für Ihre Anfragen per E-Mail oder rufen Sie uns an: 056 437 72 21."}]}
+        {
+          "kind": "phone",
+          "label": "Schulverwaltung anrufen: 056 437 72 21",
+          "evidence": [
+            {
+              "source_id": "schulverwaltung",
+              "quote": "Wir danken Ihnen für Ihre Anfragen per E-Mail oder rufen Sie uns an: 056 437 72 21."
+            }
+          ]
+        }
       ]
     },
     {
@@ -103,22 +342,107 @@
       "tier": "information",
       "summary": "Hauskehricht gehört in die offiziellen, gebührenpflichtigen Säcke; abgeführt wird einmal wöchentlich, je nach Lage am Dienstag oder Donnerstag, bereitstellen bis 7.00 Uhr.",
       "summary_evidence": [
-        {"source_id": "hauskehricht", "quote": "Alle vermischten Abfälle, die in den Haushaltungen anfallen und nicht wieder verwertbar sind, müssen in den offiziellen, gebührenpflichtigen Säcken entsorgt werden."},
-        {"source_id": "hauskehricht", "quote": "Die Kehrichtabfuhr erfolgt einmal wöchentlich, je nach geographischer Lage, Dienstag oder Donnerstag. Die Bereitstellung hat am jeweiligen Abholtag morgens bis um 7.00 Uhr zu erfolgen."}
+        {
+          "source_id": "hauskehricht",
+          "quote": "Alle vermischten Abfälle, die in den Haushaltungen anfallen und nicht wieder verwertbar sind, müssen in den offiziellen, gebührenpflichtigen Säcken entsorgt werden."
+        },
+        {
+          "source_id": "hauskehricht",
+          "quote": "Die Kehrichtabfuhr erfolgt einmal wöchentlich, je nach geographischer Lage, Dienstag oder Donnerstag. Die Bereitstellung hat am jeweiligen Abholtag morgens bis um 7.00 Uhr zu erfolgen."
+        }
       ],
-      "categories": ["waste_disposal"],
-      "keywords": ["Kehricht", "Abfall", "Entsorgung", "Gebührensack", "Kehrichtsack", "Sperrgut", "Abfuhr"],
+      "categories": [
+        "waste_disposal"
+      ],
+      "keywords": [
+        "Kehricht",
+        "Abfall",
+        "Entsorgung",
+        "Gebührensack",
+        "Kehrichtsack",
+        "Sperrgut",
+        "Abfuhr"
+      ],
       "fees": [
-        {"label": "Grundgebühr", "amount": 55.00, "unit": "pro Jahr und Wohnung/Betrieb", "evidence": [{"source_id": "hauskehricht", "quote": "Grundgebühr Jahr/Whg/Betrieb Fr. 55.00"}]},
-        {"label": "Kehrichtsäcke 17 Liter", "amount": 10.00, "unit": "Rolle à 10 Stk.", "evidence": [{"source_id": "hauskehricht", "quote": "17 Liter Rolle à 10 Stk. Fr. 10.00"}]},
-        {"label": "Kehrichtsäcke 35 Liter", "amount": 19.00, "unit": "Rolle à 10 Stk.", "evidence": [{"source_id": "hauskehricht", "quote": "35 Liter Rolle à 10 Stk. Fr. 19.00"}]},
-        {"label": "Kehrichtsäcke 60 Liter", "amount": 29.00, "unit": "Rolle à 10 Stk.", "evidence": [{"source_id": "hauskehricht", "quote": "60 Liter Rolle à 10 Stk. Fr. 29.00"}]},
-        {"label": "Kehrichtsäcke 110 Liter", "amount": 27.00, "unit": "Rolle à 5 Stk.", "evidence": [{"source_id": "hauskehricht", "quote": "110 Liter Rolle à 5 Stk. Fr. 27.00"}]},
-        {"label": "Sperrgutmarke", "amount": 9.00, "unit": "pro Stück", "evidence": [{"source_id": "hauskehricht", "quote": "Sperrgutmarke pro Stk. Fr. 9.00"}]}
+        {
+          "label": "Grundgebühr",
+          "amount": 55.0,
+          "unit": "pro Jahr und Wohnung/Betrieb",
+          "evidence": [
+            {
+              "source_id": "hauskehricht",
+              "quote": "Grundgebühr Jahr/Whg/Betrieb Fr. 55.00"
+            }
+          ]
+        },
+        {
+          "label": "Kehrichtsäcke 17 Liter",
+          "amount": 10.0,
+          "unit": "Rolle à 10 Stk.",
+          "evidence": [
+            {
+              "source_id": "hauskehricht",
+              "quote": "17 Liter Rolle à 10 Stk. Fr. 10.00"
+            }
+          ]
+        },
+        {
+          "label": "Kehrichtsäcke 35 Liter",
+          "amount": 19.0,
+          "unit": "Rolle à 10 Stk.",
+          "evidence": [
+            {
+              "source_id": "hauskehricht",
+              "quote": "35 Liter Rolle à 10 Stk. Fr. 19.00"
+            }
+          ]
+        },
+        {
+          "label": "Kehrichtsäcke 60 Liter",
+          "amount": 29.0,
+          "unit": "Rolle à 10 Stk.",
+          "evidence": [
+            {
+              "source_id": "hauskehricht",
+              "quote": "60 Liter Rolle à 10 Stk. Fr. 29.00"
+            }
+          ]
+        },
+        {
+          "label": "Kehrichtsäcke 110 Liter",
+          "amount": 27.0,
+          "unit": "Rolle à 5 Stk.",
+          "evidence": [
+            {
+              "source_id": "hauskehricht",
+              "quote": "110 Liter Rolle à 5 Stk. Fr. 27.00"
+            }
+          ]
+        },
+        {
+          "label": "Sperrgutmarke",
+          "amount": 9.0,
+          "unit": "pro Stück",
+          "evidence": [
+            {
+              "source_id": "hauskehricht",
+              "quote": "Sperrgutmarke pro Stk. Fr. 9.00"
+            }
+          ]
+        }
       ],
       "handoffs": [
-        {"kind": "online_form", "label": "Gebührenmarken im Online-Schalter bestellen", "url": "https://www.wettingen.ch/online-schalter",
-         "evidence": [{"source_id": "hauskehricht", "quote": "Sämtliche Gebührenmarken können über unseren Online-Schalter bequem von zu Hause aus bestellt oder am Schalter des Gemeindebüros im Rathaus, Alb. Zwyssigstrasse 76."}]}
+        {
+          "kind": "online_form",
+          "label": "Gebührenmarken im Online-Schalter bestellen",
+          "url": "https://www.wettingen.ch/online-schalter",
+          "evidence": [
+            {
+              "source_id": "hauskehricht",
+              "quote": "Sämtliche Gebührenmarken können über unseren Online-Schalter bequem von zu Hause aus bestellt oder am Schalter des Gemeindebüros im Rathaus, Alb. Zwyssigstrasse 76."
+            }
+          ]
+        }
       ]
     },
     {
@@ -127,45 +451,117 @@
       "tier": "wayfinding",
       "summary": "Betreuungsverhältnisse können subventioniert werden; massgebend sind Einkommen und Vermögen. Der Antrag muss vor dem ersten Betreuungstag eingereicht sein.",
       "summary_evidence": [
-        {"source_id": "kinderbetreuung", "quote": "Aufgrund von Leistungsvereinbarungen können die Betreuungsverhältnisse subventioniert werden. Massgebend ist hierfür Ihr Einkommen und Vermögen."},
-        {"source_id": "kinderbetreuung", "quote": "Rückwirkend werden keine Subventionen ausgesprochen."}
+        {
+          "source_id": "kinderbetreuung",
+          "quote": "Aufgrund von Leistungsvereinbarungen können die Betreuungsverhältnisse subventioniert werden. Massgebend ist hierfür Ihr Einkommen und Vermögen."
+        },
+        {
+          "source_id": "kinderbetreuung",
+          "quote": "Rückwirkend werden keine Subventionen ausgesprochen."
+        }
       ],
-      "categories": ["childcare"],
-      "keywords": ["Kita", "Krippe", "Tagesstruktur", "Hort", "Subvention", "Betreuungsgutschein", "Mittagstisch", "Kinderbetreuung"],
+      "categories": [
+        "childcare"
+      ],
+      "keywords": [
+        "Kita",
+        "Krippe",
+        "Tagesstruktur",
+        "Hort",
+        "Subvention",
+        "Betreuungsgutschein",
+        "Mittagstisch",
+        "Kinderbetreuung"
+      ],
       "responsible": {
         "office": "Tagesstrukturen Wettingen (Kindergarten und Schulkinder bis Ende 6. Klasse)",
         "address": "Alberich Zwyssig-Strasse 76, 5430 Wettingen",
         "phone": "056 437 72 21",
         "email": "tagesstrukturen@wettingen.ch",
-        "evidence": [{"source_id": "kinderbetreuung", "quote": "Kindergarten und Schulkinder (bis Ende 6. Klasse): Tagesstrukturen Wettingen Alberich Zwyssig-Strasse 76 5430 Wettingen 056 437 72 21 tagesstrukturen@wettingen.ch"}]
+        "evidence": [
+          {
+            "source_id": "kinderbetreuung",
+            "quote": "Kindergarten und Schulkinder (bis Ende 6. Klasse): Tagesstrukturen Wettingen Alberich Zwyssig-Strasse 76 5430 Wettingen 056 437 72 21 tagesstrukturen@wettingen.ch"
+          }
+        ]
       },
       "documents": [
-        {"id": "subventionsantrag", "label": "Vollständig ausgefüllter Subventionsantrag mit den notwendigen Unterlagen", "applies_to": "household",
-         "evidence": [{"source_id": "kinderbetreuung", "quote": "Bitte beachten Sie, dass der Subventionsantrag vollständig ausgefüllt und mit den notwendigen Unterlagen versehen vor dem ersten Betreuungstag an tagesstrukturen@wettingen.ch eingereicht werden muss."}]}
+        {
+          "id": "subventionsantrag",
+          "label": "Vollständig ausgefüllter Subventionsantrag mit den notwendigen Unterlagen",
+          "applies_to": "household",
+          "evidence": [
+            {
+              "source_id": "kinderbetreuung",
+              "quote": "Bitte beachten Sie, dass der Subventionsantrag vollständig ausgefüllt und mit den notwendigen Unterlagen versehen vor dem ersten Betreuungstag an tagesstrukturen@wettingen.ch eingereicht werden muss."
+            }
+          ]
+        }
       ],
       "fees": [
-        {"label": "Gebühr bei Änderung eines Subventionsentscheids", "amount": 25.00, "unit": "ab der ersten Änderung",
-         "evidence": [{"source_id": "kinderbetreuung", "quote": "Bei Änderungen der Subventionsentscheide, werden ab der ersten Änderung Gebühren in Höhe von CHF 25.00 erhoben."}]}
+        {
+          "label": "Gebühr bei Änderung eines Subventionsentscheids",
+          "amount": 25.0,
+          "unit": "ab der ersten Änderung",
+          "evidence": [
+            {
+              "source_id": "kinderbetreuung",
+              "quote": "Bei Änderungen der Subventionsentscheide, werden ab der ersten Änderung Gebühren in Höhe von CHF 25.00 erhoben."
+            }
+          ]
+        }
       ],
       "handoffs": [
-        {"kind": "email", "label": "Subventionsantrag an tagesstrukturen@wettingen.ch",
-         "evidence": [{"source_id": "kinderbetreuung", "quote": "vor dem ersten Betreuungstag an tagesstrukturen@wettingen.ch eingereicht werden muss"}]},
-        {"kind": "online_form", "label": "Tarifrechner (kitarechner.ch)", "url": "http://www.kitarechner.ch/Wettingen",
-         "evidence": [{"source_id": "kinderbetreuung", "quote": "Auf http://www.kitarechner.ch/Wettingen finden Sie einen Tarifrechner, der Ihnen unverbindlich den Tarif berechnet."}]}
+        {
+          "kind": "email",
+          "label": "Subventionsantrag an tagesstrukturen@wettingen.ch",
+          "evidence": [
+            {
+              "source_id": "kinderbetreuung",
+              "quote": "vor dem ersten Betreuungstag an tagesstrukturen@wettingen.ch eingereicht werden muss"
+            }
+          ]
+        },
+        {
+          "kind": "online_form",
+          "label": "Tarifrechner (kitarechner.ch)",
+          "url": "http://www.kitarechner.ch/Wettingen",
+          "evidence": [
+            {
+              "source_id": "kinderbetreuung",
+              "quote": "Auf http://www.kitarechner.ch/Wettingen finden Sie einen Tarifrechner, der Ihnen unverbindlich den Tarif berechnet."
+            }
+          ]
+        }
       ]
     },
     {
       "id": "soziale_dienste",
       "title": "Soziale Dienste",
       "tier": "information",
-      "categories": ["social_services"],
-      "keywords": ["Sozialhilfe", "Soziales", "Unterstützung", "Beratung", "Alimente", "Kindes- und Erwachsenenschutz", "KESD"],
+      "categories": [
+        "social_services"
+      ],
+      "keywords": [
+        "Sozialhilfe",
+        "Soziales",
+        "Unterstützung",
+        "Beratung",
+        "Alimente",
+        "Kindes- und Erwachsenenschutz",
+        "KESD"
+      ],
       "responsible": {
         "office": "Soziale Dienste – Administration und Buchhaltung",
         "address": "Landstrasse 89, 5430 Wettingen",
         "phone": "056 437 74 00",
         "email": "sozialabteilung@wettingen.ch",
-        "evidence": [{"source_id": "soziale-dienste", "quote": "Gehört zum Departement: Soziale Dienste Kontakt Administration und Buchhaltung Landstrasse 89 5430 Wettingen Tel. 056 437 74 00 sozialabteilung@wettingen.ch"}]
+        "evidence": [
+          {
+            "source_id": "soziale-dienste",
+            "quote": "Gehört zum Departement: Soziale Dienste Kontakt Administration und Buchhaltung Landstrasse 89 5430 Wettingen Tel. 056 437 74 00 sozialabteilung@wettingen.ch"
+          }
+        ]
       }
     }
   ]

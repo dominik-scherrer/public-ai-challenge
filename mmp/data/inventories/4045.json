@@ -26,8 +26,8 @@
     }
   },
   "build": {
-    "id": "wettingen-20260924T203404Z",
-    "built_at": "2026-09-24T20:34:04.331075Z",
+    "id": "wettingen-20260924T205731Z",
+    "built_at": "2026-09-24T20:57:31.359308Z",
     "method": "browser_capture",
     "extraction": "manual (Claude, from browser captures 2026-09-24; stands in for the build model until a key is configured)",
     "judge": {
@@ -166,7 +166,8 @@
           "label": "Heimatschein",
           "applies_to": "each_person",
           "audience": "swiss",
-          "condition": "wenn vorhanden"
+          "condition": "wenn vorhanden",
+          "condition_key": "if_available"
         },
         {
           "evidence": [
@@ -215,7 +216,8 @@
           "label": "Sorgerechtsentscheid",
           "applies_to": "child",
           "audience": "all",
-          "condition": "für Kinder von getrennt lebenden Eltern"
+          "condition": "für Kinder von getrennt lebenden Eltern",
+          "condition_key": "separated_parents"
         },
         {
           "evidence": [
@@ -264,7 +266,8 @@
           "label": "Eheschein",
           "applies_to": "adult",
           "audience": "foreign",
-          "condition": "falls verheiratet"
+          "condition": "falls verheiratet",
+          "condition_key": "married"
         },
         {
           "evidence": [
@@ -277,7 +280,8 @@
           "label": "Scheidungsurteil",
           "applies_to": "adult",
           "audience": "foreign",
-          "condition": "falls geschieden"
+          "condition": "falls geschieden",
+          "condition_key": "divorced"
         },
         {
           "evidence": [
@@ -290,7 +294,8 @@
           "label": "Arbeitsbewilligung oder Arbeitsvertrag (sofern bereits vorhanden)",
           "applies_to": "adult",
           "audience": "foreign",
-          "condition": "falls Sie vom Ausland zuziehen"
+          "condition": "falls Sie vom Ausland zuziehen",
+          "condition_key": "from_abroad"
         }
       ],
       "opening_hours": {

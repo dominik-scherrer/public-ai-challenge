@@ -1,6 +1,6 @@
 {
   "schema": "mmp-judge-report/v0",
-  "build_id": "duebendorf-20260924T203404Z",
+  "build_id": "duebendorf-20260924T205731Z",
   "municipality": "Dübendorf",
   "mode": "deterministic-only (no judge model configured; provenance NOT judged)",
   "blocked": false,
@@ -20,5 +20,5 @@
     ]
   },
   "injection_withheld": [],
-  "judged_at": "2026-09-24T20:34:04.330364+00:00"
+  "judged_at": "2026-09-24T20:57:31.358661+00:00"
 }

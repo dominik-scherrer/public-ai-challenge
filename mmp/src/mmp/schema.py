@@ -96,6 +96,9 @@ class Fee(Attribute):
     unit: str | None = Field(default=None, max_length=80)
 
 
+ConditionKey = Literal["if_available", "separated_parents", "divorced", "married", "from_abroad", "other"]
+
+
 class RequiredDocument(Attribute):
     id: str = Field(pattern=r"^[a-z0-9_]+$")
     label: str = Field(max_length=200)
@@ -107,6 +110,11 @@ class RequiredDocument(Attribute):
         description="Only needed if this condition holds, verbatim from the site, e.g. "
         "'für Kinder von getrennt lebenden Eltern'. Matched against the Citizen's "
         "situation in the client, never on the server (ADR-0005).",
+    )
+    condition_key: ConditionKey | None = Field(
+        default=None,
+        description="The condition, typed (ADR-0007: controlled list), so the client can match it "
+        "deterministically against what the Citizen stated instead of asking a model.",
     )
 
 

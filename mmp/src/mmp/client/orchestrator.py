@@ -10,6 +10,13 @@ JSON plan; this backend then performs the MCP calls itself. The model never
 states facts about a Service: facts come only from ``get_service`` and are
 rendered by the Service Card with their sources.
 
+The model writes no free text for the Citizen at all: every sentence in the
+chat is a template filled from the plan and from MMP data (first Apertus test
+run: the model's own reply asserted "Die Gemeinde übernimmt keine
+Umzugskosten" — a fact no source supports). Conditional documents are matched
+deterministically: the Build types each condition (``condition_key``), the
+planner reports which situation flags the Citizen stated.
+
 Situation details (children, a separation, the move date) stay here and in
 the browser. They are passed to the Service Card through the MCP Apps host
 context, never as tool arguments to the MMP server.
@@ -27,37 +34,81 @@ from mcp.client import Client
 
 from mmp.llm import ChatModel
 
-PLANNER = """Du bist der Assistent der Gemeinde {name} (BFS {bfs}) für Einwohnerinnen und Einwohner.
-Heute ist {today}. Du kennst NUR die Dienstleistungen in der Liste unten (aus dem MMP-Server).
-
-Dienstleistungen von {name}:
+PLANNER = """Du wählst Dienstleistungen der Gemeinde {name} (BFS {bfs}) für eine Einwohnerin / einen Einwohner aus.
+Heute ist {today}. Es gibt NUR diese Dienstleistungen (aus dem MMP-Server):
 {services}
 
 Andere Gemeinden mit MMP-Inventar: {others}
 
-Aufgabe: Lies das Gespräch und antworte NUR mit JSON:
+Lies das Gespräch. Antworte NUR mit einem JSON-Objekt, ohne Text davor oder danach:
 {{
-  "reply": "1–2 Sätze auf Deutsch (Sie-Form). Nenne höchstens die Titel der gewählten Dienstleistungen. KEINE Fakten wie Fristen, Gebühren, Unterlagen, Adressen oder Zeiten – die zeigt die Service Card mit Quelle.",
-  "service_ids": ["ids aus der Liste, die zur Situation passen, dringendste zuerst; [] wenn keine passt"],
+  "covered": true oder false,
+  "service_ids": [...],
   "situation": {{
-    "move_date": "YYYY-MM-DD oder null",
-    "adults": "Zahl oder null", "children": "Zahl oder null",
-    "nationality": "swiss | foreign | null",
-    "moving": "in | out | within | null",
-    "previous_municipality": "Name der bisherigen Wohngemeinde oder null"
+    "move_date": "YYYY-MM-DD" oder null,
+    "adults": Zahl oder null,
+    "children": Zahl oder null,
+    "nationality": "swiss" | "foreign" | null,
+    "moving": "in" | "out" | "within" | null,
+    "previous_municipality": Name oder null,
+    "separated": true | false,
+    "divorced": true | false,
+    "married": true | false,
+    "from_abroad": true | false
   }},
-  "gap_topic": "null, oder wenn die Frage von keiner Dienstleistung beantwortet wird: ein kurzes, abstraktes Thema OHNE persönliche Angaben (z. B. 'Umzugskostenbeitrag für Alleinerziehende')",
-  "gap_service_id": "null oder id der Stelle aus der Liste, die am ehesten zuständig ist"
+  "gap_topic": null oder "kurzes abstraktes Thema",
+  "gap_service_id": null oder id
 }}
-Regeln: Erfinde keine Dienstleistungen. Wenn nichts passt, rate nicht: setze gap_topic.
-Übernimm nur Angaben, die die Person selbst gemacht hat; sonst null."""
 
-MATCHER = """Eine Person hat ihre Situation beschrieben (Gespräch unten). Die Gemeinde verlangt einige Unterlagen nur unter einer Bedingung.
-Entscheide für jede bedingte Unterlage, ob die Person die Bedingung SELBST erwähnt hat. Im Zweifel: nicht zutreffend.
-Unterlagen:
-{docs}
+Regeln:
+- covered = true nur, wenn mindestens eine Dienstleistung der Liste die Frage selbst beantwortet
+  oder das Anliegen selbst ist. Eine Stelle, die bloss "zuständig sein könnte", beantwortet die Frage NICHT.
+- covered = true: service_ids = passende ids, dringendste zuerst (z. B. Anmeldung vor Schule vor Kehricht).
+- covered = false: service_ids = [], gap_topic = abstraktes Thema OHNE persönliche Angaben,
+  gap_service_id = id der Stelle, die am ehesten Auskunft geben kann (oder null).
+- situation: nur, was die Person SELBST gesagt hat, sonst null bzw. false.
+  "Trennung"/"getrennt" ist separated, NICHT divorced. divorced nur bei "geschieden"/"Scheidung".
+  "ich ... mit meinen zwei Kindern" = adults 1, children 2.
+- Erfinde keine ids.
 
-Antworte NUR mit JSON: {{"matched": [{{"id": "...", "reason": "Hinzugefügt, weil Sie ... erwähnt haben."}}]}}"""
+Beispiel 1 – Gespräch: "Wir ziehen am 1. März mit unserem Sohn nach X."
+{{"covered": true, "service_ids": ["<id Anmeldung>", "<id Schule>"], "situation": {{"move_date": "2027-03-01", "adults": 2, "children": 1, "nationality": null, "moving": "in", "previous_municipality": null, "separated": false, "divorced": false, "married": false, "from_abroad": false}}, "gap_topic": null, "gap_service_id": null}}
+
+Beispiel 2 – Gespräch: "Bezahlt die Gemeinde einen Beitrag an meinen Zahnarzt?"
+{{"covered": false, "service_ids": [], "situation": {{"move_date": null, "adults": null, "children": null, "nationality": null, "moving": null, "previous_municipality": null, "separated": false, "divorced": false, "married": false, "from_abroad": false}}, "gap_topic": "Beitrag an Zahnarztkosten", "gap_service_id": "<id Soziale Dienste, falls vorhanden>"}}"""
+
+# Situation flag -> condition_key it satisfies, and the sentence the card shows.
+CONDITION_REASONS = {
+    "separated_parents": ("separated", "Hinzugefügt, weil Sie eine Trennung erwähnt haben."),
+    "divorced": ("divorced", "Hinzugefügt, weil Sie eine Scheidung erwähnt haben."),
+    "married": ("married", "Hinzugefügt, weil Sie erwähnt haben, dass Sie verheiratet sind."),
+    "from_abroad": ("from_abroad", "Hinzugefügt, weil Sie aus dem Ausland zuziehen."),
+}
+
+
+def match_documents(documents: list[dict[str, Any]], situation: dict[str, Any]) -> list[dict[str, str]]:
+    """Deterministic: a conditional document applies iff the Citizen stated the matching fact."""
+    matched = []
+    for doc in documents:
+        rule = CONDITION_REASONS.get(doc.get("condition_key") or "")
+        if rule and situation.get(rule[0]):
+            matched.append({"id": doc["id"], "reason": rule[1]})
+    return matched
+
+
+_MONTH_NAMES = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+
+
+def reply_for_services(municipality: str, count: int, situation: dict[str, Any], is_move_in: bool) -> str:
+    what = f"{count} Dienstleistung{'en' if count != 1 else ''} der Gemeinde {municipality}"
+    if is_move_in and situation.get("move_date"):
+        d = date.fromisoformat(situation["move_date"])
+        return f"Für Ihren Zuzug per {d.day}. {_MONTH_NAMES[d.month - 1]} habe ich {what} gefunden. Die dringendste zuerst:"
+    return f"Dazu habe ich {what} gefunden{'. Die dringendste zuerst:' if count > 1 else ':'}"
+
+
+def reply_for_gap(domain: str) -> str:
+    return f"Dazu finde ich in den Angaben von {domain} nichts. Ich möchte nicht raten."
 
 
 def _conversation(messages: list[dict[str, str]]) -> str:
@@ -91,6 +142,7 @@ def clean_situation(raw: dict[str, Any] | None) -> dict[str, Any]:
         "nationality": nationality,
         "moving": moving,
         "previous_municipality": previous.strip()[:60] if isinstance(previous, str) and previous.strip() and previous != "null" else None,
+        **{flag: raw.get(flag) is True for flag in ("separated", "divorced", "married", "from_abroad")},
     }
 
 
@@ -137,22 +189,7 @@ class Orchestrator:
         arguments = {"bfs": bfs, "service_id": service_id}
         result = await self._call(mcp, "get_service", arguments)
         service = (result.get("structuredContent") or {}).get("service", {})
-        conditional = [d for d in service.get("documents", []) if d.get("condition")]
-        matched: list[dict[str, str]] = []
-        if conditional and any(m["role"] == "user" for m in messages):
-            docs = "\n".join(f"- id={d['id']}: {d['label']} — nur {d['condition']}" for d in conditional)
-            try:
-                answer = await asyncio.to_thread(
-                    self.model.complete_json, MATCHER.format(docs=docs), [{"role": "user", "content": _conversation(messages)}]
-                )
-                ids = {d["id"] for d in conditional}
-                matched = [
-                    {"id": m["id"], "reason": str(m.get("reason", ""))[:160]}
-                    for m in answer.get("matched", [])
-                    if isinstance(m, dict) and m.get("id") in ids
-                ]
-            except Exception:  # noqa: BLE001 - a failed match only means "show the condition, not a tick"
-                matched = []
+        matched = match_documents(service.get("documents", []), situation)
         return {
             "type": "app",
             "tool": "get_service",
@@ -182,9 +219,14 @@ class Orchestrator:
             )
             plan = await asyncio.to_thread(self.model.complete_json, system, [{"role": "user", "content": _conversation(messages)}])
 
-            ids = [i for i in plan.get("service_ids") or [] if i in services][:6]
             situation = clean_situation(plan.get("situation"))
-            reply = str(plan.get("reply") or "").strip()[:600]
+            ids = [i for i in plan.get("service_ids") or [] if i in services][:6]
+            gap_service = plan.get("gap_service_id") if plan.get("gap_service_id") in services else None
+            if plan.get("covered") is False:
+                # The model says no Service answers the question: a Service it listed anyway
+                # is at most the office to ask, never the answer.
+                gap_service = gap_service or (ids[0] if ids else None)
+                ids = []
             blocks: list[dict[str, Any]] = []
 
             details = {}
@@ -218,12 +260,12 @@ class Orchestrator:
                             block["item"]["bfs"] = prev["bfs"]
                     blocks.append(block)
                 blocks.append(await self._card(mcp, bfs, ids[0], messages, situation))
+                reply = reply_for_services(municipality["name"], len(ids), situation, is_move_in)
             else:
                 topic = plan.get("gap_topic")
                 topic = topic.strip()[:120] if isinstance(topic, str) and topic.strip() and topic != "null" else None
                 contact = None
-                gap_service = plan.get("gap_service_id")
-                if gap_service in services:
+                if gap_service:
                     full = await self._call(mcp, "get_service", {"bfs": bfs, "service_id": gap_service})
                     responsible = ((full.get("structuredContent") or {}).get("service") or {}).get("responsible")
                     if responsible:
@@ -231,9 +273,9 @@ class Orchestrator:
                 if contact is None and municipality.get("general_contact"):
                     gc = municipality["general_contact"]
                     contact = {k: gc.get(k) for k in ("office", "phone", "email", "address")}
-                blocks.append(
-                    {"type": "gap", "bfs": bfs, "topic": topic, "contact": contact, "domain": municipality["official_domains"][0]}
-                )
+                domain = municipality["official_domains"][0]
+                blocks.append({"type": "gap", "bfs": bfs, "topic": topic, "contact": contact, "domain": domain})
+                reply = reply_for_gap(domain)
             return {"reply": reply, "situation": situation, "blocks": blocks}
 
 
@@ -278,13 +320,6 @@ class RuleModel:
     def complete_json(self, system: str, messages: list[dict[str, str]]) -> dict[str, Any]:
         convo = messages[-1]["content"]
         person = "\n".join(line for line in convo.splitlines() if line.startswith("Person:")).lower()
-        if system.startswith("Eine Person hat ihre Situation"):
-            matched = []
-            if re.search(r"trennung|getrennt|geschieden|scheidung", person):
-                for doc_id in re.findall(r"id=(\w+):[^\n]*getrennt", system):
-                    matched.append({"id": doc_id, "reason": "Hinzugefügt, weil Sie eine Trennung erwähnt haben."})
-            return {"matched": matched}
-
         services = re.findall(r"^- (\w+): (.+?) \[\w+\] Stichworte: (.*)$", system, re.M)
         last = person.splitlines()[-1].removeprefix("person:").strip() if person else ""
         chosen = []
@@ -322,14 +357,15 @@ class RuleModel:
             previous = p.group(1)
         adults = 1 if re.search(r"\bich\b", person) and not re.search(r"\bwir\b", person) else None
         situation = {"move_date": move_date, "adults": adults, "children": children, "nationality": None,
-                     "moving": "in" if moving_in else None, "previous_municipality": previous}
+                     "moving": "in" if moving_in else None, "previous_municipality": previous,
+                     "separated": bool(re.search(r"trennung|getrennt", person)),
+                     "divorced": bool(re.search(r"geschieden|scheidung", person)),
+                     "married": bool(re.search(r"verheiratet", person)), "from_abroad": bool(re.search(r"aus dem ausland", person))}
         if not chosen:
             topic = re.sub(r"^(gibt es|wie|was|wo|wann|kann ich|bekomme ich)\s+", "", last).strip(" ?.")
             topic = re.sub(r"\b(ich|mein\w*|mir|mich)\b", "", topic).strip()[:80] or "Anfrage ohne passende Dienstleistung"
-            return {"reply": "Dazu finde ich in den erfassten Angaben keine Dienstleistung. Ich möchte nicht raten.",
-                    "service_ids": [], "situation": situation, "gap_topic": topic[:1].upper() + topic[1:], "gap_service_id": None}
-        return {"reply": f"Ich habe {len(chosen)} passende Dienstleistung{'en' if len(chosen) != 1 else ''} gefunden. Die dringendste zuerst:",
-                "service_ids": chosen, "situation": situation, "gap_topic": None, "gap_service_id": None}
+            return {"covered": False, "service_ids": [], "situation": situation, "gap_topic": topic[:1].upper() + topic[1:], "gap_service_id": None}
+        return {"covered": True, "service_ids": chosen, "situation": situation, "gap_topic": None, "gap_service_id": None}
 
 
 def dumps(value: Any) -> str:

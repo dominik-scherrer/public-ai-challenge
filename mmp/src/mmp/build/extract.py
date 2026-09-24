@@ -53,7 +53,8 @@ Regeln:
   sonst "information".
 - categories: nur aus {list(CATEGORIES)}.
 - Dokumente: applies_to ∈ each_person|adult|child|household; audience ∈ all|swiss|foreign;
-  condition = die Bedingung wörtlich (z. B. "für Kinder von getrennt lebenden Eltern"), sonst weglassen.
+  condition = die Bedingung wörtlich (z. B. "für Kinder von getrennt lebenden Eltern"), sonst weglassen;
+  condition_key dazu ∈ if_available|separated_parents|divorced|married|from_abroad|other.
 - Fristen: days als Zahl, relative_to ∈ move_in|move_out|event.
 - Gebühren: amount als Zahl in CHF (0 = ausdrücklich gratis).
 - handoffs: kind ∈ online_form|eumzug|counter|email|phone|download; fields (nur für
@@ -67,7 +68,7 @@ Antworte NUR mit JSON:
   "responsible": {{"office": "...", "phone": "...", "email": "...", "address": "...", "evidence": [...]}},
   "deadline": {{"days": 14, "relative_to": "move_in", "label": "...", "evidence": [...]}},
   "fees": [{{"label": "...", "amount": 0, "unit": "...", "evidence": [...]}}],
-  "documents": [{{"id": "snake_case", "label": "...", "applies_to": "...", "audience": "...", "condition": "...", "evidence": [...]}}],
+  "documents": [{{"id": "snake_case", "label": "...", "applies_to": "...", "audience": "...", "condition": "...", "condition_key": "...", "evidence": [...]}}],
   "opening_hours": {{"office": "...", "entries": [{{"days": "...", "times": ["..."]}}], "evidence": [...]}},
   "handoffs": [{{"kind": "...", "label": "...", "url": "...", "fields": [{{"key": "...", "label": "..."}}], "evidence": [...]}}]
 }}], "general_contact": null}}

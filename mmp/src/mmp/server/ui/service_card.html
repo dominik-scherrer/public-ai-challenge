@@ -149,6 +149,7 @@ textarea{width:100%;min-height:90px;padding:10px;border:1px solid var(--line);bo
     for (const d of docs) {
       if (d.audience !== "all" && d.audience !== aud) continue;
       const isMatched = matched.has(d.id);
+      if (d.condition_key === "if_available") { out.self.push({ ...d, label: `${d.label} (${d.condition})` }); continue; }
       if (d.condition && !isMatched) { out.maybe.push(d); continue; }
       if (d.applies_to === "child") { (hasKids || isMatched ? out.kids : out.maybe).push({ ...d, reason: matched.get(d.id) }); continue; }
       out.self.push({ ...d, reason: matched.get(d.id) });

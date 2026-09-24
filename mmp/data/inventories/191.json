@@ -25,8 +25,8 @@
     }
   },
   "build": {
-    "id": "duebendorf-20260924T203404Z",
-    "built_at": "2026-09-24T20:34:04.327485Z",
+    "id": "duebendorf-20260924T205731Z",
+    "built_at": "2026-09-24T20:57:31.355412Z",
     "method": "browser_capture",
     "extraction": "manual (Claude, from browser captures 2026-09-24; stands in for the build model until a key is configured)",
     "judge": {
