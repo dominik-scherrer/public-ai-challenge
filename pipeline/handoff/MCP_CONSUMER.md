@@ -41,14 +41,13 @@ Each `inventory.json` follows:
 mmp-service-inventory/v0
 ```
 
-and is designed for the planned runtime tools:
+and exposes **semantic capabilities**, not concrete MCP tool names.
 
-- `list_services`
-- `find_service`
-- `get_service`
-- `search_documents`
+Patrick's live `minigmeind` server currently exposes a broader domain-specific tool surface (moving, forms, permits, waste, facilities, finance, reporting, etc.). The inventory intentionally does not mirror those names.
 
-The MCP implementation should treat the inventory as **data**, not executable code.
+The MCP implementation should treat the inventory as **canonical data** and map its capability tags to the current tool contracts.
+
+See [MCP_CAPABILITY_MATRIX.md](MCP_CAPABILITY_MATRIX.md) for the live tool → required data mapping.
 
 ## What is inside
 
@@ -178,23 +177,30 @@ Then test:
 6. Bosco/Gurin — noisy/sparse small municipality
 7. Biel/Bienne — once retrieval is fixed
 
-## Minimal runtime mapping
+## Runtime mapping
 
-A practical first implementation can map directly:
+Patrick's MCP owns the public tool surface.
+
+Examples:
 
 ```text
-list_services()
-  → inventory.services
+list_services
+  ← capability: service_catalog
 
-find_service(query)
-  → text search over title / labels / category / summary
+get_move_in_requirements
+  ← capability: residence_registration
+  ← requirements + documents + authority + channel + evidence
 
-get_service(id)
-  → exact service record + resolved source metadata
+get_office_hours
+  ← capability: office_hours
+  ← typed office/hours data + evidence
 
-search_documents(query)
-  → documents.jsonl
+get_building_application_requirements
+  ← capability: building_application
+  ← requirements + authority + official handoff + evidence
 ```
+
+The mapping belongs in the MCP/runtime layer, not in the crawler.
 
 Do not invent missing attributes.
 
