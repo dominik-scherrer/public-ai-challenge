@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "source.schema.json",
+  "title": "Source record (one line of sources.jsonl)",
+  "type": "object",
+  "required": ["source_id","classification","source_type","publisher","url","retrieved_at","capture_method","snapshot_quality","content_type","language","title"],
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {"type":"string","pattern":"^src_[a-z0-9_]+_[0-9]{3,}$"},
+    "classification": {"enum":["official","observed","other"]},
+    "source_type": {"enum":["municipality_website","municipal_egov_portal","municipal_pdf","intermunicipal_body","cantonal_website","cantonal_egov_portal","federal_website","third_party_platform","other"]},
+    "publisher": {"type":"object","required":["name","authority_level"],"additionalProperties":false,"properties":{
+      "name":{"type":"string"},
+      "authority_level":{"enum":["municipality","intermunicipal","canton","federal","private","unknown"]},
+      "department":{"type":["string","null"]}}},
+    "url": {"type":"string","format":"uri"},
+    "final_url": {"type":["string","null"]},
+    "canonical_url": {"type":["string","null"], "description":"Only when a <link rel=canonical> was directly observed; else null."},
+    "hreflang": {"type":"array","items":{"type":"array","items":{"type":"string"},"minItems":2,"maxItems":2}, "description":"Directly observed <link rel=alternate hreflang> pairs; [] if none observed."},
+    "retrieved_at": {"type":"string","format":"date-time"},
+    "http_status": {"type":["integer","null"]},
+    "source_modified_at": {"type":["string","null"], "description":"Only a date the source itself states (Last-Modified header, meta tag, or visible 'Stand/aktualisiert' text). Never inferred."},
+    "source_modified_basis": {"enum":["http_last_modified","meta_tag","visible_text","pdf_metadata",null]},
+    "last_modified": {"type":["string","null"], "description":"Raw HTTP Last-Modified header, null if absent/unobservable."},
+    "etag": {"type":["string","null"]},
+    "content_hash": {"type":["string","null"], "description":"sha256 of raw bytes of a same-origin re-fetch in the browser; null if not observable."},
+    "capture_method": {"enum":["browser_sameorigin_refetch","browser_rendered_page_text","webfetch_discovery_only"]},
+    "snapshot_quality": {"enum":["raw_hash_text","rendered_text_only","discovery_summary_only"], "description":"raw_hash_text: raw bytes hashed + verbatim text extracted, raw bytes NOT archived. rendered_text_only: text from rendered page, no hash/headers. discovery_summary_only: WebFetch summary; may never back an evidence quote."},
+    "content_type": {"type":"string"},
+    "language": {"type":["string","null"]},
+    "html_lang": {"type":["string","null"]},
+    "title": {"type":["string","null"]},
+    "page_role": {"enum":["service_page","service_directory","department_page","transaction_endpoint","form_pdf","regulation","fee_schedule","contact_page","homepage","navigation","news","other"]},
+    "notes": {"type":["string","null"]}
+  }
+}
