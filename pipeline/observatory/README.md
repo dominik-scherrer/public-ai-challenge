@@ -1,4 +1,4 @@
-# Project Build Observatory
+# Scout Observatory
 
 A project-wide, evidence-based coordination dashboard stored under `pipeline/observatory/`.
 
@@ -10,26 +10,25 @@ This preserves ownership boundaries while giving the team one integrated view.
 
 ## It tracks
 
-- the system as four blocks — **Discovery → Service Compiler → MCP Builder → Citizen Experience** — and the typed handoffs between them (Service Leads, capability plan, village MCP)
-- **Trust · provenance · Judge** wrapping the whole chain, and **Operate** alongside it
-- modules inside each block, on one maturity scale: research → designed → prototype → working → verified → demo ready
-- three cross-cutting rails: Trust, AI / models, Standards
-- benchmark municipalities (Batch A / B), tests, evals and acceptance checks
-- Git commits, PRs and unmerged branches, owners, open decisions and conflicts between docs
-- project history and next actions
+- **Scout**, the agent this workstream builds: Municipality URL + Service Index → Step 1 Discover → ScoutFindings[] → Step 2 Understand / Compile → MunicipalityDiscovery JSON → MCP Factory (downstream, abstract)
+- live status on every part of that diagram: planned → in progress → needs refinement → implemented
+- the runtime / control layers: what AI reasoning (PydanticAI) owns vs. the deterministic Python runtime
+- architectural maturity and the benchmark municipalities (Binn, Ausserberg, Dübendorf, Bosco/Gurin, Zürich)
+- tests per branch, tool grounding, Scout evals and MVP acceptance
+- PRs, branches, open decisions, conflicts and project history
 
 ## What it is not
 
 It is not a task tracker that guesses completion from filenames.
 
-A document can prove that something is **designed**. Only code that runs moves a module to **prototype** or beyond, and only real benchmark runs and passing checks move it past that.
+A document can only make something **planned**. Code moves it to **in progress**; code that matches the Scout design and is tested makes it **implemented**. Hand-seeded data never counts as a Scout run.
 
 ## Files
 
-- `index.html` — the dashboard, four tabs:
-  - **Architecture**: *what is this system?* Four blocks with their handoffs, Trust wrapping the chain, Operate, cross-cutting rails, and a maturity meter per module. Click a block, handoff or module for the inspector.
-  - **Build**: *how far have we built it?* Open PRs, next actions, decisions, conflicts, owners.
-  - **Evidence**: benchmark municipalities, tests, evals and MVP acceptance checks.
+- `index.html` — the Scout Observatory, four tabs:
+  - **Scout**: the architecture as a living diagram — inputs, both Scout steps, the two artifacts, the Factory, runtime layers, then implementation status, maturity and benchmark cases. Click any card for its evidence.
+  - **Build**: open PRs and branches, next actions, decisions, conflicts.
+  - **Evidence**: tests per branch, tool grounding, Scout evals, MVP acceptance.
   - **History**: day-grouped log with filter and search.
   Open it straight from disk; `#build`, `#evidence` and `#history` link to tabs.
 - `state.json` — current machine-readable integrated state
