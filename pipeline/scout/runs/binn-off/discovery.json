@@ -1,0 +1,289 @@
+{
+  "schema": "municipality-discovery/v1",
+  "municipality": {
+    "name": "Binn",
+    "canton": "VS",
+    "official_url": "https://www.binn.ch/"
+  },
+  "build": {
+    "run_id": "binn-20260924T174403Z",
+    "scouted_at": "2026-09-24T17:44:03.984128Z",
+    "service_index_version": "mvp-1"
+  },
+  "strategy": {
+    "mode": "broad_small_site",
+    "reason": "Small/shallow site without a clear service directory.",
+    "roots": [
+      "https://www.binn.ch/"
+    ],
+    "max_pages": 25,
+    "max_depth": 2,
+    "target_services": [
+      "waste_collection",
+      "move_in",
+      "office_hours",
+      "forms",
+      "building_application"
+    ]
+  },
+  "services": [
+    {
+      "service_id": "waste_collection",
+      "local_name": "Webcam",
+      "index_relation": "indexed",
+      "availability": "supported",
+      "handling": {
+        "type": "static_page",
+        "interaction": "information",
+        "summary": "The municipality provides this service primarily as information on an official web page.",
+        "live": false,
+        "external_system": null
+      },
+      "sources": [
+        {
+          "source_id": "src_858dc4f98f7a3215",
+          "url": "https://www.binn.ch/gemeinde/allgemein/home",
+          "role": "municipal_service_page",
+          "retrieved_at": "2026-09-24T17:43:58.567037Z",
+          "discovered_from": null
+        }
+      ],
+      "information": {
+        "available": true,
+        "structured": false
+      },
+      "confidence": 0.75,
+      "limitations": []
+    },
+    {
+      "service_id": "office_hours",
+      "local_name": "Gemeindeverwaltung",
+      "index_relation": "indexed",
+      "availability": "supported",
+      "handling": {
+        "type": "html_form",
+        "interaction": "request",
+        "summary": "The municipality exposes this service through an HTML form or request endpoint.",
+        "live": false,
+        "external_system": null
+      },
+      "sources": [
+        {
+          "source_id": "src_d925dc3a7fccd205",
+          "url": "https://www.binn.ch/gemeinde/allgemein/kontakt",
+          "role": "municipal_service_page",
+          "retrieved_at": "2026-09-24T17:44:00.217890Z",
+          "discovered_from": null
+        },
+        {
+          "source_id": "ref_d44030c977b924db",
+          "url": "https://www.binn.ch/gemeinde/allgemein/kontakt?id=38&mod_action=check_mailform&data=session&language=de",
+          "role": "form",
+          "retrieved_at": null,
+          "discovered_from": "src_d925dc3a7fccd205"
+        }
+      ],
+      "information": {
+        "available": true,
+        "structured": false
+      },
+      "confidence": 0.8500000000000001,
+      "limitations": []
+    },
+    {
+      "service_id": "building_application",
+      "local_name": "Webcam",
+      "index_relation": "indexed",
+      "availability": "supported",
+      "handling": {
+        "type": "static_page",
+        "interaction": "information",
+        "summary": "The municipality provides this service primarily as information on an official web page.",
+        "live": false,
+        "external_system": null
+      },
+      "sources": [
+        {
+          "source_id": "src_858dc4f98f7a3215",
+          "url": "https://www.binn.ch/gemeinde/allgemein/home",
+          "role": "municipal_service_page",
+          "retrieved_at": "2026-09-24T17:43:58.567037Z",
+          "discovered_from": null
+        }
+      ],
+      "information": {
+        "available": true,
+        "structured": false
+      },
+      "confidence": 0.75,
+      "limitations": []
+    },
+    {
+      "service_id": null,
+      "local_name": "Gemeinde Binn | Binntal - Tal der Mineralien - Wanderparadies",
+      "index_relation": "possible_new",
+      "availability": "supported",
+      "handling": {
+        "type": "static_page",
+        "interaction": "information",
+        "summary": "The municipality provides this service primarily as information on an official web page.",
+        "live": false,
+        "external_system": null
+      },
+      "sources": [
+        {
+          "source_id": "src_d8bd7983894fab91",
+          "url": "https://www.binn.ch/gemeinde/aktuelles/gemeindeinfos",
+          "role": "municipal_service_page",
+          "retrieved_at": "2026-09-24T17:44:01.182111Z",
+          "discovered_from": null
+        }
+      ],
+      "information": {
+        "available": true,
+        "structured": false
+      },
+      "confidence": 0.66,
+      "limitations": []
+    },
+    {
+      "service_id": null,
+      "local_name": "Gemeinde Binn | Binntal - Tal der Mineralien - Wanderparadies",
+      "index_relation": "possible_new",
+      "availability": "supported",
+      "handling": {
+        "type": "static_page",
+        "interaction": "information",
+        "summary": "The municipality provides this service primarily as information on an official web page.",
+        "live": false,
+        "external_system": null
+      },
+      "sources": [
+        {
+          "source_id": "src_d8bd7983894fab91",
+          "url": "https://www.binn.ch/gemeinde/aktuelles/gemeindeinfos",
+          "role": "municipal_service_page",
+          "retrieved_at": "2026-09-24T17:44:01.182111Z",
+          "discovered_from": null
+        }
+      ],
+      "information": {
+        "available": true,
+        "structured": false
+      },
+      "confidence": 0.66,
+      "limitations": []
+    },
+    {
+      "service_id": null,
+      "local_name": "Geschichte",
+      "index_relation": "possible_new",
+      "availability": "supported",
+      "handling": {
+        "type": "static_page",
+        "interaction": "information",
+        "summary": "The municipality provides this service primarily as information on an official web page.",
+        "live": false,
+        "external_system": null
+      },
+      "sources": [
+        {
+          "source_id": "src_7719323b58cab2f7",
+          "url": "https://www.binn.ch/gemeinde/gemeinde/geschichte",
+          "role": "municipal_service_page",
+          "retrieved_at": "2026-09-24T17:44:03.778894Z",
+          "discovered_from": null
+        }
+      ],
+      "information": {
+        "available": true,
+        "structured": false
+      },
+      "confidence": 0.66,
+      "limitations": []
+    },
+    {
+      "service_id": "move_in",
+      "local_name": "Zuzug",
+      "index_relation": "indexed",
+      "availability": "not_observed",
+      "handling": {
+        "type": "unknown",
+        "interaction": "information",
+        "summary": "Scout did not find sufficient source evidence for this indexed service in this run.",
+        "live": false,
+        "external_system": null
+      },
+      "sources": [],
+      "information": {
+        "available": false,
+        "structured": false
+      },
+      "confidence": 0.0,
+      "limitations": [
+        "Not observed is not evidence that the service is unavailable."
+      ]
+    },
+    {
+      "service_id": "forms",
+      "local_name": "Formulare",
+      "index_relation": "indexed",
+      "availability": "not_observed",
+      "handling": {
+        "type": "unknown",
+        "interaction": "information",
+        "summary": "Scout did not find sufficient source evidence for this indexed service in this run.",
+        "live": false,
+        "external_system": null
+      },
+      "sources": [],
+      "information": {
+        "available": false,
+        "structured": false
+      },
+      "confidence": 0.0,
+      "limitations": [
+        "Not observed is not evidence that the service is unavailable."
+      ]
+    }
+  ],
+  "catalog_suggestions": [
+    {
+      "local_name": "Gemeinde Binn | Binntal - Tal der Mineralien - Wanderparadies",
+      "proposal": "possible_new_service",
+      "reason": "Source-backed service-like capability did not match the current Service Index.",
+      "source_ids": [
+        "src_d8bd7983894fab91"
+      ],
+      "confidence": 0.66
+    },
+    {
+      "local_name": "Gemeinde Binn | Binntal - Tal der Mineralien - Wanderparadies",
+      "proposal": "possible_new_service",
+      "reason": "Source-backed service-like capability did not match the current Service Index.",
+      "source_ids": [
+        "src_d8bd7983894fab91"
+      ],
+      "confidence": 0.66
+    },
+    {
+      "local_name": "Geschichte",
+      "proposal": "possible_new_service",
+      "reason": "Source-backed service-like capability did not match the current Service Index.",
+      "source_ids": [
+        "src_7719323b58cab2f7"
+      ],
+      "confidence": 0.66
+    }
+  ],
+  "coverage": {
+    "indexed_services_checked": 5,
+    "supported": 6,
+    "partial": 0,
+    "handoff_only": 0,
+    "unavailable": 0,
+    "not_observed": 2,
+    "new_candidates": 3
+  },
+  "failures": []
+}

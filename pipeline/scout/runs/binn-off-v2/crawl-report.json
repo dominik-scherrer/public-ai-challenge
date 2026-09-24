@@ -1,0 +1,22 @@
+{
+  "run_id": "binn-20260924T174958Z",
+  "strategy": {
+    "mode": "broad_small_site",
+    "reason": "Small/shallow site without a clear service directory.",
+    "roots": [
+      "https://www.binn.ch/"
+    ],
+    "max_pages": 25,
+    "max_depth": 2,
+    "target_services": [
+      "waste_collection",
+      "move_in",
+      "office_hours",
+      "forms",
+      "building_application"
+    ]
+  },
+  "pages_fetched": 25,
+  "findings": 4,
+  "indexed_services_checked": 5
+}
