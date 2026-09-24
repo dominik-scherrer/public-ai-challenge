@@ -1,133 +1,139 @@
----
-status: draft
-version: 4.0.0
----
+# Gemeinde MCP Pipeline  {#C_GMP}
 
-# Concept: Gemeinde MCP Pipeline [C_GMP]
+> **Code:** C_GMP
+> **Status:** draft
+> **Created:** 2026-09-24
+> **Updated:** 2026-09-24
+> **Author:** Pipeline Team
+> **Owner:** Service Processing Team
+> **Complexity:** medium
+>
+> **Depends on:** none
+> **Used by:** —
+> **Spike:** —
+> **Specification:** [SP_GMP](./gemeinde_mcp.sp.md)
+> **Plan:** [gemeinde_mcp.plan.md](./gemeinde_mcp.plan.md)
+>
+> Converts a Gemeinde (Swiss municipality) website into a running Model Context Protocol (MCP) server. A 4-stage pipeline extracts website content, synthesizes information, generates Python tool functions via Large Language Models (LLMs), and serves the resulting resources and tools to LLM clients.
 
-## 01. Purpose
-Convert a Gemeinde website into a running MCP server. The pipeline has 4 stages. This document defines the stages and the contracts between them.
+## 1. Philosophy  {#C_GMP_01}
+### 1.1. Core Principle  {#C_GMP_01_01}
+The pipeline exists to convert unstructured municipality website content into standardized MCP resources and executable MCP tools. This enables external LLM clients to query municipal information and perform actions programmatically.
 
-## 02. Pipeline
+### 1.2. Design Constraints  {#C_GMP_01_02}
+The pipeline consists of four stages. This team owns and builds Stage 3 (Service Processing) and Stage 4 (MCP Server). Another team owns Stage 1 (Website Crawl) and Stage 2 (Service Detection). Stage 1 and Stage 2 act as external dependencies.
 
+## 2. Domain Model  {#C_GMP_02}
+### 2.1. Key Entities  {#C_GMP_02_01}
+- **ScoutedService**: A JSON record containing a service name, description, availability status, and source URLs.
+- **Markdown content file**: A synthesized text document containing the unified information about a specific service.
+- **Generated tool file**: A Python file containing LLM-generated functions for a specific service.
+- **MCP Resource**: A read-only data item exposed by the MCP server, mapped to the Markdown content file.
+- **MCP Tool**: An executable action exposed by the MCP server, mapped to the functions in the generated tool file. Tools are categorized as action tools (perform actions) or informational tools (extract facts).
+- **Cross-service tools**: Built-in MCP tools written in the server code that operate across multiple services.
+
+### 2.2. Data Flows  {#C_GMP_02_02}
+The pipeline executes in two phases and four stages:
+
+```text
+Phase 1: Scouting (External)
+Stage 1: Website Crawl (crawls HTML and PDFs) -> Stage 2: Service Detection (matches content to predefined services)
+
+Phase 2: Building (Internal)
+Stage 2 -> Stage 3: Service Processing (fetches URLs, extracts text, generates tools) -> Stage 4: MCP Server (loads resources and tools, runs server)
 ```
-Stage 1           Stage 2              Stage 3                Stage 4
-Website URL   --> Service Detection --> Service Processing --> MCP Server
-(crawl HTML       (identify services   (extract content,      (load resources
- + PDFs)           + categories)        generate tools)        + tools, run)
-```
 
-### Stage 1: Website Crawl [C_CRW]
-**Owner**: Teammate.
-**Input**: A Gemeinde website URL (e.g., `https://www.ausserberg.ch`).
-**Output**: A local directory of fetched HTML pages and PDF documents.
+- **Stage 1**: Crawls the provided website URL.
+- **Stage 2**: Analyzes crawled data to produce a list of ScoutedService records.
+- **Stage 3**: Processes each ScoutedService record to output one Markdown content file and one generated tool file.
+- **Stage 4**: Starts the MCP server using the output files from Stage 3.
 
-### Stage 2: Service Detection [C_SDT]
-**Owner**: Teammate.
-**Input**: The crawled HTML pages and PDFs from Stage 1.
-**Output**: A JSON file containing a list of `ServiceMention` objects. Each `ServiceMention` includes a `category` field that groups the service into an area (e.g., "Forms and registration", "Permits and planning").
+## 3. Mechanisms  {#C_GMP_03}
+### 3.1. Core Algorithm  {#C_GMP_03_01}
+Stage 3 executes the following steps sequentially for each ScoutedService:
 
-### Stage 3: Service Processing [C_SPR]
-**Owner**: This team.
-**Input**: The `ServiceMention` list from Stage 2, plus access to the crawled files from Stage 1.
-**Output**: For each service, two artifacts:
-- A Markdown file containing all information available on the website about the service.
-- A Python file containing generated MCP tool functions. The LLM generates two kinds of tools:
-    - **Action tools**: functions that perform an action (submit a form, download a file, compose an email).
-    - **Informational tools**: functions that extract specific facts from the Markdown content (e.g., `get_office_hours()`, `get_id_requirements(age)`).
+1. **Availability Check**: If the ScoutedService indicates the service is unavailable, write a Markdown content file stating the service is absent and write an empty generated tool file. Proceed to the next ScoutedService.
+2. **Fetch**: Execute HTTP GET requests for each URL in the ScoutedService concurrently. Extract text from HTML or PDF content. Write the text to temporary Markdown fragment files. Save the raw source content.
+3. **Extract and Synthesize**: Execute the Content Synthesis Agent (a PydanticAI agent) providing the temporary Markdown fragment files as input. The agent returns a `SynthesizedContent` Pydantic model. Write the model data to the Markdown content file.
+4. **Generate Tools**: Execute the Tool Generation Agent (a PydanticAI agent) providing the synthesized Markdown, raw source content, and ScoutedService metadata as input. The agent returns a `GeneratedTools` Pydantic model. Write the model data to the generated tool file.
 
-**Processing order for one ServiceMention**:
+### 3.2. Edge Cases  {#C_GMP_03_02}
+- **URL Fetch Failures**: Network errors or HTTP error responses during the fetch step halt processing for the specific URL.
+- **LLM Failures**: Timeout or connection errors from the LLM provider raise exceptions.
+- **Syntax Errors**: The Tool Generation Agent validates generated code using `ast.parse`. Syntax errors raise a `ModelRetry` exception, which prompts the LLM to self-correct the code.
 
-1. For each `source_url` in `ServiceMention.source_urls` (can run in parallel):
-    1. Load the crawled file. Determine the file type (HTML or PDF).
-    2. If HTML: parse the HTML and extract the Markdown content. If PDF: extract the text content and convert to Markdown. Write the result to `output/fragments/{service_name}__{url_hash}.md`.
-2. Content Synthesis (runs once per service, after step 1):
-    1. Send all `output/fragments/{service_name}__*.md` files to an LLM.
-    2. The LLM synthesizes the fragments into a single, cohesive, well-structured Markdown document, removing redundancies and organizing the information logically.
-    3. Write the synthesized result to `output/{service_name}.md`.
-3. Tool generation (runs once per service, after step 2):
-    1. Send the synthesized Markdown file (`output/{service_name}.md`), the original source files (HTML/PDF), and the `category` to an LLM.
-    2. The LLM analyzes the content and generates Python code implementing each tool. For web forms, the LLM explicitly relies on the raw HTML to extract form `action` URLs, HTTP methods, and exact input `name` attributes. Each function is tagged with the `category`.
-    3. The LLM writes the generated code to `output/{service_name}_tools.py`. Each function in this file is a complete, executable MCP tool.
+## 4. Integration Points  {#C_GMP_04}
+### 4.1. Dependencies  {#C_GMP_04_01}
+- **Stage 1 and Stage 2**: External systems providing the ScoutedService records.
+- **PydanticAI**: Library for orchestrating LLM agents and validating outputs.
+- **httpx**: Library for asynchronous HTTP requests.
+- **markdownify**: Library for converting HTML to Markdown.
+- **pymupdf**: Library for extracting text from PDF files.
 
-Stage 3 repeats steps 1–3 for every `ServiceMention` in the input list.
+### 4.2. API Surface  {#C_GMP_04_02}
+- **Contract A (Scouted Services List)**: The input from Stage 2 to Stage 3. A JSON array of ScoutedService objects. Each object contains `name` (string), `description` (string), `urls` (array of strings), and `available` (boolean).
+- **Contract B (Stage 3 Output)**: The output from Stage 3 to Stage 4. Two files per service: `output/{name}.md` (Markdown content file) and `output/{name}_tools.py` (generated tool file).
 
-### Stage 4: MCP Server [C_MCS]
-**Owner**: This team.
-**Input**: The Markdown files and generated Python tool files from Stage 3.
-**Output**: A running MCP server exposing:
-- One MCP Resource per service (the Markdown content).
-- The generated MCP Tools from each `{service_name}_tools.py` file (both action and informational tools).
-- Built-in cross-service tools (not LLM-generated, written once in the server code):
-    - `list_services(category?)` — list all loaded services, optionally filtered by category.
-    - `list_tools(category?)` — list all available tools, optionally filtered by category.
-    - `search_services(query)` — search across all service Markdown files.
+## 5. Design Decisions  {#C_GMP_DEC}
 
-## 03. Scope
-This team builds Stages 3 and 4. Stages 1 and 2 are external dependencies with contracts defined in Section 04.
+### DEC_01 — Declarative tool definitions with generic executor  {#C_GMP_DEC_01}
+**Status:** resolved
+**Question:** Should the system use declarative JSON tool definitions parsed by a generic executor instead of generating Python code?
+**Options:**
 
-## 04. Integration Contracts
+| Option | Description |
+|--------|-------------|
+| Generate Python code | Selected |
+| Declarative JSON + generic executor | Rejected |
 
-### Contract A: Crawl Output (Stage 1 → Stage 3)
-The crawled files are stored in a local directory. Each file retains its original URL as metadata (exact mechanism to be agreed with teammate — filename convention or a manifest file).
+**Decision:** Generate Python code.
+**Rationale:** Generated Python code provides flexibility for handling custom interaction flows in the initial version.
+**Rejected because:** A generic executor must anticipate and handle specific interaction types. Interaction schemas do not accommodate custom flows efficiently.
 
-### Contract B: ServiceMention List (Stage 2 → Stage 3)
-A JSON array where each element has:
-```json
-{
-  "service_name": "string",
-  "category": "string",
-  "source_urls": ["string"]
-}
-```
-- `service_name` is unique within the array.
-- `category` groups the service into an area. The set of categories is defined by Stage 2 and must be consistent across all `ServiceMention` objects (same category name for the same area).
-- Each entry in `source_urls` is a URL that was crawled in Stage 1.
+### DEC_02 — Declarative tool definitions with runtime LLM interpreter  {#C_GMP_DEC_02}
+**Status:** resolved
+**Question:** Should the system use a runtime LLM to interpret declarative tool definitions during execution?
+**Options:**
 
-### Contract C: Service Processing Output (Stage 3 → Stage 4)
-For each service, Stage 3 produces:
-- `output/{service_name}.md` — the Markdown content file.
-- `output/{service_name}_tools.py` — a Python module containing MCP tool functions generated by the LLM. Each function is tagged with the service's `category`.
+| Option | Description |
+|--------|-------------|
+| Generate Python code | Selected |
+| Declarative JSON + runtime LLM | Rejected |
 
-## 05. Glossary
-| Term | Definition |
-|------|------------|
-| Gemeinde | A Swiss municipality. |
-| ServiceMention | A record containing a service name, category, and the URLs where the service was found on the website. |
-| Category | A grouping label for services (e.g., "Forms and registration", "Permits and planning"). Assigned by Stage 2 (Service Detection). All tools generated for a service inherit its category. |
-| MCP | Model Context Protocol — a standard protocol for exposing data and tools to LLM clients. |
-| MCP Resource | A read-only data item exposed by an MCP server. In this system: the Markdown content of a service. |
-| MCP Tool | An executable action exposed by an MCP server. Two kinds: action tools (perform an action) and informational tools (extract specific facts from content). |
-| Cross-service tool | A built-in MCP tool that operates across all loaded services (e.g., `list_services`, `search_services`). Written once in the server code, not LLM-generated. |
+**Decision:** Generate Python code.
+**Rationale:** Eliminates runtime LLM dependency for tool execution.
+**Rejected because:** A runtime LLM adds 2 to 10 seconds of latency per tool call and incurs ongoing token usage costs.
 
-## 06. Alternatives Considered
+### DEC_03 — LLM-generated cross-service tools  {#C_GMP_DEC_03}
+**Status:** resolved
+**Question:** Should an LLM generate the cross-service tools (e.g., listing loaded services)?
+**Options:**
 
-### Alternative 1: Declarative tool definitions with a generic executor (Deferred)
-**Description**: Instead of generating Python code, the LLM generates a declarative JSON definition for each tool (name, parameters, behavior description). A generic executor interprets the definition at runtime.
-**Pros**: No generated code to audit. The executor is maintained once and reused.
-**Cons**: The executor must handle every possible interaction type. Complex interactions may not fit a declarative schema.
-**Decision**: Deferred. Generated Python code is more flexible for the first version.
+| Option | Description |
+|--------|-------------|
+| Built-in server code | Selected |
+| LLM-generated tools | Rejected |
 
-### Alternative 2: Declarative tool definitions with a runtime LLM interpreter (Deferred)
-**Description**: The LLM generates a declarative tool definition. When the tool is called at runtime, a second LLM call interprets the definition and executes the action.
-**Pros**: No generated code. The runtime LLM can handle complex, context-dependent interactions.
-**Cons**: Adds LLM cost and 2–10 seconds latency per tool call at runtime.
-**Decision**: Deferred.
+**Decision:** Write cross-service tools directly in the server codebase.
+**Rationale:** Cross-service operations read the deterministic state of the server.
+**Rejected because:** LLM generation provides no benefit for deterministic operations.
 
-### Alternative 3: LLM-generated cross-service tools (Rejected)
-**Description**: After all per-service tools are generated, run one more LLM call with the full list of services to generate cross-service tools like `list_services`, `search_services`.
-**Pros**: The LLM might discover non-obvious cross-service relationships.
-**Cons**: The behavior of `list_services` is deterministic (read the list of loaded resources). No LLM is needed for this.
-**Decision**: Rejected. Cross-service tools are written once in the server code.
+### DEC_04 — Markdown resources without informational tools  {#C_GMP_DEC_04}
+**Status:** resolved
+**Question:** Should the MCP server omit informational tools and require clients to read the full Markdown resources?
+**Options:**
 
-### Alternative 4: LLM assigns categories during tool generation (Rejected)
-**Description**: Instead of receiving the `category` from the `ServiceMention`, the LLM assigns a category to each tool during generation.
-**Pros**: No change to the upstream `ServiceMention` schema.
-**Cons**: Categories may be inconsistent across services because each LLM call is independent (one call might use "Registration" while another uses "Forms and registration").
-**Decision**: Rejected. Categories come from Stage 2 (`ServiceMention.category`) to ensure consistency.
+| Option | Description |
+|--------|-------------|
+| Generate resources and informational tools | Selected |
+| Expose only resources | Rejected |
 
-### Alternative 5: Markdown resources only, no informational tools (Rejected)
-**Description**: The MCP server exposes only Markdown resources for informational services. The external LLM client reads the full Markdown and answers questions from it. No informational tools are generated.
-**Pros**: Fewer tools. Simpler server.
-**Cons**: The external LLM must read and parse large Markdown documents to answer specific factual questions (e.g., "What are the office hours?"). Dedicated informational tools return targeted answers using fewer tokens.
-**Decision**: Rejected. Both resources and informational tools are generated.
+**Decision:** Generate both Markdown resources and informational tools.
+**Rationale:** Informational tools extract targeted facts and return the specific facts to the client, which uses fewer tokens.
+**Rejected because:** Reading full Markdown documents for specific factual questions increases token consumption and latency for the client.
+
+## Changelog
+
+| Date | Change |
+|------|--------|
+| 2026-09-24 | Initial version (v6.0.0) |

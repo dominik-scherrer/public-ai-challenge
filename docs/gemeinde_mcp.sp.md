@@ -1,153 +1,322 @@
----
-status: draft
-version: 4.0.0
----
+# Gemeinde MCP Pipeline — Specification  {#SP_GMP}
 
-# Specification: Gemeinde MCP Pipeline [SP_GMP]
+> **Code:** SP_GMP
+> **Status:** draft
+> **Created:** 2026-09-24
+> **Updated:** 2026-09-24
+>
+> **Concept:** [C_GMP](./gemeinde_mcp.concept.md)
+> **Depends on:** none
+> **Used by:** —
+> **Plan:** [PL_GMP](./gemeinde_mcp.plan.md)
+>
+> Specification for the Gemeinde Model Context Protocol (MCP) Pipeline, defining data structures, contracts, validation rules, state transitions, verification criteria, and design decisions.
 
-## 01. Data Structures
+## 01. Data Structures  {#SP_GMP_01}
+### 01_01. ScoutedService  {#SP_GMP_01_01}
 
-### 1.1 ServiceMention (Input from Stage 2)
-```json
-{
-  "service_name": "string (required, unique)",
-  "category": "string (required, e.g. 'Forms and registration', 'Permits and planning')",
-  "source_urls": ["string (required, HTTP/HTTPS URL, at least one)"]
-}
+| Field | Type | Required | Default | Constraints | Description |
+|---|---|---|---|---|---|
+| name | string | Yes | — | Unique from ENUM master list | The service identifier. |
+| description | string | Yes | — | — | The service description. |
+| urls | list[string] | Conditional | — | Required if available is true | URLs associated with the service. |
+| available | boolean | Yes | — | — | Indicates if the service is available. |
+
+Invariants:
+- If `available` is true, `urls` must contain at least one valid URL.
+
+### 01_02. Generated Tool File  {#SP_GMP_01_02}
+
+| Field | Type | Required | Default | Constraints | Description |
+|---|---|---|---|---|---|
+| file_path | string | Yes | — | Matches `output/{name}_tools.py` | Path to the generated Python module. |
+| functions | list[function] | Yes | — | Syntactically valid Python | Contains tool functions with `@tool_meta(category="...", kind="action"\|"informational")` decorator, typed parameters, docstrings, and executable code. |
+
+Invariants:
+- `functions` must be parsable by `ast.parse`.
+- Tool functions return a string or dict.
+
+### 01_03. ServiceProcessingDeps  {#SP_GMP_01_03}
+
+| Field | Type | Required | Default | Constraints | Description |
+|---|---|---|---|---|---|
+| http_client | httpx.AsyncClient | Yes | — | Shared instance | Client for fetching URLs. |
+| model_name | string | Yes | — | e.g., "openai:gpt-4o" | LLM model identifier. |
+
+Invariants:
+- The `http_client` is instantiated once and shared across all runs.
+
+### 01_04. SynthesizedContent  {#SP_GMP_01_04}
+
+| Field | Type | Required | Default | Constraints | Description |
+|---|---|---|---|---|---|
+| service_name | string | Yes | — | Matches ScoutedService | Name of the service. |
+| markdown | string | Yes | — | — | Unified Markdown document. |
+| source_urls | list[string] | Yes | — | — | URLs used for synthesis. |
+
+### 01_05. GeneratedTools  {#SP_GMP_01_05}
+
+| Field | Type | Required | Default | Constraints | Description |
+|---|---|---|---|---|---|
+| service_name | string | Yes | — | Matches ScoutedService | Name of the service. |
+| python_code | string | Yes | — | Syntactically valid Python | Complete Python module source code. |
+| tool_names | list[string] | Yes | — | — | Names of generated tool functions. |
+
+Invariants:
+- `python_code` must pass `ast.parse` validation.
+
+### 01_06. ServiceResource  {#SP_GMP_01_06}
+
+| Field | Type | Required | Default | Constraints | Description |
+|---|---|---|---|---|---|
+| name | string | Yes | — | — | The service identifier. |
+| markdown_content | string | Yes | — | Content of `output/{name}.md` | The Markdown content. |
+| tools_module | string | No | — | Path to Python module | Path to generated tools module. |
+
+## 02. Contracts  {#SP_GMP_02}
+### 02_01. Content Synthesis  {#SP_GMP_02_01}
+Purpose: Fetches service URLs and synthesizes HTML/PDF content into a single Markdown file.
+
+Input:
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| service | ScoutedService | Yes | The scouted service data. |
+| deps | ServiceProcessingDeps | Yes | Dependencies for fetching and LLM calls. |
+
+Output:
+
+| Return | Type | Description |
+|---|---|---|
+| result | SynthesizedContent | The synthesized Markdown and source URLs. |
+
+Errors:
+
+| Error | Condition | Result |
+|---|---|---|
+| Network Error | URL fetch fails | Log warning, skip URL. If all URLs fail, fallback to unavailable behavior. |
+
+Processing logic pseudocode:
+```python
+if not service.available:
+    write_unavailable_markdown(service.name)
+    write_empty_tools(service.name)
+    return
+
+fragments = []
+for url in service.urls:
+    try:
+        content = deps.http_client.get(url)
+        fragments.append(convert_to_markdown(content))
+    except FetchError:
+        log_warning()
+        continue
+
+if not fragments:
+    write_unavailable_markdown(service.name)
+    write_empty_tools(service.name)
+    return
+
+synthesized = synthesis_agent.run(fragments, deps)
+write_file(f"output/{service.name}.md", synthesized.markdown)
 ```
-The set of `category` values is defined by Stage 2. The same category string must be used consistently across all `ServiceMention` objects belonging to the same area.
 
-### 1.2 Generated Tool File (Output of Stage 3)
-A Python module (`output/{service_name}_tools.py`) containing one or more functions. Each function:
-- Has a descriptive name reflecting the semantic action (e.g., `register_move_in`, `get_office_hours`). Generic names (e.g., `submit_form_1`) are used only when the LLM cannot determine the purpose.
-- Has typed parameters with descriptive names matching the domain (e.g., `previous_municipality: str`, not `field_3: str`).
-- Has a docstring explaining what the tool does, what parameters it expects, and what it returns.
-- Is decorated with `@tool_meta(category="...", kind="action"|"informational")` to carry the category and tool kind.
-- Contains executable Python code:
-    - **Action tools**: submit a form via HTTP POST, download a file, compose an email, fetch calendar data, etc.
-    - **Informational tools**: extract a specific fact from the service's Markdown content and return it (e.g., office hours, ID requirements, fees).
-- Returns a string or dict describing the result.
-
-### 1.3 ServiceResource (Internal to Stage 4)
-```json
-{
-  "service_name": "string",
-  "category": "string",
-  "markdown_content": "string (content of the .md file)",
-  "tools_module": "string (Python module path for the generated tools)"
-}
+Agent Definition:
+```python
+synthesis_agent = Agent[ServiceProcessingDeps, SynthesizedContent](
+    model='openai:gpt-4o',
+    deps_type=ServiceProcessingDeps,
+    output_type=SynthesizedContent,
+    system_prompt=(
+        "You are a documentation specialist. Synthesize the provided Markdown "
+        "fragments into a single, cohesive, well-structured Markdown document. "
+        "Remove redundancies and organize the information logically. Preserve all "
+        "factual details, URLs, contact information, and official references."
+    ),
+    retries=2,
+)
 ```
 
-## 02. Contracts
+### 02_02. Tool Generation  {#SP_GMP_02_02}
+Purpose: Analyzes synthesized Markdown and source content to generate Python MCP tools.
 
-### 2.1 Stage 3: Service Processing
+Input:
 
-**Input**:
-- `ServiceMention` list (JSON file from Stage 2).
-- Access to the crawled files directory from Stage 1.
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| service | ScoutedService | Yes | The scouted service data. |
+| markdown_content | string | Yes | Synthesized Markdown content. |
+| source_contents | list[string] | Yes | Raw fetched content (HTML/PDF). |
+| deps | ServiceProcessingDeps | Yes | Dependencies for LLM calls. |
 
-**Output directory**: `output/`
-- `output/fragments/` — intermediate per-URL Markdown fragments.
-- `output/{service_name}.md` — final Markdown file per service.
-- `output/{service_name}_tools.py` — generated Python tool module per service.
+Output:
 
-**Content synthesis contract**:
-- For each `source_url` in the `ServiceMention`:
-    - Determine the file type (HTML or PDF).
-    - If HTML: extract the `<main>` element (fall back to `<body>`), convert to Markdown using `markdownify`.
-    - If PDF: extract text content, convert to Markdown.
-    - Write the result to `output/fragments/{service_name}__{url_hash}.md`.
-- After all `source_urls` are processed: send all fragments to an LLM to synthesize a single, cohesive, well-structured Markdown document. Write the result to `output/{service_name}.md`.
+| Return | Type | Description |
+|---|---|---|
+| tools | GeneratedTools | Generated Python code and tool names. |
 
-**Tool generation contract**:
-- After `output/{service_name}.md` is written, send the following to an LLM:
-    - The synthesized Markdown content (to understand the service's purpose).
-    - The original source files (HTML/PDF) for the service (to extract mechanical details).
-    - The `category` from the `ServiceMention`.
-    - A system prompt instructing the LLM to:
-        1. Identify actions a user or LLM might want to perform related to this service. Generate an **action tool** for each.
-        2. Identify specific facts that a user or LLM might want to query (e.g., office hours, requirements, fees). Generate an **informational tool** for each.
-        3. For web forms, analyze the raw HTML to determine the correct `action` URL, HTTP method, and exact `name` attributes for all inputs to ensure the generated Python code submits the correct payload.
-        4. Use semantically meaningful function names and parameter names.
-        5. Decorate each function with `@tool_meta(category="...", kind="action"|"informational")`.
-        6. Include `httpx` calls for HTTP interactions in action tools.
-        7. Include error handling (timeouts, non-200 responses).
-- The LLM writes the generated code to `output/{service_name}_tools.py`.
+Errors:
 
-**Error handling**:
-- If a crawled file does not exist for a `source_url`, log a warning and skip that URL.
-- If all `source_urls` for a `ServiceMention` fail, write an empty Markdown file with the header `# {service_name}\n\nNo content available.` and an empty tools file.
-- If the LLM fails to generate tool code, write an empty tools file (the service is still exposed as an MCP Resource without tools).
+| Error | Condition | Result |
+|---|---|---|
+| Generation Failure | LLM fails to generate valid code after 3 retries | Write empty `_tools.py` file. |
 
-### 2.2 Stage 4: MCP Server
+Processing logic pseudocode:
+```python
+if not service.available or not fragments_fetched:
+    return
 
-**Server name**: `gemeinde-mcp-server`
+tools = tool_gen_agent.run(
+    markdown_content,
+    source_contents,
+    service.name,
+    service.description,
+    deps
+)
+write_file(f"output/{service.name}_tools.py", tools.python_code)
+```
 
-**Resources**:
-- URI pattern: `gemeinde://services/{service_name}`
-- MIME type: `text/markdown`
-- Content: The contents of `output/{service_name}.md`.
+Agent Definition:
+```python
+tool_gen_agent = Agent[ServiceProcessingDeps, GeneratedTools](
+    model='openai:gpt-4o',
+    deps_type=ServiceProcessingDeps,
+    output_type=GeneratedTools,
+    system_prompt="...",  # Instructs to identify actions/facts, generate action/informational tools, determine form parameters, use semantic names, decorate with @tool_meta, use httpx, and handle errors.
+    retries=3,
+)
 
-**Generated tools**:
-- At startup, the server scans `output/` for `*_tools.py` files.
-- For each file, the server dynamically imports the module and registers each public function as an MCP Tool.
-- The tool name, parameters, docstring, category, and kind are read from the function's signature, `__doc__`, and `@tool_meta` decorator.
+@tool_gen_agent.output_validator
+def validate_generated_code(
+    ctx: RunContext[ServiceProcessingDeps], output: GeneratedTools
+) -> GeneratedTools:
+    code = output.python_code.strip()
+    if code.startswith("```"):
+        code = code.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+    try:
+        ast.parse(code)
+    except SyntaxError as e:
+        raise ModelRetry(
+            f"SyntaxError at line {e.lineno}, offset {e.offset}: {e.msg}. "
+            f"Code near error: {e.text}. Fix the syntax and return valid Python."
+        )
+    output.python_code = code
+    return output
+```
 
-**Built-in cross-service tools** (written in the server code, not LLM-generated):
+### 02_03. MCP Server Startup  {#SP_GMP_02_03}
+Purpose: Exposes generated Markdown and tools via MCP protocol.
 
-| Tool | Parameters | Behavior |
-|------|------------|----------|
-| `list_services` | `category` (optional) | Return the list of loaded services. If `category` is provided, filter by category. |
-| `list_tools` | `category` (optional) | Return the list of available tools with their names, docstrings, and categories. If `category` is provided, filter by category. |
-| `search_services` | `query` (required) | Search across all service Markdown files for the query string. Return matching service names and relevant excerpts. |
+Input:
 
-**Security constraint**: Generated Python code executes in the server process. The generated code is auditable in `output/{service_name}_tools.py` before the server starts. The server does not generate or modify tool code at runtime.
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| output_dir | string | Yes | Path to `output/` directory containing `.md` and `_tools.py` files. |
 
-## 03. Verification Criteria
+Output:
 
-### SP_GMP_03_01: Content Extraction
-Given a `ServiceMention` with `source_urls` pointing to crawled HTML files, the output Markdown file contains readable text and no HTML tags.
+| Return | Type | Description |
+|---|---|---|
+| server | MCPServer | Running server instance exposing resources and tools. |
 
-### SP_GMP_03_02: Action Tool Generation
-Given the Ausserberg move-in page (`anmeldung-wohnsitz`), the generated `anmeldung_wohnsitz_tools.py` contains a function named `register_move_in` (or similar) with `kind="action"` and parameters matching the form fields.
+Errors:
 
-### SP_GMP_03_03: Informational Tool Generation
-Given the Ausserberg office hours page, the generated tools file contains a function named `get_office_hours` (or similar) with `kind="informational"` that returns the office hours from the Markdown content.
+| Error | Condition | Result |
+|---|---|---|
+| Import Error | Module fails to import | Skip module, log error. |
 
-### SP_GMP_03_04: MCP Resource Listing
-When the MCP server starts with 5 services in the `output/` directory, `resources/list` returns 5 resources with URIs matching `gemeinde://services/{service_name}`.
+Processing logic pseudocode:
+```python
+for file in list_files("output/"):
+    if file.endswith(".md"):
+        register_resource(f"gemeinde://services/{file.stem}", file.read())
+    elif file.endswith("_tools.py") and not file.is_empty():
+        module = dynamic_import(file)
+        for func in module.public_functions:
+            register_tool(func)
+register_builtin_tools()
+```
 
-### SP_GMP_03_05: MCP Resource Read
-When reading `gemeinde://services/anmeldung_wohnsitz`, the server returns the Markdown content of `output/anmeldung_wohnsitz.md`.
+## 03. Validation Rules  {#SP_GMP_03}
+### 03_01. Input Validation  {#SP_GMP_03_01}
+- `ScoutedService` data must pass JSON schema validation matching section 01_01.
+- `urls` in `ScoutedService` must be valid URL formats.
+- Generated Python code must pass `ast.parse` syntax validation.
 
-### SP_GMP_03_06: MCP Tool Listing
-When the MCP server starts with a service that has a `_tools.py` file containing 2 functions, `tools/list` includes 2 tools with names, parameters, and categories matching the function metadata.
+## 04. State Transitions  {#SP_GMP_04}
+### 04_01. Lifecycle  {#SP_GMP_04_01}
+Per-service processing lifecycle:
+`pending` → `fetching` → `synthesizing` → `generating_tools` → `complete` | `failed`
 
-### SP_GMP_03_07: Tool Execution
-When calling the `register_move_in` tool with valid parameters, the tool executes the HTTP POST to the form action URL and returns a result describing the outcome.
+## 05. Verification Criteria  {#SP_GMP_05}
+### 05_01. Functional Expectations  {#SP_GMP_05_01}
 
-### SP_GMP_03_08: Cross-Service Tool
-When calling `list_services(category="Forms and registration")`, the server returns only the services whose `ServiceMention.category` is "Forms and registration".
+| ID | Description |
+|---|---|
+| SP_GMP_03_01 | Synthesized Markdown for available services contains cohesive text without HTML tags. |
+| SP_GMP_03_02 | Synthesized Markdown for unavailable services states the service is unavailable, with an empty `_tools.py` file. |
+| SP_GMP_03_03 | Action tools match form fields, possess semantic names (e.g., `register_move_in`), and specify `kind="action"`. |
+| SP_GMP_03_04 | Informational tools extract correct facts (e.g., office hours), possess semantic names, and specify `kind="informational"`. |
+| SP_GMP_03_05 | MCP server with 5 service files exposes 5 resources with `gemeinde://services/{name}` URIs. |
+| SP_GMP_03_06 | Reading `gemeinde://services/{name}` returns the correct Markdown content. |
+| SP_GMP_03_07 | MCP server registers all functions from non-empty `_tools.py` files as MCP tools with correct metadata. |
+| SP_GMP_03_09 | `list_services()` returns all loaded services. |
 
-## 04. Glossary
-Same as `C_GMP` Section 05.
+### 05_02. Invariant Checks  {#SP_GMP_05_02}
 
-## 05. Alternatives Considered
+| ID | Description |
+|---|---|
+| SP_GMP_03_10 | PydanticAI output validator raises `ModelRetry` for invalid Python code, and the agent self-corrects within 3 retries, producing code that passes `ast.parse`. |
 
-### Alternative 1: Mechanical HTML scanning for interaction detection (Rejected)
-**Description**: A rule-based script scans HTML for `<form>` elements, `mailto:` links, PDF links, calendar widgets, and generates a declarative `InteractionDefinition` JSON for each detected element.
-**Pros**: No LLM cost. Deterministic output.
-**Cons**: Cannot create informational tools. Produces generic tool names (`submit_form_1`) instead of semantic names (`register_move_in`). Cannot understand the purpose of a form.
-**Decision**: Rejected.
+### 05_03. Integration Scenarios  {#SP_GMP_05_03}
 
-### Alternative 2: Declarative tool definitions with a generic executor (Deferred)
-**Description**: The LLM generates a declarative JSON definition for each tool instead of Python code. A generic executor interprets the definition at runtime.
-**Pros**: No generated code to audit.
-**Cons**: The executor must handle every possible interaction type. Complex interactions may not fit a declarative schema.
-**Decision**: Deferred.
+| ID | Description |
+|---|---|
+| SP_GMP_03_08 | Calling an action tool executes the HTTP POST to the correct URL and returns an outcome description. |
 
-### Alternative 3: Runtime LLM interpreter (Deferred)
-**Description**: The LLM generates a declarative tool definition. A second LLM call at runtime interprets the definition and executes the action.
-**Pros**: No generated code. Handles complex, context-dependent interactions.
-**Cons**: Adds LLM cost and 2–10 seconds latency per tool call at runtime.
-**Decision**: Deferred.
+### 05_04. Edge Cases and Boundaries  {#SP_GMP_05_04}
+
+| ID | Description |
+|---|---|
+| SP_GMP_EDGE_01 | URL fetch failure correctly falls back to unavailable behavior when all URLs fail. |
+| SP_GMP_EDGE_02 | Code generation failure correctly yields an empty `_tools.py` file. |
+
+## 06. Reversibility  {#SP_GMP_06}
+### 06_01. Rollback Strategy  {#SP_GMP_06_01}
+Output files in the `output/` directory can be deleted. The pipeline can be re-run at any time. The pipeline maintains no persistent state outside the output directory.
+
+## 07. Design Decisions  {#SP_GMP_DEC}
+### DEC_01 — How to detect interactions in HTML?  {#SP_GMP_DEC_01}
+**Context**: We need to identify actions a user can take on a service webpage.
+**Considered Options**:
+1. Mechanical HTML scanning: Rule-based script scans HTML for forms, links, widgets, generating JSON interactions.
+2. LLM-based tool generation: PydanticAI agent analyzes HTML/PDF and synthesized content to generate Python tools.
+**Decision**: Use LLM-based tool generation.
+**Rationale**: Mechanical scanning cannot create informational tools, produces generic names, and cannot understand form purpose. LLM provides semantic names and identifies information needs.
+
+### DEC_02 — How to execute tools?  {#SP_GMP_DEC_02}
+**Context**: We need to execute the identified tools.
+**Considered Options**:
+1. Generated Python code: LLM generates Python code representing tools, executed by the server.
+2. Declarative tool definitions with generic executor: LLM generates JSON, interpreted by generic executor.
+**Decision**: Use generated Python code. (Declarative tool definitions are deferred.)
+**Rationale**: A generic executor must handle all possible interaction types, which is complex. Python code allows flexible interactions.
+
+### DEC_03 — Should tools be interpreted by LLM at runtime?  {#SP_GMP_DEC_03}
+**Context**: We need a mechanism to execute declarative definitions if adopted.
+**Considered Options**:
+1. Runtime LLM interpreter: LLM interprets declarative definitions at runtime to execute actions.
+2. Direct execution: Tools execute directly as Python code.
+**Decision**: Direct execution. (Runtime interpreter is deferred.)
+**Rationale**: Runtime LLM adds cost and latency (2–10 seconds) per tool call.
+
+### DEC_04 — Which LLM client framework to use?  {#SP_GMP_DEC_04}
+**Context**: We need a library to interact with LLMs.
+**Considered Options**:
+1. PydanticAI: Provides typed `BaseModel` outputs, `ModelRetry` self-healing, and dependency injection.
+2. Raw LLM client calls (OpenAI/Anthropic SDK): Manual prompt construction, JSON parsing, no validation loop.
+**Decision**: Use PydanticAI.
+**Rationale**: Raw calls lack type-safe structured output, automatic validation retries, and dependency injection. PydanticAI reduces boilerplate and handles syntax error retries automatically.
+
+## Changelog
+- 2026-09-24 | Initial version (v6.0.0)
