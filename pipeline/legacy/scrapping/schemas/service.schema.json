@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "service.schema.json",
+  "title": "Canonical municipal service (one line of services.jsonl)",
+  "type": "object",
+  "required": ["service_id","concept","labels","description","provider","jurisdiction","eligibility","requirements","documents","fees","processing_time","channels","actions","contacts","source_refs","field_provenance","trust","status"],
+  "additionalProperties": false,
+  "definitions": {
+    "evidence": {"type":"object","required":["source_ref","text","quote_check"],"additionalProperties":false,"properties":{
+      "source_ref":{"type":"string"},
+      "text":{"type":"string","maxLength":400},
+      "quote_check":{"enum":["exact","whitespace_normalized","not_checked"]}}},
+    "prov": {"type":"object","required":["classification","source_refs","evidence"],"additionalProperties":false,"properties":{
+      "classification":{"enum":["official","observed","derived","inferred","dynamic"]},
+      "source_refs":{"type":"array","items":{"type":"string"},"minItems":1},
+      "evidence":{"type":"array","items":{"$ref":"#/definitions/evidence"}},
+      "derived_from":{"type":["string","null"],"description":"For derived: the field path whose official value was transformed."},
+      "method":{"type":["string","null"]},
+      "note":{"type":["string","null"]}}},
+    "labelset": {"type":["string","null"]}
+  },
+  "properties": {
+    "service_id": {"type":"string","pattern":"^ch\\.[a-z]{2}\\.[a-z0-9-]+\\.[a-z0-9_.-]+$"},
+    "concept": {"type":"string","pattern":"^[a-z0-9_]+$","description":"Normalized English machine concept. NOT an official label."},
+    "labels": {"type":"object","additionalProperties":false,"required":["de","fr","it","rm"],"properties":{
+      "de":{"$ref":"#/definitions/labelset"},"fr":{"$ref":"#/definitions/labelset"},"it":{"$ref":"#/definitions/labelset"},"rm":{"$ref":"#/definitions/labelset"},
+      "alt":{"type":"array","items":{"type":"object","required":["lang","label","source_ref"],"properties":{"lang":{"type":"string"},"label":{"type":"string"},"source_ref":{"type":"string"}}}}}},
+    "description": {"type":["string","null"], "description":"Short neutral description in English written by the collector (inferred) or verbatim source text (official)."},
+    "audience": {"type":"array","items":{"enum":["residents","businesses","property_owners","visitors","parents","associations","other"]}},
+    "provider": {"type":"object","required":["name","department","authority_level"],"additionalProperties":false,"properties":{
+      "name":{"type":["string","null"]},"department":{"type":["string","null"]},
+      "authority_level":{"enum":["municipality","intermunicipal","canton","federal","mixed","unknown"]}}},
+    "jurisdiction": {"type":"object","required":["country","canton","municipality"],"additionalProperties":false,"properties":{
+      "country":{"const":"CH"},"canton":{"type":"string","pattern":"^[A-Z]{2}$"},"municipality":{"type":"string"}}},
+    "eligibility": {"type":"array","items":{"type":"object","required":["text"],"properties":{"text":{"type":"string"}}}},
+    "requirements": {"type":"array","items":{"type":"object","required":["text"],"properties":{"text":{"type":"string"}}}},
+    "documents": {"type":"array","items":{"type":"object","required":["name"],"properties":{"name":{"type":"string"},"url":{"type":["string","null"]},"kind":{"enum":["required_document","form","guide","regulation",null]}}}},
+    "fees": {"type":"array","items":{"type":"object","required":["raw_text","amount","currency"],"additionalProperties":false,"properties":{
+      "raw_text":{"type":"string"},"amount":{"type":["number","null"]},"amount_max":{"type":["number","null"]},
+      "currency":{"type":["string","null"]},"unit":{"type":["string","null"]},"condition":{"type":["string","null"]}}}},
+    "processing_time": {"type":["string","null"]},
+    "channels": {"type":"object","required":["online","in_person","postal","telephone","email"],"additionalProperties":false,"properties":{
+      "online":{"type":["boolean","null"]},"in_person":{"type":["boolean","null"]},"postal":{"type":["boolean","null"]},"telephone":{"type":["boolean","null"]},"email":{"type":["boolean","null"]}}},
+    "actions": {"type":"array","items":{"type":"object","required":["type","url"],"additionalProperties":false,"properties":{
+      "type":{"enum":["online_transaction","online_form","download_form","book_appointment","in_person","email","telephone","information_only","external_portal"]},
+      "label":{"type":["string","null"]},"url":{"type":["string","null"]},
+      "portal":{"type":["object","null"],"properties":{"domain":{"type":"string"},"operator":{"type":["string","null"]},"official_link_evidence":{"type":["string","null"]}}},
+      "transition":{"type":["string","null"],"description":"e.g. 'info page -> official eGov portal -> transaction'"}}}},
+    "contacts": {"type":"array","items":{"type":"object","properties":{"name":{"type":["string","null"]},"phone":{"type":["string","null"]},"email":{"type":["string","null"]},"address":{"type":["string","null"]},"url":{"type":["string","null"]}}}},
+    "source_refs": {"type":"array","items":{"type":"string"},"minItems":1},
+    "field_provenance": {"type":"object","additionalProperties":{"$ref":"#/definitions/prov"}},
+    "conflicts": {"type":"array","items":{"type":"object","required":["field","status","candidates"],"properties":{"field":{"type":"string"},"status":{"const":"conflict"},"candidates":{"type":"array"},"assessment":{"type":["string","null"]}}}},
+    "trust": {"type":"object","required":["authority","directness","freshness","evidence_coverage","conflicts"],"additionalProperties":false,"properties":{
+      "authority":{"enum":["high","medium","low"]},
+      "directness":{"enum":["primary","secondary","indirect"]},
+      "freshness":{"enum":["known","unknown","stale_indicated"]},
+      "freshness_basis":{"type":["string","null"]},
+      "evidence_coverage":{"type":"number","minimum":0,"maximum":1},
+      "conflicts":{"type":"array"}}},
+    "judgement_notes": {"type":"array","items":{"type":"object","required":["kind","text"],"properties":{"kind":{"enum":["FACT","INFERENCE","HYPOTHESIS","IDEA"]},"text":{"type":"string"}}}},
+    "status": {"enum":["verified","partial","candidate"]}
+  }
+}

@@ -1,0 +1,16 @@
+.env
+.env.*
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+.agents
+.codex
+artifacts
+data
+ideas-patrick
+tests
+NOTES.md
+PLAN.md

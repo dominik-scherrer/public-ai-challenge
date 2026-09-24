@@ -1,0 +1,26 @@
+[project]
+name = "mmp-judge"
+version = "0.1.0"
+description = "The Judge -- MMP's only quality gate: provenance, injection/safety, and coverage checks over a Build's Service Inventory (docs/architecture/adr/0004)."
+requires-python = ">=3.14"
+dependencies = [
+  "pyyaml>=6.0",
+]
+
+[project.scripts]
+judge = "judge.pipeline:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.16,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+package = true
+
+[tool.uv.build-backend]
+module-name = "judge"

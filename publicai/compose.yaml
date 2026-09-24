@@ -1,0 +1,16 @@
+services:
+  factory:
+    image: publicai-factory:0.1.0
+    build: .
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - ./artifacts:/artifacts
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 96
+    mem_limit: 1g
+    cpus: 2.0
+    tmpfs:
+      - /tmp:size=64m,mode=1777

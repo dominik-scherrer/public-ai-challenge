@@ -1,0 +1,392 @@
+{
+  "contract_version": "1.0",
+  "discovery_id": "fictional-discovery-1",
+  "created_at": "2026-09-24T12:00:00Z",
+  "official_url": "https://www.ausserberg.ch/",
+  "identity": {
+    "name": {
+      "value": "Fictional Fixture Municipality",
+      "evidence": [
+        {
+          "source_id": "home",
+          "excerpt": "Fictional Fixture Municipality"
+        },
+        {
+          "source_id": "contact",
+          "excerpt": "Fictional Fixture Municipality"
+        }
+      ]
+    },
+    "contact": {
+      "value": "Kanzlei: Telefon +41 00 000 00 00",
+      "evidence": [
+        {
+          "source_id": "contact",
+          "excerpt": "Kanzlei: Telefon +41 00 000 00 00"
+        }
+      ]
+    },
+    "language": "de"
+  },
+  "sources": [
+    {
+      "id": "home",
+      "url": "https://www.ausserberg.ch/",
+      "kind": "homepage",
+      "title": "FICTIONAL TEST FIXTURE",
+      "text": "FICTIONAL TEST FIXTURE — not actual information about Ausserberg.\nFictional Fixture Municipality\nKanzlei: Telefon +41 00 000 00 00\nDeutsch\nKanzlei\nMontag 09:00–11:00\nKehricht\nBitte den Kehrichtsack am Sammeltag bis 07:00 bereitstellen.\nNord\nSüd\n2026-10-01\n2026-10-30\n2026-10-15\n2026-10-31\nGlas\nGlas zur Sammelstelle Dorfplatz bringen.\nZuzug\nMelden Sie Ihren Zuzug bei der Kanzlei.\nAusländerausweis vorlegen.\nBei Zuzug aus dem Ausland.\nWegzug\nMelden Sie Ihren Wegzug bei der Kanzlei.\nSchadenmeldung\nStrassenschäden melden.\nhttps://www.ausserberg.ch/fixture-service\nhttps://portal.example.test/registration",
+      "retrieved_at": "2026-09-24T12:00:00Z",
+      "sha256": "efa713693794af7e3923bf5b94268343dc5053b7e191c8fac9be0097dbe9a823",
+      "links": [
+        "https://www.ausserberg.ch/fixture-service",
+        "https://portal.example.test/registration"
+      ]
+    },
+    {
+      "id": "contact",
+      "url": "https://www.ausserberg.ch/fixture-contact",
+      "kind": "contact",
+      "title": "FICTIONAL TEST FIXTURE",
+      "text": "FICTIONAL TEST FIXTURE — not actual information about Ausserberg.\nFictional Fixture Municipality\nKanzlei: Telefon +41 00 000 00 00\nDeutsch\nKanzlei\nMontag 09:00–11:00\nKehricht\nBitte den Kehrichtsack am Sammeltag bis 07:00 bereitstellen.\nNord\nSüd\n2026-10-01\n2026-10-30\n2026-10-15\n2026-10-31\nGlas\nGlas zur Sammelstelle Dorfplatz bringen.\nZuzug\nMelden Sie Ihren Zuzug bei der Kanzlei.\nAusländerausweis vorlegen.\nBei Zuzug aus dem Ausland.\nWegzug\nMelden Sie Ihren Wegzug bei der Kanzlei.\nSchadenmeldung\nStrassenschäden melden.\nhttps://www.ausserberg.ch/fixture-service\nhttps://portal.example.test/registration",
+      "retrieved_at": "2026-09-24T12:00:00Z",
+      "sha256": "efa713693794af7e3923bf5b94268343dc5053b7e191c8fac9be0097dbe9a823",
+      "links": [
+        "https://www.ausserberg.ch/fixture-service",
+        "https://portal.example.test/registration"
+      ]
+    }
+  ],
+  "capabilities": {
+    "office_hours": {
+      "coverage": "supported",
+      "entries": [
+        {
+          "id": "kanzlei",
+          "label": {
+            "value": "Kanzlei",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Kanzlei"
+              }
+            ]
+          },
+          "hours": [
+            {
+              "value": "Montag 09:00–11:00",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Montag 09:00–11:00"
+                }
+              ]
+            }
+          ],
+          "contacts": [
+            {
+              "value": "Kanzlei: Telefon +41 00 000 00 00",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Kanzlei: Telefon +41 00 000 00 00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "garbage_collection": {
+      "coverage": "supported",
+      "entries": [
+        {
+          "id": "kehricht-nord",
+          "label": {
+            "value": "Kehricht",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Kehricht"
+              }
+            ]
+          },
+          "instructions": [
+            {
+              "value": "Bitte den Kehrichtsack am Sammeltag bis 07:00 bereitstellen.",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Bitte den Kehrichtsack am Sammeltag bis 07:00 bereitstellen."
+                }
+              ]
+            }
+          ],
+          "zone": {
+            "value": "Nord",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Nord"
+              }
+            ]
+          },
+          "dates": [
+            {
+              "value": "2026-10-01",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "2026-10-01"
+                }
+              ]
+            },
+            {
+              "value": "2026-10-30",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "2026-10-30"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "kehricht-sued",
+          "label": {
+            "value": "Kehricht",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Kehricht"
+              }
+            ]
+          },
+          "instructions": [
+            {
+              "value": "Bitte den Kehrichtsack am Sammeltag bis 07:00 bereitstellen.",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Bitte den Kehrichtsack am Sammeltag bis 07:00 bereitstellen."
+                }
+              ]
+            }
+          ],
+          "zone": {
+            "value": "Süd",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Süd"
+              }
+            ]
+          },
+          "dates": [
+            {
+              "value": "2026-10-15",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "2026-10-15"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "zone_required": true,
+      "valid_from": {
+        "value": "2026-10-01",
+        "evidence": [
+          {
+            "source_id": "contact",
+            "excerpt": "2026-10-01"
+          }
+        ]
+      },
+      "valid_to": {
+        "value": "2026-10-31",
+        "evidence": [
+          {
+            "source_id": "contact",
+            "excerpt": "2026-10-31"
+          }
+        ]
+      }
+    },
+    "recycling": {
+      "coverage": "supported",
+      "entries": [
+        {
+          "id": "glas",
+          "label": {
+            "value": "Glas",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Glas"
+              }
+            ]
+          },
+          "instructions": [
+            {
+              "value": "Glas zur Sammelstelle Dorfplatz bringen.",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Glas zur Sammelstelle Dorfplatz bringen."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "move_in": {
+      "coverage": "supported",
+      "entries": [
+        {
+          "id": "zuzug",
+          "label": {
+            "value": "Zuzug",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Zuzug"
+              }
+            ]
+          },
+          "instructions": [
+            {
+              "value": "Melden Sie Ihren Zuzug bei der Kanzlei.",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Melden Sie Ihren Zuzug bei der Kanzlei."
+                }
+              ]
+            }
+          ],
+          "requirements": [
+            {
+              "text": {
+                "value": "Ausländerausweis vorlegen.",
+                "evidence": [
+                  {
+                    "source_id": "contact",
+                    "excerpt": "Ausländerausweis vorlegen."
+                  }
+                ]
+              },
+              "conditions": [
+                {
+                  "value": "Bei Zuzug aus dem Ausland.",
+                  "evidence": [
+                    {
+                      "source_id": "contact",
+                      "excerpt": "Bei Zuzug aus dem Ausland."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "handoffs": [
+        {
+          "value": "https://portal.example.test/registration",
+          "evidence": [
+            {
+              "source_id": "contact",
+              "excerpt": "https://portal.example.test/registration"
+            }
+          ]
+        }
+      ]
+    },
+    "move_out": {
+      "coverage": "supported",
+      "entries": [
+        {
+          "id": "wegzug",
+          "label": {
+            "value": "Wegzug",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Wegzug"
+              }
+            ]
+          },
+          "instructions": [
+            {
+              "value": "Melden Sie Ihren Wegzug bei der Kanzlei.",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Melden Sie Ihren Wegzug bei der Kanzlei."
+                }
+              ]
+            }
+          ],
+          "contacts": [
+            {
+              "value": "Kanzlei: Telefon +41 00 000 00 00",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Kanzlei: Telefon +41 00 000 00 00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "problem_reporting": {
+      "coverage": "supported",
+      "entries": [
+        {
+          "id": "schaden",
+          "label": {
+            "value": "Schadenmeldung",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Schadenmeldung"
+              }
+            ]
+          },
+          "contacts": [
+            {
+              "value": "Kanzlei: Telefon +41 00 000 00 00",
+              "evidence": [
+                {
+                  "source_id": "contact",
+                  "excerpt": "Kanzlei: Telefon +41 00 000 00 00"
+                }
+              ]
+            }
+          ],
+          "purpose": {
+            "value": "Strassenschäden melden.",
+            "evidence": [
+              {
+                "source_id": "contact",
+                "excerpt": "Strassenschäden melden."
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "review": {
+    "status": "passed",
+    "agent": "fictional-fixture-review",
+    "checked_at": "2026-09-24T12:00:00Z",
+    "issues": []
+  }
+}
