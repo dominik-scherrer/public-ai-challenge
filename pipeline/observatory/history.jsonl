@@ -1,3 +1,7 @@
-{"at":"2026-09-24T13:19:15Z","kind":"commit","title":"Concept docs committed","detail":"Initial adaptive ingestion, provenance, benchmark, service model and build plan were added under pipeline/."}
-{"at":"2026-09-24T13:32:42Z","kind":"pull_request","title":"PR #3 opened","detail":"HTTP-first runtime, browser escalation, OSS tooling options and semantic-compiler architecture proposed."}
-{"at":"2026-09-24T14:54:00+02:00","kind":"analysis","title":"Build observatory initialized","detail":"Current state classified as design-ready; implementation modules remain unstarted in pipeline/."}
+{"at":"2026-09-24T11:52:45Z","kind":"pr","title":"MMP architecture contribution opened","detail":"Dominik's glossary, ADRs and open questions entered through PR #1 and were merged."}
+{"at":"2026-09-24T12:11:52Z","kind":"pr","title":"Information classification contribution","detail":"Mark's static/dynamic information classification entered through PR #2 and was merged."}
+{"at":"2026-09-24T12:45:28Z","kind":"commit","title":"Work packages added","detail":"Repository README gained Data Acquisition, UX, System Architecture, QA and Deployment/GTM work packages."}
+{"at":"2026-09-24T13:19:15Z","kind":"commit","title":"Pipeline concept docs committed","detail":"Adaptive ingestion, provenance, municipality benchmark, service model and build plan were added under pipeline/."}
+{"at":"2026-09-24T13:32:42Z","kind":"pr","title":"Pipeline semantic-compiler PR opened","detail":"PR #3 proposes HTTP-first runtime, browser escalation, OSS tooling choices and large-planner/small-Apertus execution."}
+{"at":"2026-09-24T13:40:20Z","kind":"pr","title":"Living observatory PR opened","detail":"PR #4 introduced the first static build-state dashboard."}
+{"at":"2026-09-24T16:27:00+02:00","kind":"analysis","title":"Observatory widened to project scope","detail":"The dashboard now integrates repository-wide project streams and Git metadata while preserving pipeline/observatory as the only write location."}

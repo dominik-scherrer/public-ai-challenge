@@ -1,50 +1,54 @@
-# Build Observatory Refresh Prompt
-
-Use this prompt for the recurring build-status analysis.
+# Project Build Observatory — Refresh Prompt
 
 ## Scope
 
 Repository: `dominik-scherrer/public-ai-challenge`
 
-**Hard scope rule:** inspect and modify only `pipeline/`. You may read repository-wide pull-request/commit metadata when needed to understand dependencies, but never edit files outside `pipeline/`.
+### Read scope
+Read the **entire repository** and Git metadata needed to understand the project:
+- main README and work packages
+- docs/
+- ideas*/
+- pipeline/
+- src/
+- pyproject/deployment files
+- open/merged pull requests
+- recent commits
+- CI/status information when present
 
-## Task
+### Write scope
+**Hard rule:** modify only `pipeline/observatory/`.
 
-Act as the information orchestrator for the ingestion-pipeline build.
+The observatory is a project-wide read model stored inside the pipeline workstream. Do not edit other teams' files.
 
-1. Inspect the current state of `pipeline/`.
-2. Inspect open pull requests and recent commits that affect `pipeline/`.
-3. Compare the current state with:
-   - `pipeline/BUILD_PLAN.md`
-   - `pipeline/ARCHITECTURE.md`
-   - `pipeline/SEMANTIC_COMPILER.md` when present
-   - `pipeline/EVALS.md`
-4. Distinguish clearly between:
-   - implemented and evidenced
-   - designed/documented
-   - in progress
-   - blocked
-   - deferred
-5. Update:
-   - `pipeline/observatory/state.json`
-   - `pipeline/observatory/history.jsonl`
-   - the embedded state in `pipeline/observatory/index.html`
-6. Preserve history. Add a history event only when something materially changed.
-7. Do not manufacture progress. If a module exists only in documentation, mark it `designed`, not `implemented`.
-8. Surface:
-   - where we are
-   - what changed
-   - what is next
-   - open questions
-   - blockers
-   - status of each module
-   - active PRs relevant to pipeline
-9. Keep the dashboard readable to a teammate who has not followed the whole conversation.
+## Goal
+
+Act as an evidence-based information orchestrator for the whole hackathon build.
+
+Explain:
+- what the project is trying to build
+- where each workstream stands
+- what changed in Git
+- what is implemented versus merely designed
+- where team approaches converge or conflict
+- what is blocking the critical path
+- what should happen next
+
+## Required evidence surfaces
+
+Inspect:
+1. repository tree
+2. recent commits
+3. open and recently merged PRs
+4. README work packages
+5. active architecture/MVP/build-plan docs
+6. source/runtime files
+7. tests/evals/fixtures/baselines
+8. open-question and ADR documents
 
 ## Status vocabulary
 
 Use only:
-
 - `not_started`
 - `designed`
 - `in_progress`
@@ -52,10 +56,55 @@ Use only:
 - `blocked`
 - `deferred`
 
-## Update policy
+Research/document artifacts can be `implemented` as research outputs, but do not use that to imply runtime code exists.
 
-Prefer one small status commit only when the state materially changed. Avoid churn caused solely by timestamps.
+## Project streams
 
-Commit message:
+At minimum assess:
+- Product / MMP concept
+- Municipality/service research
+- Data acquisition / ingestion
+- MVP implementation
+- MCP runtime
+- UX / reference client
+- Quality / Judge / provenance
+- Deployment / GTM
 
-`chore(pipeline): refresh build observatory`
+Add/remove streams only when repository evidence warrants it.
+
+## Git section
+
+Maintain:
+- main HEAD SHA/message/time
+- open PRs relevant to project state
+- recently merged PRs
+- recent meaningful commits
+- CI/check status if available
+- branch divergence when it matters
+
+Git activity is evidence of change, not evidence of completion.
+
+## Integration analysis
+
+Explicitly flag tensions between documents/workstreams, for example:
+- incompatible scope assumptions
+- competing canonical schemas
+- baseline-vs-target model strategy
+- overlapping ownership
+- decisions made in one folder but not reflected elsewhere
+
+Do not silently reconcile disagreements. Name them and identify the decision needed.
+
+## Files to update
+
+- `pipeline/observatory/state.json`
+- `pipeline/observatory/history.jsonl`
+- embedded state in `pipeline/observatory/index.html`
+
+Preserve history. Append only material changes.
+
+Avoid timestamp-only commits.
+
+Commit message when material state changes:
+
+`chore(pipeline): refresh project observatory`
