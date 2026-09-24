@@ -9,7 +9,10 @@ import logging
 from pathlib import Path
 from typing import List
 
+from dotenv import load_dotenv
 import httpx
+
+load_dotenv()
 
 from .agents import process_service_content
 from .data_generator import generate_inventory
