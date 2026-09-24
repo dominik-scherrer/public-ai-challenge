@@ -1,0 +1,13 @@
+- static
+  - list of services
+    - online
+    - offline (info about them)
+  - search on the website (knowledge database)
+  - ? dead services (e.g. no SBB daily tickets anymore)
+- dynamic
+  - news
+    - official publications
+    - just news/digests
+  - calendar
+  - current projects (maybe move to the static?)
+  - dynamic elements on the website (e.g. if the Gemeinde is open/closed)
