@@ -1,0 +1,312 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "build_id": "ausserberg-seed-20260924",
+  "built_at": "2026-09-24T14:55:00Z",
+  "build_status": "partial",
+  "runtime_compatibility": {
+    "tools": [
+      "list_services",
+      "find_service",
+      "get_service",
+      "search_documents"
+    ]
+  },
+  "municipality": {
+    "name": "Ausserberg",
+    "canton": "VS",
+    "official_url": "https://www.ausserberg.ch/"
+  },
+  "source_languages": [
+    "de"
+  ],
+  "services": [
+    {
+      "id": "ch.vs.ausserberg.move_in",
+      "title": "Anmeldung Wohnsitz",
+      "labels": {
+        "de": "Anmeldung Wohnsitz"
+      },
+      "category": "residence_registration",
+      "summary": "Online form for registering a move to Ausserberg.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_aus_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.vs.ausserberg.move_out",
+      "title": "Wegzug",
+      "labels": {
+        "de": "Wegzug"
+      },
+      "category": "residence_deregistration",
+      "summary": "Online form for reporting departure from Ausserberg.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_aus_002"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.vs.ausserberg.facility_rental",
+      "title": "Miete Gemeindeanlagen",
+      "labels": {
+        "de": "Miete Gemeindeanlagen"
+      },
+      "category": "facility_rental",
+      "summary": "Request municipal facilities or equipment; municipal office reviews the request.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_aus_003"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.vs.ausserberg.building_application",
+      "title": "Baugesuch / eConstruction",
+      "labels": {
+        "de": "Baugesuch / eConstruction"
+      },
+      "category": "building_application",
+      "summary": "Building applications are routed to the cantonal eConstruction program.",
+      "delivery_mode": [
+        "external_online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_aus_004"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.vs.ausserberg.forms",
+      "title": "Anträge, Gesuche und Formulare",
+      "labels": {
+        "de": "Anträge, Gesuche und Formulare"
+      },
+      "category": "forms_documents",
+      "summary": "Municipal forms include water, wastewater, solar and other applications.",
+      "delivery_mode": [
+        "document"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_aus_005"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.vs.ausserberg.municipal_office",
+      "title": "Gemeindekanzlei",
+      "labels": {
+        "de": "Gemeindekanzlei"
+      },
+      "category": "municipal_contact",
+      "summary": "Municipal office contact and counter opening hours.",
+      "delivery_mode": [
+        "in_person"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_aus_006"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src_aus_001",
+      "url": "https://www.ausserberg.ch/gemeinschaft/verwaltung/verwaltung/online-schalter/anmeldung-wohnsitz",
+      "title": "Anmeldung Wohnsitz",
+      "classification": "official",
+      "publisher": {
+        "name": "Ausserberg",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_aus_002",
+      "url": "https://www.ausserberg.ch/gemeinschaft/verwaltung/online-schalter/wegzug",
+      "title": "Wegzug",
+      "classification": "official",
+      "publisher": {
+        "name": "Ausserberg",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_aus_003",
+      "url": "https://www.ausserberg.ch/gemeinschaft/informationen/antraege-gesuche-reglemente/miete-gemeindeanlagen",
+      "title": "Miete Gemeindeanlagen",
+      "classification": "official",
+      "publisher": {
+        "name": "Ausserberg",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_aus_004",
+      "url": "https://www.ausserberg.ch/gemeinschaft/informationen/bauwesen",
+      "title": "Bauwesen / eConstruction",
+      "classification": "official",
+      "publisher": {
+        "name": "Ausserberg",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_aus_005",
+      "url": "https://www.ausserberg.ch/gemeinschaft/informationen/antraege-gesuche-reglemente/antraege%2C-gesuche-formulare",
+      "title": "Anträge, Gesuche, Formulare",
+      "classification": "official",
+      "publisher": {
+        "name": "Ausserberg",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_aus_006",
+      "url": "https://www.ausserberg.ch/gemeinschaft/verwaltung/gemeindekanzlei",
+      "title": "Gemeindekanzlei",
+      "classification": "official",
+      "publisher": {
+        "name": "Ausserberg",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    }
+  ],
+  "generation": {
+    "method": "source-backed-seed",
+    "native_crawler_execution": false
+  }
+}
