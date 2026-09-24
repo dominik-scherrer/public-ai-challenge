@@ -1,0 +1,15 @@
+{
+  "package": "swiss-grounding-ingestion-concept",
+  "created": "2026-09-24",
+  "files": [
+    "README.md",
+    "ARCHITECTURE.md",
+    "PROVENANCE_AND_TRUST.md",
+    "CRAWL_STRATEGIES.md",
+    "MUNICIPALITY_BENCHMARK.md",
+    "SERVICE_MODEL.md",
+    "BUILD_PLAN.md",
+    "EVALS.md"
+  ],
+  "purpose": "Concept docs for adaptive, provenance-aware municipal service ingestion for Swiss Grounding MCP."
+}
