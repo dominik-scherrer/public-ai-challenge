@@ -1,0 +1,30 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "build_id": "biel-bienne-seed-20260924",
+  "built_at": "2026-09-24T14:55:00Z",
+  "build_status": "partial",
+  "runtime_compatibility": {
+    "tools": [
+      "list_services",
+      "find_service",
+      "get_service",
+      "search_documents"
+    ]
+  },
+  "municipality": {
+    "name": "Biel/Bienne",
+    "canton": "BE",
+    "official_url": "https://www.biel-bienne.ch/"
+  },
+  "source_languages": [
+    "de",
+    "fr"
+  ],
+  "services": [],
+  "sources": [],
+  "generation": {
+    "method": "source-backed-seed",
+    "native_crawler_execution": false
+  },
+  "coverage_note": "Official website could not be reliably retrieved in this run; inventory intentionally empty rather than filled from non-authoritative sources."
+}
