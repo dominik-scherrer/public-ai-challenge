@@ -1,0 +1,171 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "build_id": "lausanne-seed-20260924",
+  "built_at": "2026-09-24T14:55:00Z",
+  "build_status": "partial",
+  "runtime_compatibility": {
+    "tools": [
+      "list_services",
+      "find_service",
+      "get_service",
+      "search_documents"
+    ]
+  },
+  "municipality": {
+    "name": "Lausanne",
+    "canton": "VD",
+    "official_url": "https://www.lausanne.ch/"
+  },
+  "source_languages": [
+    "fr"
+  ],
+  "services": [
+    {
+      "id": "ch.vd.lausanne.arrival",
+      "title": "Inscription à la commune",
+      "labels": {
+        "fr": "Inscription à la commune"
+      },
+      "category": "residence_registration",
+      "summary": "New arrivals must register with the residents service.",
+      "delivery_mode": [
+        "in_person"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_lau_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.vd.lausanne.residence_declaration",
+      "title": "Déclaration de résidence",
+      "labels": {
+        "fr": "Déclaration de résidence"
+      },
+      "category": "residence_certificate",
+      "summary": "Residence/departure declarations are available as a municipal service.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_lau_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.vd.lausanne.waste_calendar",
+      "title": "Calendrier de ramassage",
+      "labels": {
+        "fr": "Calendrier de ramassage"
+      },
+      "category": "waste_collection",
+      "summary": "Address-based collection calendar and nearby recycling information.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_lau_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src_lau_001",
+      "url": "https://www-vali.lausanne.ch/prestations.html",
+      "title": "Prestations",
+      "classification": "official",
+      "publisher": {
+        "name": "Lausanne",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "fr"
+    },
+    {
+      "source_id": "src_lau_002",
+      "url": "https://www.lausanne.ch/dam/jcr%3A379afd27-3817-4a2f-ab48-6d64f06ead2a/Brochure_Contr%C3%B4le_Habitants.pdf",
+      "title": "Contrôle des habitants - catalogue",
+      "classification": "official",
+      "publisher": {
+        "name": "Lausanne",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "fr"
+    },
+    {
+      "source_id": "src_lau_003",
+      "url": "https://www.lausanne.ch/dam/jcr%3A49f53f47-a7f6-4381-9827-5227b63a00f7/110.1%20-%20R%C3%A8glement%20et%20tarif%20des%20%C3%A9moluments%20du%20contr%C3%B4le%20des%20habitants.pdf",
+      "title": "Tarif contrôle des habitants",
+      "classification": "official",
+      "publisher": {
+        "name": "Lausanne",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "fr"
+    }
+  ],
+  "generation": {
+    "method": "source-backed-seed",
+    "native_crawler_execution": false
+  }
+}
