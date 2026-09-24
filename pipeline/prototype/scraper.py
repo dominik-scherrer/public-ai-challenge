@@ -18,21 +18,41 @@ from typing import Any
 from model_adapter import ModelConfig, OpenAICompatibleModel
 
 
-USER_AGENT = "SwissGroundingMCP-Hackathon/0.1 (+public municipal service research)"
+USER_AGENT = "SwissGroundingMCP-Hackathon/0.2 (+public municipal service research)"
 
 SERVICE_HINTS = (
     "anmeldung", "abmeldung", "umzug", "wohnsitz", "bescheinigung", "ausweis",
     "identitätskarte", "gesuch", "bewilligung", "formular", "bestellung",
-    "beantragen", "register", "attestation", "demande", "permis", "inscription",
-    "certificat", "richiesta", "permesso", "certificato", "iscrizione",
-    "servizio", "dienstleistung", "online-schalter", "guichet", "sportello",
+    "beantragen", "register", "patent", "meldepflicht", "gebühr", "gebuehr",
+    "attestation", "demande", "permis", "inscription", "certificat",
+    "richiesta", "permesso", "certificato", "iscrizione", "servizio",
+    "dienstleistung", "online-schalter", "guichet", "sportello",
+)
+
+ACTION_HINTS = (
+    "beantragen", "bestellen", "anmelden", "abmelden", "melden", "einreichen",
+    "gesuch einreichen", "antrag stellen", "bewilligung", "patent", "formular",
+    "gebühr", "gebuehr", "kosten", "unterlagen", "voraussetzungen",
+    "zuständig", "zustaendig", "schalter", "kontakt", "download",
+    "demander", "commander", "inscription", "formulaire", "frais",
+    "richiedere", "ordinare", "modulo", "tassa",
 )
 
 NOISE_HINTS = (
-    "news", "medien", "politik", "gemeinderat", "veranstaltung", "event",
-    "tourismus", "hotel", "restaurant", "verein", "association", "manifestation",
-    "turismo", "albergo",
+    "news", "medien", "aktuelles", "politik", "gemeinderat", "veranstaltung",
+    "event", "tourismus", "hotel", "restaurant", "verein", "association",
+    "manifestation", "turismo", "albergo", "wetter", "weather", "webcam",
+    "immobilien", "liegenschaft", "ferienwohnung", "unterkunft",
 )
+
+NOISE_PATH_HINTS = (
+    "/aktuelles/", "/news/", "/medien/", "/wetter", "/weather", "/webcam",
+    "/tourismus", "/tourism", "/hotel", "/restaurant", "/veranstaltung",
+    "/events", "/politik/", "/gemeinderat/", "/immobilien", "/liegenschaft",
+)
+
+TRACKING_QUERY_PREFIXES = ("utm_", "pk_", "mc_")
+TRACKING_QUERY_KEYS = {"fbclid", "gclid"}
 
 
 @dataclass
@@ -100,7 +120,7 @@ class MunicipalHTMLParser(HTMLParser):
             rel = (attrs.get("rel") or "").lower()
             href = attrs.get("href")
             if href and "canonical" in rel:
-                self.canonical_url = urllib.parse.urljoin(self.base_url, href)
+                self.canonical_url = normalize_url(urllib.parse.urljoin(self.base_url, href))
         elif tag == "a":
             href = attrs.get("href")
             if href:
@@ -111,7 +131,7 @@ class MunicipalHTMLParser(HTMLParser):
         elif tag == "form":
             action = attrs.get("action")
             if action:
-                self.forms.append(urllib.parse.urljoin(self.base_url, action))
+                self.forms.append(normalize_url(urllib.parse.urljoin(self.base_url, action)))
 
     def handle_endtag(self, tag: str):
         if tag == "a" and self._current_link:
@@ -119,7 +139,7 @@ class MunicipalHTMLParser(HTMLParser):
             self.links.append(self._current_link)
             path = urllib.parse.urlsplit(self._current_link["url"]).path.lower()
             if path.endswith(".pdf"):
-                self.documents.append(self._current_link["url"])
+                self.documents.append(normalize_url(self._current_link["url"]))
             self._current_link = None
 
         if tag in {"script", "style", "noscript", "svg"} and self._skip_depth:
@@ -148,12 +168,13 @@ class MunicipalHTMLParser(HTMLParser):
                 self.headings.append(text)
 
     def page_ir(self, url: str, source_ref: str) -> dict[str, Any]:
-        host = urllib.parse.urlsplit(url).netloc.lower()
+        normalized_url = normalize_url(url)
+        host = urllib.parse.urlsplit(normalized_url).netloc.lower()
         links = []
         seen = set()
 
         for link in self.links:
-            candidate = _strip_fragment(link["url"])
+            candidate = normalize_url(link["url"])
             if not candidate or candidate in seen:
                 continue
             seen.add(candidate)
@@ -172,7 +193,7 @@ class MunicipalHTMLParser(HTMLParser):
 
         return {
             "schema": "page-ir/v0",
-            "url": url,
+            "url": normalized_url,
             "title": _clean_space(" ".join(self.title_parts)) or None,
             "language": self.language,
             "headings": self.headings[:100],
@@ -210,6 +231,7 @@ def validate_public_http_url(url: str) -> None:
 
 
 def fetch(url: str, timeout_seconds: int = 20) -> tuple[SourceSnapshot, bytes]:
+    url = normalize_url(url)
     validate_public_http_url(url)
 
     opener = urllib.request.build_opener(SafeRedirectHandler())
@@ -222,7 +244,7 @@ def fetch(url: str, timeout_seconds: int = 20) -> tuple[SourceSnapshot, bytes]:
     )
 
     with opener.open(request, timeout=timeout_seconds) as response:
-        final_url = response.geturl()
+        final_url = normalize_url(response.geturl())
         validate_public_http_url(final_url)
         body = response.read()
         sha = hashlib.sha256(body).hexdigest()
@@ -252,22 +274,33 @@ def parse_html(snapshot: SourceSnapshot, body: bytes) -> dict[str, Any]:
 
 
 def heuristic_score(page: dict[str, Any]) -> float:
-    haystack = " ".join(
+    title_headings_url = " ".join(
         [
             page.get("title") or "",
             " ".join(page.get("headings") or []),
             page.get("url") or "",
         ]
     ).lower()
+    body = (page.get("main_text") or "").lower()
 
-    positive = sum(1 for hint in SERVICE_HINTS if hint in haystack)
-    negative = sum(1 for hint in NOISE_HINTS if hint in haystack)
+    strong_positive = sum(1 for hint in SERVICE_HINTS if hint in title_headings_url)
+    body_positive = sum(1 for hint in ACTION_HINTS if hint in body)
+    negative = sum(1 for hint in NOISE_HINTS if hint in title_headings_url)
 
-    score = 0.20 + 0.18 * positive - 0.20 * negative
+    score = 0.14 + min(0.60, 0.20 * strong_positive) + min(0.24, 0.04 * body_positive)
+
     if page.get("forms"):
-        score += 0.15
+        score += 0.18
     if page.get("documents"):
-        score += 0.05
+        score += 0.08
+    if re.search(r"(?:chf|fr\.?)[\s\xa0]*\d", body):
+        score += 0.08
+    if any(term in body for term in ("online-schalter", "online schalter", "e-government", "egov")):
+        score += 0.08
+
+    score -= min(0.55, 0.22 * negative)
+    if _url_has_noise(page.get("url") or "") and strong_positive == 0:
+        score -= 0.25
 
     return max(0.0, min(1.0, score))
 
@@ -280,18 +313,18 @@ def heuristic_extract(
     score = heuristic_score(page)
     title = page["headings"][0] if page.get("headings") else page.get("title")
     text = page.get("main_text", "")
-    quote = text[:500] if score >= 0.45 and text else None
+    quote = text[:500] if score >= 0.40 and text else None
 
     return {
-        "page_role": "service" if score >= 0.55 else ("department" if score >= 0.35 else "other"),
-        "is_service": score >= 0.55,
+        "page_role": "service" if score >= 0.48 else ("department" if score >= 0.32 else "other"),
+        "is_service": score >= 0.48,
         "confidence": round(score, 3),
         "concept": None,
         "title": title,
-        "summary": text[:700] if score >= 0.55 else None,
+        "summary": text[:700] if score >= 0.48 else None,
         "evidence_quote": quote,
         "follow_urls": [],
-        "extractor": "heuristic-v0",
+        "extractor": "heuristic-v1",
     }
 
 
@@ -307,13 +340,22 @@ def model_extract(
     should_call = (
         model is not None
         and model_mode != "off"
-        and (model_mode == "always" or baseline["confidence"] >= 0.28)
+        and (model_mode == "always" or baseline["confidence"] >= 0.24)
     )
 
     if not should_call:
         return baseline
 
-    result = model.extract_service(page, municipality, canton)
+    try:
+        result = _validated_model_extraction(
+            model.extract_service(page, municipality, canton)
+        )
+    except Exception as exc:
+        fallback = dict(baseline)
+        fallback["model_error"] = f"{type(exc).__name__}: {exc}"
+        fallback["model_fallback"] = True
+        return fallback
+
     result["extractor"] = "event-api"
 
     quote = result.get("evidence_quote")
@@ -321,6 +363,32 @@ def model_extract(
         result["evidence_quote"] = None
         result["evidence_warning"] = "non-verbatim model quote discarded"
 
+    return result
+
+
+def _validated_model_extraction(value: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise RuntimeError("model output must be an object")
+    if not isinstance(value.get("is_service"), bool):
+        raise RuntimeError("model output is_service must be boolean")
+    if value.get("page_role") not in {
+        "service", "department", "form", "egov", "news", "tourism", "politics",
+        "contact", "other",
+    }:
+        raise RuntimeError("model output page_role is invalid")
+    confidence = value.get("confidence")
+    if not isinstance(confidence, (int, float)) or isinstance(confidence, bool):
+        raise RuntimeError("model output confidence must be numeric")
+    if not 0 <= float(confidence) <= 1:
+        raise RuntimeError("model output confidence must be between 0 and 1")
+    result = dict(value)
+    result["confidence"] = float(confidence)
+    for key in ("concept", "title", "summary", "evidence_quote"):
+        if result.get(key) is not None and not isinstance(result.get(key), str):
+            raise RuntimeError(f"model output {key} must be string or null")
+    if not isinstance(result.get("follow_urls", []), list):
+        raise RuntimeError("model output follow_urls must be a list")
+    result.setdefault("follow_urls", [])
     return result
 
 
@@ -410,6 +478,7 @@ def crawl(
     delay_seconds: float = 0.5,
     model_mode: str = "candidate",
 ) -> CrawlReport:
+    entrypoint = normalize_url(entrypoint)
     validate_public_http_url(entrypoint)
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -420,47 +489,51 @@ def crawl(
     model = OpenAICompatibleModel(model_config) if model_config else None
 
     started_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    queue: list[tuple[str, int]] = [(_strip_fragment(entrypoint), 0)]
-    seen: set[str] = set()
+    queue: list[tuple[str, int, int]] = [(entrypoint, 0, 0)]
+    requested_seen: set[str] = set()
+    processed_final: set[str] = set()
+    processed_canonical: set[str] = set()
     allowed_hosts = {urllib.parse.urlsplit(entrypoint).netloc.lower()}
 
     source_rows: list[dict[str, Any]] = []
     services: list[dict[str, Any]] = []
     failures: list[dict[str, str]] = []
 
-    while queue and len(seen) < max_pages:
-        url, depth = queue.pop(0)
-        if url in seen:
+    while queue and len(source_rows) < max_pages:
+        queue.sort(key=lambda item: (item[2], -item[1]), reverse=True)
+        url, depth, _priority = queue.pop(0)
+        url = normalize_url(url)
+        if url in requested_seen:
             continue
-        seen.add(url)
+        requested_seen.add(url)
 
         try:
             snapshot, body = fetch(url)
+            snapshot.url = normalize_url(snapshot.url)
+            final_key = snapshot.url
             allowed_hosts.add(urllib.parse.urlsplit(snapshot.url).netloc.lower())
 
-            source_rows.append(
-                {
-                    **asdict(snapshot),
-                    "classification": "official",
-                    "source_type": "municipality_website",
-                    "publisher": {
-                        "name": municipality,
-                        "authority_level": "municipality",
-                    },
-                }
-            )
-
-            suffix = (
-                ".html"
-                if snapshot.content_type in {"text/html", "application/xhtml+xml"}
-                else ".bin"
-            )
-            (out_dir / "snapshots" / f"{snapshot.source_id}{suffix}").write_bytes(body)
+            if final_key in processed_final:
+                continue
 
             if snapshot.content_type not in {"text/html", "application/xhtml+xml"}:
+                processed_final.add(final_key)
+                source_rows.append(_source_row(snapshot, municipality))
+                (out_dir / "snapshots" / f"{snapshot.source_id}.bin").write_bytes(body)
                 continue
 
             page = parse_html(snapshot, body)
+            canonical_key = normalize_url(snapshot.canonical_url) if snapshot.canonical_url else None
+            identity_key = canonical_key or final_key
+
+            if identity_key in processed_canonical:
+                processed_final.add(final_key)
+                continue
+
+            processed_final.add(final_key)
+            processed_canonical.add(identity_key)
+            source_rows.append(_source_row(snapshot, municipality))
+            (out_dir / "snapshots" / f"{snapshot.source_id}.html").write_bytes(body)
             (out_dir / "pages" / f"{snapshot.source_id}.json").write_text(
                 json.dumps(page, ensure_ascii=False, indent=2),
                 encoding="utf-8",
@@ -484,23 +557,19 @@ def crawl(
                 services.append(service)
 
             if depth < max_depth:
-                ranked = sorted(
-                    (
-                        link
-                        for link in page["links"]
-                        if link["internal"]
-                        and urllib.parse.urlsplit(link["url"]).netloc.lower() in allowed_hosts
-                        and not _obvious_noise(link)
-                    ),
-                    key=_link_priority,
-                    reverse=True,
-                )
-
-                queued_urls = {queued for queued, _ in queue}
-                for link in ranked:
-                    if link["url"] not in seen and link["url"] not in queued_urls:
-                        queue.append((link["url"], depth + 1))
-                        queued_urls.add(link["url"])
+                queued_urls = {queued for queued, _, _ in queue}
+                for link in page["links"]:
+                    link_url = normalize_url(link["url"])
+                    if (
+                        not link["internal"]
+                        or urllib.parse.urlsplit(link_url).netloc.lower() not in allowed_hosts
+                        or _obvious_noise(link)
+                        or link_url in requested_seen
+                        or link_url in queued_urls
+                    ):
+                        continue
+                    queue.append((link_url, depth + 1, _link_priority(link)))
+                    queued_urls.add(link_url)
 
         except Exception as exc:
             failures.append(
@@ -542,26 +611,77 @@ def crawl(
     return report
 
 
+def _source_row(snapshot: SourceSnapshot, municipality: str) -> dict[str, Any]:
+    return {
+        **asdict(snapshot),
+        "classification": "official",
+        "source_type": "municipality_website",
+        "publisher": {
+            "name": municipality,
+            "authority_level": "municipality",
+        },
+    }
+
+
 def _link_priority(link: dict[str, Any]) -> int:
-    haystack = f"{link.get('text', '')} {link.get('url', '')}".lower()
-    return (
-        sum(3 for hint in SERVICE_HINTS if hint in haystack)
-        - sum(4 for hint in NOISE_HINTS if hint in haystack)
-    )
+    text = (link.get("text") or "").lower()
+    url = link.get("url") or ""
+    haystack = f"{text} {url.lower()}"
+    score = sum(5 for hint in SERVICE_HINTS if hint in haystack)
+    score += sum(2 for hint in ACTION_HINTS if hint in text)
+    if url.lower().endswith(".pdf"):
+        score += 3
+    if any(token in haystack for token in ("verwaltung", "gemeinde", "schalter", "service", "dienst")):
+        score += 2
+    score -= sum(7 for hint in NOISE_HINTS if hint in haystack)
+    if _url_has_noise(url):
+        score -= 12
+    return score
 
 
 def _obvious_noise(link: dict[str, Any]) -> bool:
     haystack = f"{link.get('text', '')} {link.get('url', '')}".lower()
-    return (
-        any(hint in haystack for hint in NOISE_HINTS)
-        and not any(hint in haystack for hint in SERVICE_HINTS)
-    )
+    has_service_signal = any(hint in haystack for hint in SERVICE_HINTS)
+    return (_url_has_noise(link.get("url") or "") or any(hint in haystack for hint in NOISE_HINTS)) and not has_service_signal
+
+
+def _url_has_noise(url: str) -> bool:
+    path = urllib.parse.urlsplit(url).path.lower()
+    return any(hint in path for hint in NOISE_PATH_HINTS)
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8") as handle:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def normalize_url(url: str) -> str:
+    parsed = urllib.parse.urlsplit((url or "").strip())
+    if not parsed.scheme or not parsed.netloc:
+        return _strip_fragment(url)
+
+    scheme = parsed.scheme.lower()
+    hostname = (parsed.hostname or "").lower()
+    port = parsed.port
+    if port and not ((scheme == "http" and port == 80) or (scheme == "https" and port == 443)):
+        netloc = f"{hostname}:{port}"
+    else:
+        netloc = hostname
+
+    path = re.sub(r"/{2,}", "/", parsed.path or "/")
+    if path != "/" and path.endswith("/"):
+        path = path[:-1]
+
+    query_pairs = []
+    for key, value in urllib.parse.parse_qsl(parsed.query, keep_blank_values=True):
+        lowered = key.lower()
+        if lowered in TRACKING_QUERY_KEYS or any(lowered.startswith(p) for p in TRACKING_QUERY_PREFIXES):
+            continue
+        query_pairs.append((key, value))
+    query = urllib.parse.urlencode(query_pairs, doseq=True)
+
+    return urllib.parse.urlunsplit((scheme, netloc, path, query, ""))
 
 
 def _strip_fragment(url: str) -> str:

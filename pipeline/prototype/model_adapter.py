@@ -111,6 +111,8 @@ class OpenAICompatibleModel:
             raise RuntimeError(f"model HTTP {exc.code}: {detail}") from exc
         except urllib.error.URLError as exc:
             raise RuntimeError(f"model request failed: {exc}") from exc
+        except TimeoutError as exc:
+            raise RuntimeError("model request timed out") from exc
 
         try:
             content = data["choices"][0]["message"]["content"]
@@ -123,8 +125,8 @@ class OpenAICompatibleModel:
 def _parse_json_object(content: str) -> dict[str, Any]:
     content = content.strip()
     if content.startswith("```"):
-        content = re.sub(r"^```(?:json)?\\s*", "", content)
-        content = re.sub(r"\\s*```$", "", content)
+        content = re.sub(r"^```(?:json)?\s*", "", content)
+        content = re.sub(r"\s*```$", "", content)
 
     try:
         value = json.loads(content)
