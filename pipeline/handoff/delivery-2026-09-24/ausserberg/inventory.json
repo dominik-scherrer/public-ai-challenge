@@ -3,14 +3,6 @@
   "build_id": "ausserberg-seed-20260924",
   "built_at": "2026-09-24T14:55:00Z",
   "build_status": "partial",
-  "runtime_compatibility": {
-    "tools": [
-      "list_services",
-      "find_service",
-      "get_service",
-      "search_documents"
-    ]
-  },
   "municipality": {
     "name": "Ausserberg",
     "canton": "VS",
@@ -53,7 +45,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "residence_registration"
+      ]
     },
     {
       "id": "ch.vs.ausserberg.move_out",
@@ -88,7 +83,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "residence_deregistration"
+      ]
     },
     {
       "id": "ch.vs.ausserberg.facility_rental",
@@ -123,7 +121,11 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "facilities",
+        "facility_options"
+      ]
     },
     {
       "id": "ch.vs.ausserberg.building_application",
@@ -158,7 +160,11 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "authority_routing",
+        "building_application"
+      ]
     },
     {
       "id": "ch.vs.ausserberg.forms",
@@ -193,7 +199,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "forms"
+      ]
     },
     {
       "id": "ch.vs.ausserberg.municipal_office",
@@ -228,7 +237,12 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "authority_routing",
+        "municipal_contact",
+        "office_hours"
+      ]
     }
   ],
   "sources": [
@@ -308,5 +322,17 @@
   "generation": {
     "method": "source-backed-seed",
     "native_crawler_execution": false
-  }
+  },
+  "capabilities": [
+    "authority_routing",
+    "building_application",
+    "facilities",
+    "facility_options",
+    "forms",
+    "municipal_contact",
+    "office_hours",
+    "residence_deregistration",
+    "residence_registration",
+    "service_catalog"
+  ]
 }
