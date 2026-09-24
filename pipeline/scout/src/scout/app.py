@@ -56,6 +56,19 @@ def _parent_domain(url: str) -> str:
     return ".".join(parts[-2:]) if len(parts) >= 2 else host
 
 
+# Cantonal and federal authorities are official handoff targets for municipal
+# services (e.g. Binn's building permits route to www.vs.ch).
+CANTON_CODES = (
+    "ag", "ai", "ar", "be", "bl", "bs", "fr", "ge", "gl", "gr", "ju", "lu", "ne",
+    "nw", "ow", "sg", "sh", "so", "sz", "tg", "ti", "ur", "vd", "vs", "zg", "zh",
+)
+GOVERNMENT_DOMAINS = {f"{code}.ch" for code in CANTON_CODES} | {"admin.ch", "ch.ch"}
+
+
+def _is_government(url: str) -> bool:
+    return _parent_domain(url) in GOVERNMENT_DOMAINS
+
+
 def compile_source_bundle(page) -> list[SourceRef]:
     sources = [
         SourceRef(
@@ -92,11 +105,11 @@ def compile_source_bundle(page) -> list[SourceRef]:
         sibling_official = (
             page_parent_domain
             and _parent_domain(url) == page_parent_domain
-        )
+        ) or _is_government(url)
         semantic_handoff = any(
             term in f"{text} {url.lower()}"
             for term in (
-                "portal", "online", "eumzug", "egov",
+                "portal", "portail", "portale", "online", "eumzug", "egov",
                 "antrag", "gesuch", "kauf", "bestellen",
             )
         )

@@ -50,6 +50,30 @@ class ScoutIntegrationTests(unittest.TestCase):
             )
         )
 
+    def test_cantonal_portal_is_retained_as_official_handoff(self):
+        # Binn's Bauwesen page routes building permits to the canton's portal.
+        page = PageIR(
+            source_id="src_bau",
+            url="https://www.binn.ch/gemeinde/verwaltung/bauwesen",
+            retrieved_at=datetime.now(timezone.utc),
+            title="Bauwesen",
+            language="de",
+            headings=["Bauwesen"],
+            text="Baugesuche werden elektronisch eingereicht.",
+            links=[
+                {"url": "https://www.vs.ch/de/web/sajmte/portail-utilisateurs", "text": "", "internal": False},
+                {"url": "http://www.indual.ch/", "text": "webdesign", "internal": False},
+            ],
+            forms=[],
+            documents=[],
+        )
+        handoffs = [
+            str(source.url)
+            for source in compile_source_bundle(page)
+            if source.role.value == "official_handoff"
+        ]
+        self.assertEqual(handoffs, ["https://www.vs.ch/de/web/sajmte/portail-utilisateurs"])
+
     def test_fixture_run_compiles_discovery_json(self):
         now = datetime.now(timezone.utc)
         root = PageIR(
