@@ -1,128 +1,137 @@
-# Municipality URL → runnable MCP package: 24-hour MVP
+# Municipality MCP server factory
 
-Status: implementation plan based on Patrick's confirmed scope, 2026-09-24.
-Inputs: `ideas-patrick/servicelist_patrick.md`, `ideas-patrick/ausserberg_example.md`, and `ideas/mmp-swiss-municipality-service-research.md`. Dominik's documents are excluded from the design.
+## Outcome
 
-## Outcome and scope
+A CLI-first, two-stage agentic pipeline:
 
-A team member supplies an official Swiss municipality URL. The builder discovers public German-language information, extracts supported services, produces a review report, and exports a runnable MCP package. The same data and runtime power a hosted demo endpoint. Ausserberg is the reference municipality; a second German-speaking municipality tests generalization without bespoke code.
+**Municipality URL → discovery and normalization agent → validated service inventory → server-building agent → tested MCP server package.**
 
-Information and official handoffs only. Unknown attributes are omitted; records with insufficient evidence are skipped and reported. Partial builds are permitted and visibly identified. No submission, authentication to citizen portals, payments, live availability claims, or guaranteed universal coverage.
+The first version covers six service categories through seven standardized tools. It provides information and official handoffs, with live refresh for news and collection schedules. Form submissions, PDF extraction, builder UI, and hosted chat demos are deferred.
 
-Commercial LLMs handle build-time extraction. Use a small provider interface so Apertus on Swisscom infrastructure can be evaluated later. Runtime retrieval does not require an LLM or provider key. Citizen conversations use the host's chosen model independently.
+## 1. Standard service catalogue
 
-## UI recommendation
+Every server exposes the same tools and schemas. Missing information produces an explicit coverage status rather than a missing tool or an invented answer.
 
-Use an unmodified Open WebUI deployment for citizen conversations. Its native MCP integration supports Streamable HTTP; an administrator configures the endpoint and enables the tools. Pin a tested release. Do not build or fork a chat client or implement rich MCP Apps cards during the hackathon.
+| Service | Tool and optional inputs | Normalized result |
+|---|---|---|
+| Office hours | `get_office_hours(office)` | Office names, weekly hours, published exceptions, contact details |
+| Garbage collection | `get_garbage_collection(waste_type, zone, date_from, date_to)` | Published collection dates, waste types, zones, instructions and calendar links |
+| Waste recycling | `get_recycling_info(material)` | Accepted materials, disposal guidance, collection points, addresses and hours |
+| Move in | `get_move_in_requirements()` | Published requirements, documents, deadlines, responsible office and official registration link |
+| Move out | `get_move_out_requirements()` | Published requirements, documents, deadlines, responsible office and official deregistration link |
+| Report a problem | `get_problem_reporting_info(category)` | Reporting channels, supported categories, observed form fields and official reporting link |
+| Municipal news | `get_latest_municipality_news(limit)` | Headlines, published dates when available, article URLs and publisher |
 
-Build a separate minimal team page: URL input → progress → extracted services and review report → download package and copy hosted endpoint. Implement with server-rendered HTML alongside the Python backend. A CLI exposes the same build operation and is the fallback if the UI is cut for time.
+Use English tool identifiers and preserve source-language content. Start with German-speaking municipalities and German discovery synonyms.
 
-Use Open WebUI as the primary narrated demo, then demonstrate the same inventory through ChatGPT and Claude. Validate access to custom MCP connections in the actual demo accounts immediately. If a host cannot connect, record the limitation; a protocol smoke test is not proof of compatibility with that host.
+Collection queries default to the next 30 days in `Europe/Zurich`, with a maximum 90-day range. News defaults to five results, capped at twenty. Return available zone choices when a schedule requires a zone; do not infer address-to-zone mappings.
 
-Reference: https://docs.openwebui.com/features/extensibility/mcp/
+## 2. Stage 1: discover, inspect and normalize
 
-## Architecture
+The discovery agent receives the municipality URL and the versioned service catalogue.
+
+- Search navigation, sitemaps, municipal service pages, contact pages, waste sections and news sections specifically for the catalogue.
+- Prefer HTML and public structured sources: RSS/Atom, iCalendar and JSON endpoints discovered through official pages.
+- Inspect service shape: information page, HTML form, document link, external portal or structured feed. Record visible form fields, required markers, authentication barriers and handoff destinations without submitting anything.
+- Record PDF titles and official links only. Mark their contents as uninspected; discover a service from its referring page without claiming knowledge of the PDF.
+- Keep external portals as handoffs. Fetch external public feeds only when the municipality explicitly links them as a service source, using the same network protections.
+
+Produce a versioned `discovery.json` with:
+
+- Municipality identity, official URL, language, timestamps and build ID.
+- One entry for each of the seven capabilities.
+- Normalized service data, delivery shape, official handoffs and coverage: `supported`, `partial`, `handoff_only`, or `unavailable`.
+- Field-level evidence: source URL, supporting excerpt and retrieval timestamp.
+- Missing information, conflicts and discovery failures.
+- Live-source specifications for news and schedules, including format, URL and captured fixtures.
+
+Keep absence of evidence distinct from evidence that a service does not exist. Do not equate observed form fields with complete procedural requirements.
+
+Default crawl limits: 100 HTML/feed requests, two concurrent requests per domain and ten minutes per discovery run. Respect robots rules, block private-network destinations and validate redirects. Report truncation explicitly.
+
+Reuse suitable crawler and provenance components from the repository. Introduce an explicit adapter to the new factory contract; existing seed inventories remain candidates until validated.
+
+## 3. Stage 2: generate within a fixed server standard
+
+A separate builder agent consumes the validated discovery artifact. It generates service modules, source adapters and tests within a maintained Python server template.
+
+The shared template owns MCP transport, schemas, response formatting, safe HTTP access, caching, logging and startup. Generated code cannot change these contracts or add dependencies outside the pinned allowlist.
+
+Each package contains:
 
 ```text
-Team page / CLI
-      |
-Bounded crawl → HTML/PDF text + source snapshots
-      |
-LLM extraction → typed inventory → validation → review report
-      |
-Immutable build directory
-      +-- downloadable package + shared runtime
-      +-- hosted shared runtime → /municipalities/<id>/mcp
-                                      |
-                              Open WebUI / ChatGPT / Claude
+municipality-mcp/
+  pyproject.toml
+  uv.lock
+  Dockerfile
+  compose.yaml
+  README.md
+  manifest.json
+  discovery.json
+  report.md
+  llms.txt
+  municipality.md
+  src/
+  tests/
+  fixtures/
 ```
 
-The LLM produces data, never executable server code. Every package uses the same maintained runtime. Each endpoint is bound to one inventory; tool calls cannot select arbitrary local files or URLs.
+The manifest records municipality identity, build ID, contract version, template version, enabled live adapters and artifact hashes.
 
-Use Python and uv, the official MCP Python SDK, typed schema validation, ordinary HTTP fetching and HTML parsing, and PDF text extraction. Pin compatible dependencies after an initial smoke test; verify the repository's Python 3.14 baseline against them. Use JSON plus SQLite full-text search for local retrieval. No vector database, task queue, Kubernetes, or runtime agent loop is needed.
+Standard runtime behavior:
 
-## Initial tool contract
+- One municipality per server; no caller-supplied source URLs.
+- Streamable HTTP at `/mcp` and a stdio launch command.
+- Identical input/output schemas and read-only tool annotations across packages.
+- Structured results plus readable text, following the [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
+- A common response envelope containing municipality, capability, coverage, data, sources, timestamps, freshness and limitations.
+- Missing service information is an ordinary typed result; execution failures are distinguished from missing coverage.
+- No runtime model credentials or runtime LLM interpretation.
 
-Keep four tools for the mandatory delivery:
+Validate generated code in isolation without factory credentials, then run the shared conformance suite. Allow two repair attempts; failed validation produces a diagnostic report rather than a release package.
 
-| Tool | Input | Result |
-| --- | --- | --- |
-| `list_services` | optional category, pagination | Compact supported-service catalog |
-| `find_service` | query, bounded result limit | Matching services and snippets |
-| `get_service` | stable service ID | Requirements, office, fees, documents, official handoffs, evidence |
-| `search_documents` | query, optional service ID, bounded result limit | Relevant excerpts with URL and page/section references |
+### Live news and schedules
 
-Contacts and office hours are fields in service records; notices are typed records retrievable through these tools. Separate authority, notices, or waste-date tools can follow when extraction warrants them. Use German synonyms for search; return an explicit no-match result instead of fabricated answers.
+Prefer standard feed parsers; generate deterministic HTML adapters when needed. Test adapters against captured sources before packaging.
 
-Responses contain structured data and a readable text representation for host interoperability. Each response identifies municipality and build timestamp. Unknown fields remain absent; a separate completeness field states omissions. Fixed tool descriptions tell the host to use source links and distinguish information, requests, and confirmed outcomes.
+Refresh on demand after a 15-minute news cache or six-hour schedule cache expires. Use a ten-second refresh timeout and retain the last validated response on failure, clearly labelled stale. Without cached data, return an unavailable result and official source link.
 
-## Ausserberg reference set
+Do not promise live coverage where only a PDF or inaccessible portal exists. Such services remain handoff-only. Source layout changes must produce a refresh failure rather than silently replacing valid data with an empty result.
 
-Must cover: arrival/departure, residence certificates where discovered, municipal contacts/hours, facility rental requests, and building/solar application routing. Include at least one text-based PDF to demonstrate document retrieval. Regulations and official notices are included if the crawl discovers usable sources, but legal interpretation and computed objection deadlines are excluded.
+## 4. Municipality knowledge sheet and factory workflow
 
-Reference scenarios:
+Generate `municipality.md` from the same evidence-backed inventory: identity, official contacts, service responsibilities, official portals, languages, source links and known coverage gaps.
 
-1. “Ich ziehe nach Ausserberg. Wo melde ich mich an und welche Unterlagen brauche ich?”
-2. “Wie kann ich einen Gemeinderaum für eine Geburtstagsfeier anfragen?”
-3. “Wo finde ich das Formular für eine Solaranlage und welche Stelle ist zuständig?”
-4. “Wann ist die Gemeindekanzlei offen?”
-5. “Ist der Saal nächsten Samstag frei?” → explain that availability is not available in the inventory and provide the official request channel.
+Generate `llms.txt` as a concise guide linking to that sheet and the service documentation, using the [llms.txt proposal](https://llmstxt.org/). Treat it as a packaged context artifact; automatic chatbot discovery is not guaranteed. Defer a separate installable skill.
 
-Answers may contain only supported details. Discovery of a form does not prove that all procedural requirements have been found. Facility requests are subject to municipal review, not confirmed reservations.
+Expose three CLI operations:
 
-## Data and evidence
+- `factory discover URL --out DIR`
+- `factory build DISCOVERY_JSON --out DIR`
+- `factory run URL --out DIR` — orchestrates both stages.
 
-Inventory envelope: schema version, municipality identity, official URL, source language, build ID, fetched timestamps, runtime compatibility, and partial/complete build status. Only include a BFS identifier if established from evidence; otherwise use a stable local identity.
+A usable package requires verified municipality identity and at least one evidence-backed capability or official service handoff. Report partial coverage prominently. Preserve immutable builds; rebuilding creates a new artifact and never overwrites the last successful package.
 
-Service: stable ID, title, category, summary, delivery mode, optional requirements/fees/office/hours, form/document references, and official handoff URLs. Use internal categories initially; eCH mapping is a later enrichment, not a hackathon dependency.
+Retain the original 24-hour target as a planning assumption:
 
-Every substantive extracted claim has a source ID, URL, exact supporting text, and page/section when available. Preserve effective dates separately from fetch times. Do not describe a recent fetch as municipal verification. Dates and fees retain their conditions; conflicts are reported and affected attributes withheld. Distinguish unknown, not applicable, inaccessible, and conflicting information in the review report.
+1. Hours 0–4: catalogue, schemas, template and fixtures.
+2. Hours 4–10: targeted discovery and normalized handoff.
+3. Hours 10–16: builder agent, generated adapters and packaging.
+4. Hours 16–21: live refresh and end-to-end municipality runs.
+5. Hours 21–24: conformance checks, documentation and rehearsal.
 
-## Build pipeline and boundaries
+## 5. Acceptance checks
 
-1. Validate HTTP(S) input and identify the official site. Refuse private/local network destinations; revalidate redirects and resolved destinations.
-2. Discover links from the homepage, navigation, sitemap, and service/form sections. Respect robots rules. Initial configurable bounds: 100 HTML pages, 20 PDFs, 10 MB per document, two concurrent requests per domain, and a ten-minute build deadline. Report when a bound truncates discovery.
-3. Fetch and cache source snapshots; strip navigation and extract readable text with stable source identifiers. Skip scanned PDFs with an explicit report entry for the MVP. Browser rendering is a fallback only if essential reference pages require it.
-4. Follow the official domain by default. Retain external handoff links with evidence from the referring municipal page. Do not crawl external sites automatically; any enabled external domain gets the same URL validation. External links are not an authorization to submit data.
-5. Extract schema-constrained records with commercial LLMs. Treat website text as untrusted content. No tools, shell execution, credentials, or executable templates are available to extraction. Validate structured outputs and evidence references. Unsupported claims are withheld.
-6. Deduplicate services and validate records, dates, URL schemes, and references. Use targeted model review of ambiguous results only within a build budget; deterministic checks remain mandatory.
-7. Produce the package and report. A minimum usable build needs verified municipality identity and one source-backed service with an official next step or contact. Below that, return a failed build report rather than a nominally useful server.
+- Ausserberg builds through the normal URL-to-package workflow without manually editing generated data.
+- A second German-speaking municipality builds without changes to factory code.
+- Both packages expose the same seven tool contracts and launch using documented Docker and stdio commands.
+- Every substantive answer is traceable to evidence; unsupported details remain absent.
+- HTML forms produce guidance and handoffs without submissions.
+- PDF-only services remain discoverable and explicitly link-only.
+- News and schedule tests cover refresh, cache expiry, source failure, changed markup and stale fallback.
+- Collection tests cover missing zones, absent future dates and date boundaries.
+- Discovery tests cover crawl limits, blocked pages, conflicting evidence, redirects and malicious page instructions.
+- Generated packages contain no secrets and pass the shared contract suite.
+- The report distinguishes service discovery coverage from usable structured data and working live adapters.
 
-The hosted builder is team-restricted to bound cost. The public demo MCP endpoint serves only the public, read-only snapshot over HTTPS with rate limits. Do not log citizen tool arguments or ship extraction credentials in packages. This is an independent hosting choice, not a requirement inherited from other idea folders.
-
-## Package and refresh
-
-Export a ZIP containing pinned runtime source/dependencies, Dockerfile, Compose configuration, inventory JSON, SQLite retrieval index, referenced text excerpts, build manifest, review report, and launch/host-connection instructions. Build an equivalent hosted instance from the same artifact. Retain full crawl snapshots as team build artifacts; package only the source material needed for retrieval and evidence.
-
-Primary launch: `docker compose up --build`. First launch requires dependency/image downloads; serving the built snapshot then requires no commercial model key. Label this distinction in the README. Offer stdio if it is needed for a tested host path; Streamable HTTP is the primary transport.
-
-Manual rebuild command creates a new immutable build and report. Compare added/removed services and failed sources. A failed rebuild leaves the prior hosted build active. Team explicitly promotes a successful partial build when coverage regresses. Scheduled refresh, public publishing workflows, and automatic deployment are outside the MVP.
-
-## 24-hour delivery schedule
-
-| Hours | Engineer A: extraction | Engineer B: runtime and integration | Engineer C, if available |
-| --- | --- | --- | --- |
-| 0–2 | Agree schema; curate 10–15 reference records | Fixture MCP server; verify actual host accounts and HTTP connection | Bring up HTTPS hosting and Open WebUI |
-| 2–7 | Bounded crawler and HTML/PDF text | Four tools over fixture; search and response format | Builder page, job status, download flow |
-| 7–12 | LLM extraction, evidence, omissions report | Export package; wire automatic inventory into runtime | Package documentation; host integration checks |
-| 12–17 | Run Ausserberg; fix extraction failures | End-to-end build/download/launch/host test | Evaluate reference scenarios and second municipality |
-| 17–21 | Second-site fixes; rebuild comparison | Negative tests; freeze dependencies and deploy demo | Demo flow, report presentation, setup documentation |
-| 21–24 | Joint buffer, fixes, rehearsal, and reproducible release | Joint buffer, fixes, rehearsal, and reproducible release | Joint buffer, fixes, rehearsal, and reproducible release |
-
-With two engineers, B owns the minimal builder page after CLI export works. Cut visual polish, dedicated notices tooling, browser rendering, and optional stdio before sacrificing evidence, clean package startup, or host tests. Stop adding features at hour 17. Reserve the last three hours for failures and rehearsal. Apertus evaluation happens after the commercial-model baseline passes.
-
-## Acceptance checks
-
-- Ausserberg builds from its URL through the normal pipeline, without manually patching generated records.
-- Each exposed substantive claim has retrievable supporting evidence. Manually inspect the reference set for omissions and incorrect extraction; record results rather than asserting universal accuracy.
-- Package launches from a clean environment using documented commands and contains no model credentials.
-- Hosted and downloaded versions return equivalent records for the same build.
-- Actual ChatGPT, Claude, and Open WebUI accounts discover tools and complete at least one successful multi-tool scenario each. Record versions, setup, and any limitations.
-- Unknown fees, unavailable calendars, contradictory dates, blocked pages, scanned PDFs, and empty searches produce omissions or clear unavailable results.
-- Malicious page instructions remain inert data; crawl inputs and redirects cannot target internal network addresses.
-- A second German-speaking municipality produces useful source-backed services without site-specific code; report coverage instead of promising parity.
-- A failed rebuild preserves the last good hosted snapshot.
-
-## Setup inputs needed when implementation starts
-
-Available commercial model credentials and spending ceiling; a hosting environment with public HTTPS; access to the three demo host accounts; and ownership of the workstreams. These do not block the schema, fixture, and local pipeline work. Confirm them in the first hour rather than discovering access issues near the demo.
+Ausserberg already provides useful HTML fixtures for [office hours and news](https://www.ausserberg.ch/gemeinschaft/informationen/anschlagbrett-weibil-totz) and a [move-out form](https://www.ausserberg.ch/gemeinschaft/verwaltung/online-schalter/wegzug). Full coverage of the remaining services must be established by discovery.
