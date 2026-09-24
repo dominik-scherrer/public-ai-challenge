@@ -3,14 +3,6 @@
   "build_id": "binn-seed-20260924",
   "built_at": "2026-09-24T14:55:00Z",
   "build_status": "partial",
-  "runtime_compatibility": {
-    "tools": [
-      "list_services",
-      "find_service",
-      "get_service",
-      "search_documents"
-    ]
-  },
   "municipality": {
     "name": "Binn",
     "canton": "VS",
@@ -53,7 +45,12 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "authority_routing",
+        "municipal_contact",
+        "office_hours"
+      ]
     },
     {
       "id": "ch.vs.binn.regulations",
@@ -88,7 +85,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "regulations"
+      ]
     },
     {
       "id": "ch.vs.binn.official_information",
@@ -123,7 +123,11 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "local_notices",
+        "official_notices"
+      ]
     }
   ],
   "sources": [
@@ -167,5 +171,14 @@
   "generation": {
     "method": "source-backed-seed",
     "native_crawler_execution": false
-  }
+  },
+  "capabilities": [
+    "authority_routing",
+    "local_notices",
+    "municipal_contact",
+    "office_hours",
+    "official_notices",
+    "regulations",
+    "service_catalog"
+  ]
 }
