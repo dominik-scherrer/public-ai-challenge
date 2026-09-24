@@ -20,6 +20,7 @@ dependencies = [
 
 [project.scripts]
 public-ai-challenge = "public_ai_challenge:main"
+gemeinde-mcp-pipeline = "public_ai_challenge.gemeinde_mcp.pipeline:main"
 
 [build-system]
 requires = ["uv_build>=0.12.16,<0.13.0"]

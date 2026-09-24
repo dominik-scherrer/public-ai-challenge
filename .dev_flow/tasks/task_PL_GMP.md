@@ -2,8 +2,8 @@
 
 > **Task ID:** `task_PL_GMP`
 > **Created:** 2026-09-24 22:45
-> **Last updated:** 2026-09-24 22:45
-> **Status:** `in-progress`
+> **Last updated:** 2026-09-24 23:14
+> **Status:** `done`
 > **Contributors:** `antigravity`
 
 ## Current Work Item
@@ -87,9 +87,25 @@ Implementing Phase 1 (Project Setup & Scouting) of the Gemeinde MCP Pipeline fol
 - 23:08 — Started Phase 4 subtask.
 - 23:11 — Implemented MCPServer with resources and tools, added tests (20 passed). Subtask done.
 
+### Subtask: Phase 5 — End-to-End Pipeline
+> Author: `antigravity` — Created: 23:12 — Last updated: 23:14 — Status: `done`
+
+**Goal:** Implement `run_pipeline` and CLI in `src/public_ai_challenge/gemeinde_mcp/pipeline.py` tying together Phase 1-4.
+
+**Progress:**
+- [x] Create `src/public_ai_challenge/gemeinde_mcp/pipeline.py`
+- [x] Register CLI script in `pyproject.toml`
+- [x] Add functional tests in `tests/test_pipeline.py`
+- [x] Verify Phase 5 criteria (SP_GMP_05_08, SP_GMP_05_09) (21 tests passed)
+
+**Activity:**
+- 23:12 — Started Phase 5 subtask.
+- 23:14 — Implemented pipeline, CLI script, added integration tests (21 passed). All phases complete. Subtask done.
+
 ## Coordination Notes
 
 - 22:45 [antigravity] — Starting Phase 1 implementation.
+- 23:14 [antigravity] — All 5 phases implemented and verified. Ready for commit approval.
 
 ## Blocking Issues
 
@@ -101,8 +117,9 @@ Implementing Phase 1 (Project Setup & Scouting) of the Gemeinde MCP Pipeline fol
 |------|-------------|-----------------|
 | Concept | `docs/gemeinde_mcp.concept.md` | Core concept — `antigravity` |
 | Spec | `docs/gemeinde_mcp.sp.md` | SP_GMP_01 data structures — `antigravity` |
-| Plan | `docs/gemeinde_mcp.plan.md` | Phase 1 plan — `antigravity` |
+| Plan | `docs/gemeinde_mcp.plan.md` | Phase 1-5 plan — `antigravity` |
 
 ## Shared Activity Log
 
+- 23:14 [antigravity] — all phases completed, tests passing (21/21)
 - 22:45 [antigravity] — created task and started Phase 1

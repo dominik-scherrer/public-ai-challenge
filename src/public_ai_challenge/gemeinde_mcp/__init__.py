@@ -16,6 +16,7 @@ from .models import (
     ServiceResource,
     SynthesizedContent,
 )
+from .pipeline import run_pipeline
 from .server import FastMCP, create_mcp_server
 
 __all__ = [
@@ -35,4 +36,5 @@ __all__ = [
     "generate_inventory",
     "FastMCP",
     "create_mcp_server",
+    "run_pipeline",
 ]

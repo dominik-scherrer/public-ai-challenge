@@ -270,14 +270,14 @@ Per-service processing lifecycle:
 
 | ID | Description |
 |---|---|
-| SP_GMP_05_08 | Calling an action tool executes the HTTP POST to the correct URL and returns an outcome description. |
+| SP_GMP_05_08 | End-to-end pipeline processes scouted services list, produces synthesized markdown and structured inventories, and initializes a queryable MCP server. |
 
 ### 05_04. Edge Cases and Boundaries  {#SP_GMP_05_04}
 
 | ID | Description |
 |---|---|
 | SP_GMP_EDGE_01 | URL fetch failure correctly falls back to unavailable behavior when all URLs fail. |
-| SP_GMP_EDGE_02 | Code generation failure correctly yields an empty `_tools.py` file. |
+| SP_GMP_EDGE_02 | Inventory generation failure correctly yields a minimal fallback `_inventory.json` file. |
 
 ## 06. Reversibility  {#SP_GMP_06}
 ### 06_01. Rollback Strategy  {#SP_GMP_06_01}

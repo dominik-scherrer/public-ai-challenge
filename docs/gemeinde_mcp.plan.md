@@ -1,7 +1,7 @@
 # Implementation Plan: Gemeinde MCP Pipeline  {#PL_GMP}
 
 > **Code:** PL_GMP
-> **Status:** draft
+> **Status:** complete
 > **Created:** 2026-09-24
 > **Updated:** 2026-09-24
 >
@@ -35,7 +35,7 @@ Implement a pipeline that reads scouted services, extracts HTML and PDF content,
 - [x] Phase 2 — Content Extraction & Synthesis
 - [x] Phase 3 — Inventory Generation
 - [x] Phase 4 — MCP Server
-- [ ] Phase 5 — End-to-End Pipeline
+- [x] Phase 5 — End-to-End Pipeline
 
 ## Phases
 
@@ -113,7 +113,7 @@ Notes:
 - Exposes generic built-in MCP Tools that read `output/{name}_inventory.json`.
 - Implements cross-service tools: `list_services`, `search_services`.
 
-### Phase 5 — End-to-End Pipeline [TODO]
+### Phase 5 — End-to-End Pipeline [DONE]
 **Depends on:** Phase 2, Phase 3, Phase 4
 **Implements:** [SP_GMP_05](./gemeinde_mcp.sp.md#SP_GMP_05)
 **Verify:** SP_GMP_05_08, SP_GMP_05_09

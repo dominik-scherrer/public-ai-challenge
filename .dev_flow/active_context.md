@@ -6,12 +6,12 @@ This file is a **dashboard** — a thin index over the task files in [`tasks/`](
 
 | Task | Phase | Status | Contributors | Updated |
 |------|-------|--------|--------------|---------|
-| [task_PL_GMP](tasks/task_PL_GMP.md) — Implement Gemeinde MCP Pipeline | implement | in-progress | antigravity | 2026-09-24 22:45 |
 
 ## Recently Completed
 
 | Task | Phase | Completed | Contributors | Result |
 |------|-------|-----------|--------------|--------|
+| [task_PL_GMP](tasks/task_PL_GMP.md) — Implement Gemeinde MCP Pipeline | implement | 2026-09-24 | antigravity | All 5 phases implemented and verified (21 tests passing) |
 
 ## Deferred (todos)
 
