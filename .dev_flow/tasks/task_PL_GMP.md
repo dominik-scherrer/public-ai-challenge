@@ -43,6 +43,21 @@ Implementing Phase 1 (Project Setup & Scouting) of the Gemeinde MCP Pipeline fol
 - 22:45 — Created task file and started Phase 1 implementation.
 - 22:52 — Installed dependencies with `uv`, created models & test data, verified with pytest (5 passed). Subtask done.
 
+### Subtask: Phase 2 — Content Extraction & Synthesis
+> Author: `antigravity` — Created: 22:56 — Last updated: 23:00 — Status: `done`
+
+**Goal:** Implement extraction routines (`fetch_content`, `extract_html_to_markdown`, `extract_pdf_to_markdown`) and synthesis agent (`synthesis_agent`, `process_service_content`).
+
+**Progress:**
+- [x] Create `src/public_ai_challenge/gemeinde_mcp/extraction.py`
+- [x] Create `src/public_ai_challenge/gemeinde_mcp/agents.py` with synthesis agent and processing
+- [x] Add functional tests in `tests/test_extraction.py` and `tests/test_synthesis.py`
+- [x] Verify Phase 2 criteria (SP_GMP_05_01, SP_GMP_05_02, SP_GMP_EDGE_01) (12 tests passed)
+
+**Activity:**
+- 22:56 — Started Phase 2 subtask.
+- 23:00 — Implemented extraction, agents, tests; 12 unit/integration tests passed. Subtask done.
+
 ## Coordination Notes
 
 - 22:45 [antigravity] — Starting Phase 1 implementation.
