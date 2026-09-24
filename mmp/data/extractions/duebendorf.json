@@ -1,0 +1,64 @@
+{
+  "extraction": "manual (Claude, from browser captures 2026-09-24; stands in for the build model until a key is configured)",
+  "general_contact": {
+    "office": "Stadthaus Dübendorf",
+    "address": "Usterstrasse 2, 8600 Dübendorf",
+    "phone": "+41 44 801 67 11",
+    "email": "info@duebendorf.ch",
+    "evidence": [{"source_id": "abmeldung", "quote": "Stadthaus Dübendorf Usterstrasse 2 8600 Dübendorf +41 44 801 67 11 info@duebendorf.ch"}]
+  },
+  "services": [
+    {
+      "id": "wegzug_abmelden",
+      "title": "Wegzug abmelden",
+      "tier": "wayfinding",
+      "summary": "Wer Dübendorf verlässt, meldet sich innert 14 Tagen nach dem Wegzug am Schalter oder über das Online-Formular ab. Die Abmeldung ist gratis.",
+      "summary_evidence": [
+        {"source_id": "abmeldung", "quote": "müssen Sie sich innert 14 Tagen nach dem Wegzug bei unserem Schalter oder über das Online-Formular abmelden."},
+        {"source_id": "abmeldung", "quote": "Die Abmeldung aus unserer Gemeinde ist gratis."}
+      ],
+      "categories": ["residence_deregistration"],
+      "keywords": ["Wegzug", "Abmeldung", "Umzug", "Wohnsitz", "Einwohnerdienste"],
+      "responsible": {
+        "office": "Einwohnerdienste",
+        "address": "Usterstrasse 2, 8600 Dübendorf",
+        "phone": "+41 44 801 67 00",
+        "evidence": [{"source_id": "einwohnerdienste", "quote": "Kontakt Einwohnerdienste Usterstrasse 2 8600 Dübendorf Tel. +41 44 801 67 00"}]
+      },
+      "deadline": {
+        "days": 14, "relative_to": "move_out", "label": "innert 14 Tagen nach dem Wegzug",
+        "evidence": [{"source_id": "abmeldung", "quote": "müssen Sie sich innert 14 Tagen nach dem Wegzug bei unserem Schalter oder über das Online-Formular abmelden."}]
+      },
+      "fees": [
+        {"label": "Abmeldung", "amount": 0, "evidence": [{"source_id": "abmeldung", "quote": "Die Abmeldung aus unserer Gemeinde ist gratis."}]}
+      ],
+      "documents": [
+        {"id": "persoenlicher_ausweis", "label": "Persönlicher Ausweis", "audience": "swiss", "applies_to": "each_person",
+         "evidence": [{"source_id": "abmeldung", "quote": "Wenn Sie das Schweizerbürgerrecht besitzen, benötigen wir folgende Unterlagen von Ihnen: persönlicher Ausweis"}]},
+        {"id": "auslaenderausweis", "label": "Ausländerausweis", "audience": "foreign", "applies_to": "each_person",
+         "evidence": [{"source_id": "abmeldung", "quote": "Wenn Sie eine andere Staatsbürgerschaft besitzen, benötigen wir von Ihnen: Ausländerausweis"}]}
+      ],
+      "opening_hours": {
+        "office": "Einwohnerdienste",
+        "entries": [
+          {"days": "Montag", "times": ["09.00–11.30", "13.30–16.00"]},
+          {"days": "Dienstag", "times": ["13.30–19.00"]},
+          {"days": "Mittwoch", "times": ["09.00–11.30", "13.30–16.00"]},
+          {"days": "Donnerstag", "times": ["09.00–11.30", "13.30–16.00"]},
+          {"days": "Freitag", "times": ["07.00–14.00"]}
+        ],
+        "evidence": [{"source_id": "einwohnerdienste", "quote": "Öffnungszeiten Montag 09.00–11.30 Uhr 13.30–16.00 Uhr Dienstag 13.30–19.00 Uhr Mittwoch 09.00–11.30 Uhr 13.30–16.00 Uhr Donnerstag 09.00–11.30 Uhr 13.30–16.00 Uhr Freitag 07.00–14.00 Uhr"}]
+      },
+      "handoffs": [
+        {"kind": "online_form", "label": "Online-Formular Abmeldung", "url": "https://www.duebendorf.ch/_rte/onlinedienst/21917",
+         "fields": [
+           {"key": "move_date", "label": "Wegzugsdatum"},
+           {"key": "household_size", "label": "Anzahl Personen"}
+         ],
+         "evidence": [{"source_id": "abmeldung", "quote": "bei unserem Schalter oder über das Online-Formular abmelden"}]},
+        {"kind": "counter", "label": "Am Schalter der Einwohnerdienste",
+         "evidence": [{"source_id": "abmeldung", "quote": "bei unserem Schalter oder über das Online-Formular abmelden"}]}
+      ]
+    }
+  ]
+}

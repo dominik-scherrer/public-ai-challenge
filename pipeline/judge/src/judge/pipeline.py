@@ -49,7 +49,7 @@ DEFAULT_BUILD_FLOOR = 0.5
 def _municipality_domain(inventory_path: Path) -> str:
     payload = json.loads(inventory_path.read_text(encoding="utf-8"))
     url = payload.get("municipality", {}).get("official_url", "")
-    return urlparse(url).netloc.lstrip("www.") if url else ""
+    return urlparse(url).netloc.removeprefix("www.") if url else ""
 
 
 def judge_provenance(claim: Claim, *, dry_run: bool) -> ProvenanceVerdict:
@@ -102,8 +102,10 @@ def judge_provenance(claim: Claim, *, dry_run: bool) -> ProvenanceVerdict:
     )
 
 
-def judge_injection(claim: Claim, municipality_domain: str, *, dry_run: bool) -> InjectionFinding:
-    deterministic = deterministic_check(claim, municipality_domain)
+def judge_injection(
+    claim: Claim, municipality_domain: str, *, dry_run: bool, allowed_domains: tuple[str, ...] = ()
+) -> InjectionFinding:
+    deterministic = deterministic_check(claim, municipality_domain, allowed_domains)
     if deterministic is not None:
         return deterministic
 
@@ -148,32 +150,45 @@ def judge_injection(claim: Claim, municipality_domain: str, *, dry_run: bool) ->
     return InjectionFinding(claim=claim, flagged=False, category="none", reason="", detector=detectors)
 
 
-def run_judge(
-    inventory_path: Path,
+def judge_claims(
+    claims: list[Claim],
     *,
+    build_id: str,
+    municipality: str,
+    domain: str,
+    categories: list[str],
     dry_run: bool = False,
     build_floor: float = DEFAULT_BUILD_FLOOR,
     reference_categories: list[str] | None = None,
+    allowed_domains: tuple[str, ...] = (),
+    skip_provenance_fields: tuple[str, ...] = ("title",),
 ) -> BuildJudgeResult:
-    build_id, municipality, claims = load_claims_from_inventory(inventory_path)
-    domain = _municipality_domain(inventory_path)
+    """The Judge over already-extracted Claims (any inventory schema).
 
+    `skip_provenance_fields`: fields that are labels rather than factual
+    claims; they still get the injection check but are never withheld for
+    lacking evidence (without this, v1's always-evidence-less `title` would
+    withhold every Service's name).
+    """
     services: dict[str, ServiceJudgeResult] = {}
     for claim in claims:
         result = services.setdefault(claim.service_id, ServiceJudgeResult(service_id=claim.service_id))
 
-        provenance = judge_provenance(claim, dry_run=dry_run)
-        injection = judge_injection(claim, domain, dry_run=dry_run)
+        injection = judge_injection(claim, domain, dry_run=dry_run, allowed_domains=allowed_domains)
         result.injection_flags.append(injection)
-
         if injection.flagged:
             result.withheld_fields.append({"field": claim.field, "reason": f"injection: {injection.reason}"})
-        elif provenance.verdict == Verdict.PASS:
+            continue
+        if claim.field in skip_provenance_fields:
+            result.kept_fields.append(claim.field)
+            continue
+
+        provenance = judge_provenance(claim, dry_run=dry_run)
+        if provenance.verdict == Verdict.PASS:
             result.kept_fields.append(claim.field)
         else:
             result.withheld_fields.append({"field": claim.field, "reason": provenance.reason})
 
-    categories = load_categories(inventory_path)
     reference = reference_categories if reference_categories is not None else load_reference_categories()
     coverage = compute_coverage(categories, reference)
 
@@ -190,6 +205,28 @@ def run_judge(
             if blocked
             else None
         ),
+    )
+
+
+def run_judge(
+    inventory_path: Path,
+    *,
+    dry_run: bool = False,
+    build_floor: float = DEFAULT_BUILD_FLOOR,
+    reference_categories: list[str] | None = None,
+) -> BuildJudgeResult:
+    """mmp-service-inventory/v0 (pipeline/legacy/handoff) entry point — behaviour unchanged."""
+    build_id, municipality, claims = load_claims_from_inventory(inventory_path)
+    return judge_claims(
+        claims,
+        build_id=build_id,
+        municipality=municipality,
+        domain=_municipality_domain(inventory_path),
+        categories=load_categories(inventory_path),
+        dry_run=dry_run,
+        build_floor=build_floor,
+        reference_categories=reference_categories,
+        skip_provenance_fields=(),
     )
 
 

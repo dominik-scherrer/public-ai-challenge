@@ -1,0 +1,7 @@
+.venv/
+.env
+data/operator/
+__pycache__/
+
+# the root .gitignore ignores build/ (Python packaging); this is source code
+!/src/mmp/build/

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gemeinde-Assistent · MMP Reference Client</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <svg width="28" height="32" viewBox="0 0 28 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 2h24v14c0 7-6 12-12 14C8 28 2 23 2 16z"/><path d="M8 12l6 6 6-6"/></svg>
+    <div class="top-text">
+      <label for="muni" class="visually-hidden">Gemeinde wählen</label>
+      <select id="muni" aria-label="Gemeinde"></select>
+      <span class="top-sub">Assistent für Einwohnerinnen und Einwohner</span>
+    </div>
+    <button id="reset" class="icon" aria-label="Neues Gespräch" title="Neues Gespräch"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4l12 12M16 4L4 16"/></svg></button>
+  </header>
+  <div id="badge" class="badge-bar" role="note"></div>
+  <main id="log" class="log" aria-live="polite"></main>
+  <form id="composer" class="composer">
+    <label for="q" class="q-label">Ihre Frage</label>
+    <div class="q-row">
+      <textarea id="q" rows="3" placeholder="Beschreiben Sie Ihre Situation in eigenen Worten …"></textarea>
+      <button id="send" class="send" aria-label="Senden"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 16V4M4 10l6-6 6 6"/></svg></button>
+    </div>
+  </form>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

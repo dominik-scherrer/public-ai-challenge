@@ -22,6 +22,7 @@ Model Municipality Protocol (MMP) — public infrastructure making Swiss municip
   - `pipeline/scout/` — the active ingestion/discovery workstream (Scout).
   - `pipeline/judge/` — the Judge: provenance, injection/safety and coverage checks over a Build's Service Inventory (implements ADR-0004 and ADR-0007). See `pipeline/judge/README.md`.
   - `publicai/` — Patrick's "Factory" MVP; see the point above.
+  - `mmp/` — the MMP MVP built against `docs/architecture/adr/`: Build (reuses Patrick's crawler, now for any host) → Judge (`pipeline/judge`, path dependency) → Service Inventory; the shared MMP server; the Reference Client. See `mmp/README.md`.
   - The root `pyproject.toml` is a separate, minimal project of its own, not a shared base for the subprojects above.
 - Everything else directly under `pipeline/` (`ARCHITECTURE.md`, `BUILD_PLAN.md`, etc.) is Scout's own working notes, not the accepted architecture — that's `docs/architecture/`. `pipeline/legacy/` is superseded ingestion/prototype code kept for reference, not a base to build on.
 - Each subproject should conform to `docs/architecture/adr/`; where it currently doesn't (see the status table in `docs/architecture/README.md`), that's an open gap to resolve deliberately, not a precedent to build further on.

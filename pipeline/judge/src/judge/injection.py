@@ -43,14 +43,23 @@ def _own_domain(url: str, municipality_domain: str) -> bool:
         host = urlparse(url).netloc.lower()
     except ValueError:
         return False
-    domain = municipality_domain.lower().lstrip("www.")
+    domain = municipality_domain.lower().removeprefix("www.")
     return host == domain or host.endswith("." + domain) or host == "www." + domain
 
 
-def check_foreign_links(text: str, municipality_domain: str) -> list[str]:
-    """Returns any http(s) URLs in `text` that are not on the municipality's own domain."""
+def check_foreign_links(
+    text: str, municipality_domain: str, allowed_domains: tuple[str, ...] = ()
+) -> list[str]:
+    """Returns any http(s) URLs in `text` that are not on the municipality's own domain.
+
+    `allowed_domains` are the Municipality's other official domains plus the
+    operator allow-list ADR-0007 anticipates ("withheld until an allow-list
+    exists") — e.g. eumzug.swiss. Empty by default, so behaviour is unchanged
+    for callers that don't pass one.
+    """
     urls = re.findall(r"https?://[^\s)\]\"']+", text)
-    return [u for u in urls if not _own_domain(u, municipality_domain)]
+    domains = (municipality_domain, *allowed_domains)
+    return [u for u in urls if not any(_own_domain(u, d) for d in domains if d)]
 
 
 def check_payment_details(text: str) -> bool:
@@ -62,7 +71,9 @@ def check_injection_keywords(text: str) -> bool:
     return any(kw in lowered for kw in _INJECTION_KEYWORDS)
 
 
-def deterministic_check(claim: Claim, municipality_domain: str) -> InjectionFinding | None:
+def deterministic_check(
+    claim: Claim, municipality_domain: str, allowed_domains: tuple[str, ...] = ()
+) -> InjectionFinding | None:
     """Runs the cheap checks. Returns a flagged finding, or None if clean.
 
     Only inspects text; run this on every claim regardless of `is_free_text`
@@ -71,7 +82,7 @@ def deterministic_check(claim: Claim, municipality_domain: str) -> InjectionFind
     """
     text = str(claim.value)
 
-    foreign_links = check_foreign_links(text, municipality_domain)
+    foreign_links = check_foreign_links(text, municipality_domain, allowed_domains)
     if foreign_links:
         return InjectionFinding(
             claim=claim,

@@ -1,0 +1,24 @@
+{
+  "schema": "mmp-judge-report/v0",
+  "build_id": "duebendorf-20260924T203404Z",
+  "municipality": "Dübendorf",
+  "mode": "deterministic-only (no judge model configured; provenance NOT judged)",
+  "blocked": false,
+  "block_reason": null,
+  "build_floor": 0.5,
+  "coverage": {
+    "ratio": 0.5,
+    "mapped": [
+      "municipal_contact",
+      "office_hours",
+      "residence_deregistration"
+    ],
+    "unmapped_reference": [
+      "building_application",
+      "facility_rental",
+      "residence_registration"
+    ]
+  },
+  "injection_withheld": [],
+  "judged_at": "2026-09-24T20:34:04.330364+00:00"
+}

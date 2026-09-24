@@ -1,0 +1,36 @@
+[project]
+name = "mmp"
+version = "0.1.0"
+description = "Model Municipality Protocol MVP: Build (crawl -> extract -> Judge -> Service Inventory), the shared stateless MMP server, and the Reference Client chat."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "anyio",
+    "httpcore",
+    "httpx",
+    "mcp",
+    "openai",
+    "pydantic",
+    "python-dotenv",
+    "pyyaml",
+    "starlette",
+    "uvicorn",
+    "mmp-judge",
+]
+
+[project.scripts]
+mmp = "mmp.cli:main"
+
+[dependency-groups]
+dev = ["pytest", "pytest-asyncio"]
+
+[tool.uv.sources]
+mmp-judge = { path = "../pipeline/judge", editable = true }
+
+[build-system]
+requires = ["uv_build>=0.12.16,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

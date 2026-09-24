@@ -13,6 +13,8 @@ This folder is the canonical design record for the project — promoted here fro
 
 ## ADRs and where they stand against current work (2026-09-24)
 
+**Update (branch `feat/mmp-mvp`):** `mmp/` is an end-to-end MVP built directly against these ADRs — typed v1 Service Inventory, one shared stateless MMP server by BFS number, the Judge wired into the Build, and a Reference Client with its own MCP Apps host rendering the Service Card. See `mmp/README.md` ("How the ADRs show up in code" and "Deliberate decisions to review"). The table below describes `pipeline/` and is unchanged.
+
 The team's `pipeline/` workstream (Scout ingestion, the Judge, and handoff data) moved fast while these ADRs sat unreferenced in a personal folder. None of them have been formally contradicted; the Judge (0004, 0007) now has a running skeleton, several others are still not implemented, and one is actively at risk. Re-check this table as `pipeline/` matures — don't treat it as permanent.
 
 | ADR | Decision | Status vs. current `pipeline/` work |

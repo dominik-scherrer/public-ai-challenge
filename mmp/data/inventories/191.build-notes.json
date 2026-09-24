@@ -1,0 +1,10 @@
+{
+  "build_id": "duebendorf-20260924T203404Z",
+  "blocked": false,
+  "block_reason": null,
+  "notes": [
+    "2 retained page(s) via browser_capture",
+    "eCH-0070 list not imported (data/ech0070/leistungen.csv): all Services unmapped",
+    "Judge (deterministic): not_run, coverage 50%"
+  ]
+}

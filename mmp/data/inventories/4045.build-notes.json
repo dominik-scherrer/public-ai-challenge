@@ -1,0 +1,11 @@
+{
+  "build_id": "wettingen-20260924T203404Z",
+  "blocked": false,
+  "block_reason": null,
+  "notes": [
+    "7 retained page(s) via browser_capture",
+    "kinderbetreuung: withheld handoffs[1] (link to non-municipal domain withheld (ADR-0007): http://www.kitarechner.ch/Wettingen)",
+    "eCH-0070 list not imported (data/ech0070/leistungen.csv): all Services unmapped",
+    "Judge (deterministic): not_run, coverage 50%"
+  ]
+}

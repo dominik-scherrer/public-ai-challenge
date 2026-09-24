@@ -110,3 +110,91 @@ def load_categories(inventory_path: Path) -> list[str]:
 def iter_delivered_inventories(handoff_dir: Path) -> Iterable[Path]:
     """All inventory.json files under a delivery batch, e.g. pipeline/legacy/handoff/delivery-2026-09-24/."""
     yield from sorted(handoff_dir.glob("*/inventory.json"))
+
+
+# --- mmp-inventory/v1 (mmp/src/mmp/schema.py) --------------------------------
+#
+# The typed Service Inventory the MMP Build produces (ADR-0003/0007). Unlike
+# v0, every attribute carries its own literal source quotes, so each attribute
+# becomes one Claim whose evidence_text is exactly those quotes — the
+# provenance judge checks the attribute against what it cites, not against a
+# whole page.
+
+V1_SCALAR_ATTRIBUTES = ("responsible", "deadline", "opening_hours")
+V1_LIST_ATTRIBUTES = ("fees", "documents", "handoffs")
+
+
+def _v1_value(attribute: dict[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in attribute.items() if k != "evidence"}
+
+
+def _v1_evidence(attribute_evidence: list[dict[str, Any]]) -> str | None:
+    quotes = [e.get("quote", "") for e in attribute_evidence or [] if e.get("quote")]
+    return "\n".join(quotes) if quotes else None
+
+
+def load_claims_from_mmp_v1(payload: dict[str, Any]) -> tuple[str, str, list[Claim]]:
+    """Returns (build_id, municipality_name, claims) for an mmp-inventory/v1 document."""
+    build_id = payload.get("build", {}).get("id", "unknown-build")
+    municipality = payload.get("municipality", {}).get("name", "unknown-municipality")
+    claims: list[Claim] = []
+    for service in payload.get("services", []):
+        service_id = service.get("id", "unknown-service")
+        refs = tuple(service.get("source_ids", []))
+        if service.get("summary"):
+            claims.append(
+                Claim(
+                    service_id=service_id,
+                    municipality=municipality,
+                    field="summary",
+                    value=service["summary"],
+                    source_refs=refs,
+                    evidence_text=_v1_evidence(service.get("summary_evidence", [])),
+                    is_free_text=True,
+                )
+            )
+        claims.append(
+            Claim(
+                service_id=service_id,
+                municipality=municipality,
+                field="title",
+                value=service.get("title", ""),
+                source_refs=refs,
+                evidence_text=None,  # titles are labels, not factual claims; injection-checked only
+                is_free_text=True,
+            )
+        )
+        for name in V1_SCALAR_ATTRIBUTES:
+            attribute = service.get(name)
+            if attribute:
+                claims.append(
+                    Claim(
+                        service_id=service_id,
+                        municipality=municipality,
+                        field=name,
+                        value=_v1_value(attribute),
+                        source_refs=refs,
+                        evidence_text=_v1_evidence(attribute.get("evidence", [])),
+                    )
+                )
+        for name in V1_LIST_ATTRIBUTES:
+            for i, item in enumerate(service.get(name) or []):
+                key = item.get("id", i) if name == "documents" else i
+                claims.append(
+                    Claim(
+                        service_id=service_id,
+                        municipality=municipality,
+                        field=f"{name}[{key}]",
+                        value=_v1_value(item),
+                        source_refs=refs,
+                        evidence_text=_v1_evidence(item.get("evidence", [])),
+                    )
+                )
+    return build_id, municipality, claims
+
+
+def load_categories_from_mmp_v1(payload: dict[str, Any]) -> list[str]:
+    categories: list[str] = []
+    for service in payload.get("services", []):
+        categories.extend(service.get("categories") or [])
+    return categories

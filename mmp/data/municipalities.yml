@@ -1,0 +1,31 @@
+# Municipalities the builder knows how to reach — the 19 sampled in
+# ideas/mmp-swiss-municipality-service-research.md.
+#
+# bfs: BFS-Gemeindenummer, the address of a Service Inventory (ADR-0003).
+#   Only filled where it was checked against a source (Wikipedia "SFOS number"
+#   / schweizer-regionen.ch, 2026-09-24). `null` = not yet verified: fill it in
+#   from https://www.agvchapp.bfs.admin.ch before building that municipality.
+# official_domains: the Municipality's own domains. Links and Handoffs may only
+#   point here or to the operator allow-list in handoff_allowlist.yml (ADR-0007).
+# robots_blocked: from the research report; the crawler respects robots.txt,
+#   so these need a browser capture or the municipality's consent.
+municipalities:
+  - {slug: zuerich, name: Zürich, canton: ZH, bfs: 261, website: "https://www.stadt-zuerich.ch/", official_domains: [stadt-zuerich.ch], languages: [de]}
+  - {slug: winterthur, name: Winterthur, canton: ZH, bfs: 230, website: "https://stadt.winterthur.ch/", official_domains: [winterthur.ch], languages: [de]}
+  - {slug: bern, name: Bern, canton: BE, bfs: null, website: "https://www.bern.ch/", official_domains: [bern.ch], languages: [de]}
+  - {slug: lausanne, name: Lausanne, canton: VD, bfs: null, website: "https://www.lausanne.ch/", official_domains: [lausanne.ch], languages: [fr]}
+  - {slug: lugano, name: Lugano, canton: TI, bfs: null, website: "https://www.lugano.ch/", official_domains: [lugano.ch], languages: [it]}
+  - {slug: emmen, name: Emmen, canton: LU, bfs: 1024, website: "https://www.emmen.ch/", official_domains: [emmen.ch], languages: [de]}
+  - {slug: duebendorf, name: Dübendorf, canton: ZH, bfs: 191, website: "https://www.duebendorf.ch/", official_domains: [duebendorf.ch], languages: [de]}
+  - {slug: wettingen, name: Wettingen, canton: AG, bfs: 4045, website: "https://www.wettingen.ch/", official_domains: [wettingen.ch, schule-wettingen.ch], languages: [de]}
+  - {slug: schwyz, name: Schwyz, canton: SZ, bfs: 1372, website: "https://www.gemeindeschwyz.ch/", official_domains: [gemeindeschwyz.ch], languages: [de]}
+  - {slug: stans, name: Stans, canton: NW, bfs: null, website: "https://www.stans.ch/", official_domains: [stans.ch], languages: [de], robots_blocked: true}
+  - {slug: oberglatt, name: Oberglatt, canton: ZH, bfs: null, website: "https://www.oberglatt.ch/", official_domains: [oberglatt.ch], languages: [de]}
+  - {slug: grindelwald, name: Grindelwald, canton: BE, bfs: null, website: "https://www.gemeinde-grindelwald.ch/", official_domains: [gemeinde-grindelwald.ch], languages: [de]}
+  - {slug: pfaffnau, name: Pfaffnau, canton: LU, bfs: null, website: "https://www.pfaffnau.ch/", official_domains: [pfaffnau.ch], languages: [de]}
+  - {slug: trogen, name: Trogen, canton: AR, bfs: null, website: "https://www.trogen.ch/", official_domains: [trogen.ch], languages: [de]}
+  - {slug: scuol, name: Scuol, canton: GR, bfs: null, website: "https://www.scuol.net/", official_domains: [scuol.net], languages: [rm, de]}
+  - {slug: disentis, name: Disentis/Mustér, canton: GR, bfs: null, website: "https://www.disentis.ch/", official_domains: [disentis.ch], languages: [rm, de]}
+  - {slug: saint-george, name: Saint-George, canton: VD, bfs: null, website: "https://www.saint-george.ch/", official_domains: [saint-george.ch], languages: [fr]}
+  - {slug: airolo, name: Airolo, canton: TI, bfs: null, website: "https://www.comuneairolo.ch/", official_domains: [comuneairolo.ch], languages: [it]}
+  - {slug: novazzano, name: Novazzano, canton: TI, bfs: null, website: "https://www.novazzano.ch/", official_domains: [novazzano.ch], languages: [it]}

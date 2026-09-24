@@ -1,0 +1,12 @@
+# Operator allow-list of non-municipal domains a Handoff may point to.
+#
+# ADR-0007: "A Handoff can never lead to a form outside the Municipality's
+# domain ... Some legitimate content (e.g. a third-party booking platform the
+# Municipality really uses) will be withheld until an allow-list exists."
+#
+# This is that allow-list, kept deliberately tiny and limited to official
+# public-sector services. Every entry is a team decision: add nothing here that
+# is not run by a Swiss public body.
+domains:
+  - domain: eumzug.swiss
+    why: "eUmzug, the official electronic move registration (eOperations Schweiz / cantons). Wettingen and Dübendorf both link to it for An-/Ab-/Ummeldung."
