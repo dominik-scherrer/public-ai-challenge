@@ -175,3 +175,4 @@ cython_debug/
 
 # Repo specific files
 .DS_Store
+judge-report.json
