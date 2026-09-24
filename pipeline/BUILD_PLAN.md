@@ -2,74 +2,93 @@
 
 ## Goal
 
-Prove one end-to-end pipeline:
+Prove this end-to-end path:
 
 ```text
 municipality URL
 → reconnaissance
-→ strategy selection
-→ fetch
+→ CrawlPlan IR
+→ adaptive fetch
 → source snapshot
-→ service extraction
-→ provenance
+→ PageIR
+→ small-model classification/extraction
+→ ClaimIR
+→ deterministic validation/provenance
 → targeted follow-up
 → canonical service JSON
 ```
 
 Do not begin by attempting all seven municipalities.
 
-## Phase 0 — Repository skeleton
+## Phase 0 — Keep work scoped to pipeline/
+
+All code, schemas, fixtures, baselines and docs for this subsystem stay under this directory.
 
 Suggested structure:
 
 ```text
-/
-├── docs/
-│   └── ingestion/
+pipeline/
+├── docs/                # optional future split; current design docs remain here
+├── baseline/
+├── schemas/
+├── fixtures/
 ├── src/
 │   ├── context/
 │   ├── recon/
+│   ├── planner/
 │   ├── crawl/
 │   ├── snapshot/
 │   ├── extract/
 │   ├── normalize/
 │   ├── provenance/
 │   └── orchestrator/
-├── schemas/
-├── fixtures/
 ├── evals/
 └── tests/
 ```
 
-## Phase 1 — Deterministic fetch + snapshot
+## Phase 1 — Baseline corpus
 
-Implement:
+Use the research-agent baseline for the seven municipalities before tuning our crawler.
 
-- same-domain HTTP fetcher
+Purpose:
+
+- reference services
+- real source weirdness
+- multilingual examples
+- evidence/provenance examples
+- comparison target for our pipeline
+
+Treat service-count targets as soft budgets, not quotas.
+
+## Phase 2 — Deterministic fetch + snapshot
+
+Implement HTTP first:
+
 - redirects
 - content type
-- canonical URL
+- canonical URL when observable
 - timestamps
 - SHA-256
-- raw HTML storage
+- raw response storage
 - cache
-- basic error representation
+- retry/backoff
+- basic robots/rate policy
+- structured error representation
 
 Success:
 
 ```text
-URL → reproducible source snapshot
+URL → reproducible SourceSnapshot
 ```
 
-## Phase 2 — Cleaner + structural parser
+## Phase 3 — Cleaner + PageIR
 
-Extract:
+Extract deterministically:
 
 - title
 - headings
 - main text
-- internal links
-- external links
+- internal/external links
 - PDFs
 - forms
 - hreflang
@@ -77,111 +96,92 @@ Extract:
 - JSON-LD
 - metadata
 
-No LLM required.
-
-## Phase 3 — Page classifier
-
-Input:
+Success:
 
 ```text
-structured page representation
+SourceSnapshot → bounded PageIR
 ```
 
-Output:
+## Phase 4 — Browser fallback
 
-```json
-{
-  "page_type": "service_page",
-  "contains_service": true,
-  "authority_signal": "official",
-  "language": "de",
-  "candidate_follow_links": []
-}
-```
+Add Playwright/Crawl4AI only when HTTP is insufficient.
 
-Use strict schema output.
+Record:
 
-## Phase 4 — Service extractor
+- fetch tier
+- escalation reason
+- rendering/interaction requirement
 
-Input:
+Do not make every request a browser request.
 
-- structured page
-- canonical service schema
-- source metadata
+## Phase 5 — Typed planner
 
-Output:
+Implement `municipal-crawl-plan/v1`.
 
-- observations
-- typed candidate claims
-- field-level evidence references
+Planner receives:
 
-Do not write directly into final storage without validation.
+- municipality context
+- cheap reconnaissance
+- discovered languages
+- site scale signals
 
-## Phase 5 — Provenance assembler
+Planner returns:
 
-Every service response must expose:
+- strategy
+- roots
+- budgets
+- fetch policy
+- language plan
+- link policy
+- stop rules
 
-- source registry
-- retrieval times
-- hashes
-- field evidence
-- classifications
-- extractor version
-- conflicts
-- freshness
+Validate before execution.
 
-## Phase 6 — Reconnaissance + strategy planner
+## Phase 6 — Small Apertus-compatible classifier
 
-Given municipality entry URL:
+Input: PageIR.
 
-Inspect cheaply:
+Strict output:
 
-- robots.txt
-- sitemap
-- homepage navigation
-- language alternatives
-- likely service directory
-- eGov links
-- rough branching / page scale
+- page role
+- service likelihood
+- authority signal
+- follow-up candidates
+- confidence/escalation reason
 
-Produce:
+Start with any available model adapter if needed; keep the interface Apertus-compatible.
 
-```json
-{
-  "strategy": "section_crawl",
-  "reason": [...],
-  "languages": ["de"],
-  "page_budget": 200,
-  "candidate_roots": [...]
-}
-```
+## Phase 7 — Service extraction to ClaimIR
 
-## Phase 7 — First adaptive loop
+Produce evidence-backed candidate claims.
 
-Implement:
+Do not write final service records directly.
 
-```text
-crawl
-→ extract
-→ coverage analysis
-→ choose at most N targeted follow-ups
-→ crawl
-→ stop
-```
+Deterministic code handles:
 
-Start with `N = 3`.
+- date/currency parsing
+- schema validation
+- duplicate/conflict detection
+- provenance
+- evidence coverage
 
-## Phase 8 — Three-municipality proof
+## Phase 8 — Compile reusable site adapters
 
-First test trio:
+When the planner discovers stable structure, emit cached rules/selectors.
 
-1. **Binn** — easiest full-crawl baseline
+Try adapter-first on subsequent runs.
+
+Measure how much large-model work disappears.
+
+## Phase 9 — Three-municipality proof
+
+First trio:
+
+1. **Binn** — full-crawl baseline
 2. **Biel/Bienne** — multilingual identity test
-3. **Zürich** — selective-crawl stress test
+3. **Zürich** — selective large-site crawl
 
-This gives three fundamentally different acquisition modes.
-
-Once these work, add:
+Then:
 
 4. Lugano
 5. Lausanne
@@ -192,26 +192,48 @@ Once these work, add:
 
 For each first-trio municipality:
 
-- produce at least 10 real municipal service candidates
-- every service has source URL + retrieval timestamp
-- every non-empty structured field has evidence
-- no fabricated fields
+- real service candidates with exact source references
+- every populated structured field has evidence or is explicitly derived
 - crawl strategy and stop reason recorded
-- duplicate multilingual services are detectable
-- source snapshot can be reprocessed without refetching
-- at least one service uses targeted follow-up evidence
+- HTTP/browser fetch tier visible
+- no fabricated fields
+- multilingual duplicates detectable
+- snapshot reprocessable without refetching
+- at least one targeted follow-up
+- at least one site adapter/rule compiled and replayed
+- model escalation events recorded
 
-## Do not build yet
+## Architectural experiment
 
-Defer:
+Measure:
+
+```text
+large-model calls
+small-model calls
+HTTP vs browser fetches
+compiled-rule coverage
+pages fetched
+services retained
+evidence coverage
+precision / recall against baseline
+```
+
+The strongest proof is not "the agent can browse".
+
+It is:
+
+> **A capable model can compile an unfamiliar public website into a bounded acquisition program that deterministic software and a smaller public model can execute repeatedly.**
+
+## Defer
+
+Do not spend hackathon time on:
 
 - vector database
 - graph database
-- full MCP server
+- broad national crawling
 - sophisticated UI
-- automatic national crawling
-- broad ontology
+- stealth/browser fingerprint work
 - complex trust scoring
-- continuous schedulers
+- continuous scheduler
 
-Prove the ingestion boundary first.
+Prove the ingestion/compiler boundary first.

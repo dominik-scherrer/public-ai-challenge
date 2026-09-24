@@ -2,117 +2,91 @@
 
 ## 1. One orchestrator, multiple bounded strategies
 
-There should not be one universal scraper.
+There is no universal scraper.
 
-The orchestrator chooses a known strategy after reconnaissance.
+Reconnaissance produces a typed plan selecting one of four main strategies plus a fetch tier.
 
-## 2. FULL_CRAWL
+## 2. Fetch tiers
 
-Best for:
+```text
+HTTP
+  ↓ insufficient
+HEADLESS_BROWSER
+  ↓ interaction required
+AGENT_BROWSER
+```
 
-- tiny municipalities
-- low page counts
-- simple CMS
-- weak information architecture
-- municipal services embedded in general administration pages
+Default to HTTP. Escalation must record a reason.
 
-Behavior:
+We are crawling public-information sources at low volume, so optimization should focus on **avoiding unnecessary requests**, not bypassing anti-bot protections.
+
+Operational defaults:
+
+- clear and stable user agent
+- conservative concurrency
+- per-host rate limits
+- cache aggressively
+- reuse snapshots
+- respect robots and obvious site constraints
+- prefer sitemap/directory traversal over brute-force crawling
+- stop when coverage converges
+
+## 3. FULL_CRAWL
+
+Best for tiny municipalities, low page counts and weak information architecture.
 
 ```text
 official domain
 → bounded breadth-first crawl
 → classify every page
-→ retain municipal-service evidence
+→ retain service evidence
 → discard unrelated content
 ```
 
-Typical budget:
+Primary risk: tourism, news, associations and local-business noise.
 
-- 100–1,000 pages depending on observed scale
-- strict same-domain rules
-- file-type allowlist
-- depth limit
+## 4. SECTION_CRAWL
 
-Primary risk:
-
-- tourism / news / associations / local business noise
-
-## 3. SECTION_CRAWL
-
-Best for:
-
-- small and medium municipalities
-- identifiable administration sections
-- service content grouped by department
-
-Behavior:
+Best for small/medium municipalities with identifiable administration sections.
 
 ```text
 homepage
-→ discover administration sections
-→ rank likely service-bearing sections
-→ crawl only selected subtrees
+→ discover service-bearing departments
+→ crawl selected subtrees
 ```
 
-Examples:
+Examples: Einwohnerkontrolle, Kanzlei, Soziales, Bauverwaltung, Steueramt, Online-Schalter.
 
-- Einwohnerkontrolle
-- Kanzlei
-- Soziales
-- Bauverwaltung
-- Steueramt
-- Online-Schalter
+## 5. DIRECTORY_CRAWL
 
-## 4. DIRECTORY_CRAWL
-
-Best for:
-
-- large cities
-- mature service portals
-- clear A–Z service indexes
-- structured eGovernment portals
-
-Behavior:
+Best for large cities and mature portals.
 
 ```text
 service directory
 → service links
-→ service detail pages
+→ detail pages
 → transaction endpoints
-→ linked official documents
+→ official supporting documents
 ```
 
-Avoid crawling:
+Avoid news archives, political archives, media pages, broad tourism content and unrelated departmental history.
 
-- news archives
-- political archives
-- media pages
-- unrelated department history
-- broad tourism content
+## 6. DISCOVERY_CRAWL
 
-## 5. DISCOVERY_CRAWL
-
-Best for:
-
-- unknown structures
-- portal ecosystems
-- several linked official domains
-- unusual CMS
-- unclear service boundaries
-
-Behavior:
+Best for unclear structures, portal ecosystems and unusual CMSs.
 
 ```text
 shallow reconnaissance
 → discover structure
-→ choose FULL / SECTION / DIRECTORY
+→ compile CrawlPlan
+→ switch to FULL / SECTION / DIRECTORY
 ```
 
-The discovery crawler should not become the long-running scraper.
+Discovery must remain shallow; it should not become the long-running scraper.
 
-## 6. Targeted follow-up
+## 7. Targeted follow-up
 
-After initial extraction:
+After initial extraction, fetch only evidence likely to close real gaps.
 
 ```text
 known:
@@ -127,30 +101,11 @@ missing:
 ✗ transaction endpoint
 ```
 
-The orchestrator ranks linked evidence candidates and may fetch a small number of them.
+The planner/small model can rank candidate links, but deterministic policy caps follow-ups.
 
-Example:
+## 8. Language-aware planning
 
-```json
-{
-  "follow": [
-    {
-      "url": "/online-schalter/umzug",
-      "reason": "likely transaction endpoint"
-    },
-    {
-      "url": "/downloads/merkblatt-umzug.pdf",
-      "reason": "likely requirements and documents"
-    }
-  ]
-}
-```
-
-This is preferred over unbounded browsing.
-
-## 7. Language-aware crawl planning
-
-Keep three concepts separate:
+Keep distinct:
 
 ```text
 administrative language
@@ -158,71 +113,50 @@ population language
 website language
 ```
 
-They are related but not equivalent.
+Language context influences which site variants to inspect, expected coverage and multilingual service pairing.
 
-Municipality context may contain:
+Population-language data is a planning signal, not proof that a municipality publishes services in that language.
 
-```json
-{
-  "administrative_languages": ["de", "fr"],
-  "population_languages": {
-    "de": 0.55,
-    "fr": 0.40,
-    "other": 0.05
-  },
-  "website_languages": ["de", "fr"],
-  "crawl_languages": ["de", "fr"]
-}
-```
-
-Language affects:
-
-- which site variants should be inspected
-- expected coverage
-- multilingual service pairing
-- labels retained in the canonical record
-- gap detection
-
-## 8. Multilingual equivalence
+## 9. Multilingual equivalence
 
 Two pages do not automatically mean two services.
 
 ```text
 Wohnsitzbestätigung
-                 → canonical service
+        \
+         → canonical service
         /
 attestation de domicile
 ```
 
-Store:
+Merge only with sufficient evidence and preserve every official label and source.
 
-```json
-{
-  "service_id": "...",
-  "labels": {
-    "de": "...",
-    "fr": "..."
-  },
-  "source_refs": [
-    "src_de",
-    "src_fr"
-  ]
-}
-```
+## 10. Stop rules
 
-## 9. Stop rules
-
-Stop because of explicit conditions, not because the model "feels done".
+Stop because of explicit conditions, never because a model "feels done".
 
 Possible conditions:
 
 - page budget reached
-- all discovered service-directory entries processed
-- no new services found in last N pages
-- all required service fields above coverage threshold
-- remaining links classified as low relevance
-- language parity reached
-- repeated content detected
-- external domain boundary reached
+- discovered service directory exhausted
+- no new services in the last N retained pages
+- remaining links classified low relevance
+- language coverage target met
+- repeated-content threshold reached
+- external-domain boundary reached
+- coverage objective reached
 
-Every crawl stores the stop reason.
+Every crawl records the stop reason.
+
+## 11. Site adapters
+
+A successful discovery crawl may compile a reusable adapter containing:
+
+- allowed roots
+- service-link selectors
+- exclusion patterns
+- language routing
+- field selectors
+- portal transition rules
+
+Adapters are cached and versioned. They are hints/programs, never authority: provenance still points to the current source snapshot.
