@@ -1,19 +1,25 @@
 {
-  "package": "swiss-grounding-ingestion-concept",
+  "package": "municipality-scout",
   "created": "2026-09-24",
   "updated": "2026-09-24",
-  "files": [
-    "README.md",
-    "ARCHITECTURE.md",
-    "PROVENANCE_AND_TRUST.md",
-    "CRAWL_STRATEGIES.md",
-    "TOOLING_AND_RUNTIME.md",
-    "SEMANTIC_COMPILER.md",
-    "MUNICIPALITY_BENCHMARK.md",
-    "SERVICE_MODEL.md",
-    "BUILD_PLAN.md",
-    "EVALS.md"
-  ],
-  "purpose": "Concept and implementation docs for adaptive, provenance-aware municipal service ingestion for Swiss Grounding MCP.",
-  "scope_rule": "All ingestion-pipeline changes for this workstream stay inside pipeline/."
+  "architecture": "Municipality URL + Service Index → Scout Discover → Scout Understand/Compile → municipality-discovery/v1 → MCP Factory",
+  "active": {
+    "docs": [
+      "README.md",
+      "ARCHITECTURE.md",
+      "PROVENANCE_AND_TRUST.md",
+      "CRAWL_STRATEGIES.md",
+      "TOOLING_AND_RUNTIME.md",
+      "SEMANTIC_COMPILER.md",
+      "MUNICIPALITY_BENCHMARK.md",
+      "SERVICE_MODEL.md",
+      "BUILD_PLAN.md",
+      "EVALS.md"
+    ],
+    "implementation": "scout/",
+    "observatory": "observatory/"
+  },
+  "legacy": "legacy/",
+  "contract": "municipality-discovery/v1",
+  "scope_rule": "Current Scout work stays inside pipeline/; superseded material is kept only under pipeline/legacy/."
 }

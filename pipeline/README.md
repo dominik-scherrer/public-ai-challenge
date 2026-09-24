@@ -180,6 +180,22 @@ Browser escalation is an acquisition detail, not the Scout architecture.
 - `MUNICIPALITY_BENCHMARK.md` — municipality stress cases
 - `EVALS.md` — Scout evaluation
 
+## Repository layout
+
+The active implementation is intentionally small:
+
+```text
+pipeline/
+├── README.md + architecture docs   # current Scout design
+├── scout/                          # active executable Scout
+├── observatory/                    # current Scout architecture/build view
+└── legacy/                         # superseded experiments and contracts
+```
+
+Only the root Scout documents, `scout/`, and `observatory/` describe the current architecture.
+
+`legacy/` is historical evidence. Its old Service Inventory, crawler prototype, baseline schemas and commands are **not current interfaces** and must not be used as the Factory contract. The current downstream boundary is `municipality-discovery/v1`.
+
 ## Core claim
 
 > **The common standard is not how Swiss municipalities implement services. The common standard is the typed contract Scout compiles from that heterogeneity.**
