@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directories: ["/", "/src/publicai/templates"]
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directories: ["/", "/src/publicai/templates"]
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

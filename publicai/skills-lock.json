@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "skills": {
+    "building-pydantic-ai-agents": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/building-pydantic-ai-agents/SKILL.md",
+      "computedHash": "5a588f2859c4998c3299cb7768ffc4207d1c9d762ebc608bc56d1bba47cce3aa"
+    },
+    "logfire-evals": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/logfire-evals/SKILL.md",
+      "computedHash": "5233adabc83053005823e939616b17c5585e453f715f8703aab91f958a6501f6"
+    },
+    "logfire-infrastructure": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/logfire-infrastructure/SKILL.md",
+      "computedHash": "8f2a15e94b7a2714840f60e5519e3427944a026bc62980edc613e6e860012ee0"
+    },
+    "logfire-instrumentation": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/logfire-instrumentation/SKILL.md",
+      "computedHash": "7029fc2248a0422ed7193caed9940ef9ada843f49c57772348d8bc1338e87d6b"
+    },
+    "logfire-query": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/logfire-query/SKILL.md",
+      "computedHash": "51ddcfa6016440895c54cb34b43b9ade73e000c0a14e092a2524b4e844cc3397"
+    },
+    "logfire-setup": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/logfire-setup/SKILL.md",
+      "computedHash": "dce0710d98b944d63daeaf8760576ea39a7604ee1f74a25c115c8ede28eccb60"
+    },
+    "logfire-ui": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/logfire-ui/SKILL.md",
+      "computedHash": "ec9ad81fb607e771b6e21eedae39af01985fc902f8bac03b51f669ad0ddb3f97"
+    },
+    "migrating-agno-to-pydantic-ai": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/migrating-agno-to-pydantic-ai/SKILL.md",
+      "computedHash": "88f09586800403d2036834c9dc64c7b07975a1ecfa4c1db0bf184b34b9ffd3c3"
+    },
+    "migrating-claude-agent-sdk-to-pydantic-ai": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/migrating-claude-agent-sdk-to-pydantic-ai/SKILL.md",
+      "computedHash": "2f5df4da2267f99650c0016605fd0b8af03cb1dbc42fc4a0944b0efa77e55ac2"
+    },
+    "migrating-google-adk-to-pydantic-ai": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/migrating-google-adk-to-pydantic-ai/SKILL.md",
+      "computedHash": "8ebcf4f6feb0d77fe4aeb25b1ca1d0912dd24609579a4e0bcef2a2425378f55c"
+    },
+    "migrating-langchain-to-pydantic-ai": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/migrating-langchain-to-pydantic-ai/SKILL.md",
+      "computedHash": "ab7d4d0c7092c5d2f86c4c23aaa926d33c805f5ba52193ec12b9d43746b5f514"
+    },
+    "migrating-mastra-to-pydantic-ai": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/migrating-mastra-to-pydantic-ai/SKILL.md",
+      "computedHash": "55654ff4466a8c441a47badc77703c2bad520980352e985bd541505ae73d3de1"
+    },
+    "migrating-openai-agents-sdk-to-pydantic-ai": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/migrating-openai-agents-sdk-to-pydantic-ai/SKILL.md",
+      "computedHash": "5024dcd82ee9e81a7b80e2cfac2720b80c611572b4c7cf019c41ea6037548526"
+    },
+    "migrating-pi-to-pydantic-ai": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/migrating-pi-to-pydantic-ai/SKILL.md",
+      "computedHash": "a75bba9878b5a55da34ec02aba2eacd7f1f32bab98862c0b225f6de438a23c40"
+    },
+    "migrating-vercel-ai-sdk-and-eve-to-pydantic-ai": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/migrating-vercel-ai-sdk-and-eve-to-pydantic-ai/SKILL.md",
+      "computedHash": "192ed605c51096694a25dc7e0f881cb1864bbaf29a2cd6bb06867def98b33438"
+    },
+    "pydantic": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pydantic/SKILL.md",
+      "computedHash": "65f68dbab0f7e60bfd26998350d674a104848daf23311067e0829758a7cf6f91"
+    },
+    "pydantic-ai-harness": {
+      "source": "pydantic/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pydantic-ai-harness/SKILL.md",
+      "computedHash": "24ebd64439b138bb1f7c0fa466d0a64a9d99d36108a670673c9c75c455f9ce8d"
+    }
+  }
+}
