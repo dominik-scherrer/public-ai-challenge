@@ -1,182 +1,287 @@
 {
-  "schema": "pipeline-build-observatory/v1",
-  "generated_at": "2026-09-24T14:54:00+02:00",
-  "source": {
-    "repository": "dominik-scherrer/public-ai-challenge",
-    "scope": "pipeline/",
-    "base_branch": "main",
-    "observed_branch": "docs/pipeline-adaptive-scraping-runtime",
+  "schema": "project-build-observatory/v2",
+  "generated_at": "2026-09-24T16:27:00+02:00",
+  "scope": {
+    "read": "entire repository + Git metadata",
+    "write": "pipeline/observatory/ only",
+    "repository": "dominik-scherrer/public-ai-challenge"
+  },
+  "headline": {
+    "phase": "Convergence → implementation",
+    "status": "architecture_converging",
+    "summary": "The project has substantial research, an MVP implementation plan, service/domain framing and a provenance-aware ingestion architecture. The main gap is convergence into executable code: most core components are still documented rather than implemented."
+  },
+  "project_streams": [
+    {
+      "id": "product",
+      "name": "Product / MMP concept",
+      "status": "designed",
+      "owner_signal": "Dominik",
+      "sources": [
+        "ideas-dominik/CONTEXT.md",
+        "ideas-dominik/docs/adr/"
+      ],
+      "summary": "MMP vocabulary, service tiers, sovereign reference-client framing, build semantics and ADRs are documented.",
+      "next": "Resolve governance/verification questions and align terminology with the MVP plan."
+    },
+    {
+      "id": "research",
+      "name": "Municipality/service research",
+      "status": "implemented",
+      "owner_signal": "team research",
+      "sources": [
+        "ideas/mmp-swiss-municipality-service-research.md",
+        "ideas-patrick/servicelist_patrick.md",
+        "ideas-patrick/ausserberg_example.md"
+      ],
+      "summary": "A 19-municipality qualitative survey, service taxonomy and Ausserberg/reference-service material exist.",
+      "next": "Turn research into fixtures/baseline corpus and acceptance scenarios."
+    },
+    {
+      "id": "pipeline",
+      "name": "Data acquisition / ingestion pipeline",
+      "status": "designed",
+      "owner_signal": "Achim",
+      "sources": [
+        "pipeline/ARCHITECTURE.md",
+        "pipeline/BUILD_PLAN.md",
+        "pipeline/PROVENANCE_AND_TRUST.md",
+        "pipeline/SEMANTIC_COMPILER.md"
+      ],
+      "summary": "Adaptive crawling, provenance, semantic compiler, Apertus execution model and evaluation criteria are designed; runtime code is not yet committed.",
+      "next": "Baseline corpus → SourceSnapshot → PageIR → HTTP-first fetch → typed planner/executor."
+    },
+    {
+      "id": "mvp",
+      "name": "Hackathon MVP implementation",
+      "status": "designed",
+      "owner_signal": "shared",
+      "sources": [
+        "docs/hackathon-mvp-plan.md",
+        "src/public_ai_challenge/__init__.py",
+        "pyproject.toml"
+      ],
+      "summary": "A detailed 24-hour plan defines URL→inventory→review→MCP package, but the repository currently has only a minimal Python package skeleton.",
+      "next": "Start executable vertical slice using Ausserberg + second municipality."
+    },
+    {
+      "id": "mcp",
+      "name": "MCP runtime",
+      "status": "not_started",
+      "owner_signal": "runtime work package",
+      "sources": [
+        "docs/hackathon-mvp-plan.md"
+      ],
+      "summary": "Tool contract and runtime shape are planned; no MCP server implementation is visible in main.",
+      "next": "Fixture-backed four-tool MCP server, then wire generated inventory."
+    },
+    {
+      "id": "ux",
+      "name": "Citizen / team UX",
+      "status": "designed",
+      "owner_signal": "UX work package",
+      "sources": [
+        "docs/hackathon-mvp-plan.md",
+        "ideas-dominik/CONTEXT.md"
+      ],
+      "summary": "Open WebUI/reference-client and a minimal builder page are proposed; no UI implementation is visible.",
+      "next": "Validate host integration first; keep builder UI minimal."
+    },
+    {
+      "id": "qa",
+      "name": "Quality / trust / Judge",
+      "status": "designed",
+      "owner_signal": "QA work package",
+      "sources": [
+        "ideas-dominik/CONTEXT.md",
+        "ideas-dominik/docs/OPEN-QUESTIONS.md",
+        "pipeline/EVALS.md",
+        "pipeline/PROVENANCE_AND_TRUST.md"
+      ],
+      "summary": "Evidence discipline, withheld attributes, build floor and eval criteria are well described but not automated.",
+      "next": "Turn evidence checks and acceptance criteria into executable tests."
+    },
+    {
+      "id": "deployment",
+      "name": "Deployment / go-to-market",
+      "status": "designed",
+      "owner_signal": "deployment work package",
+      "sources": [
+        "README.md",
+        "docs/hackathon-mvp-plan.md"
+      ],
+      "summary": "Hosted HTTPS demo, downloadable package and adoption framing are planned; no deployment artifact is visible.",
+      "next": "Choose hosting and prove clean package launch before polish."
+    }
+  ],
+  "pipeline_flow": [
+    "Municipality URL",
+    "Context + reconnaissance",
+    "CrawlPlan / semantic compiler",
+    "HTTP-first fetch + browser fallback",
+    "SourceSnapshot + PageIR",
+    "Small Apertus extraction",
+    "ClaimIR + provenance",
+    "Service inventory",
+    "Review / Judge",
+    "MCP runtime",
+    "Citizen client"
+  ],
+  "git": {
+    "main_head": {
+      "sha": "a1e557bcb00edc165f09bb2cf1282e58998700b4",
+      "message": "Updated the concept docs",
+      "at": "2026-09-24T13:19:15Z"
+    },
     "open_prs": [
       {
         "number": 3,
         "title": "docs(pipeline): define adaptive scraping runtime and semantic compiler",
+        "author": "blackmath88",
         "state": "open",
+        "scope": "pipeline",
         "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/3"
+      },
+      {
+        "number": 4,
+        "title": "feat(pipeline): add living build observatory",
+        "author": "blackmath88",
+        "state": "open",
+        "scope": "pipeline/observatory",
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/4"
+      }
+    ],
+    "merged_prs": [
+      {
+        "number": 1,
+        "title": "docs: add MMP glossary, ADRs and open questions (ideas-dominik)",
+        "author": "dominik-scherrer",
+        "merged_at": "2026-09-24T12:01:08Z"
+      },
+      {
+        "number": 2,
+        "title": "info classification from Mark",
+        "author": "MarkYav",
+        "merged_at": "2026-09-24T12:12:19Z"
+      }
+    ],
+    "recent_commits": [
+      {
+        "sha": "a1e557b",
+        "author": "blackmath88",
+        "message": "Updated the concept docs",
+        "at": "2026-09-24T13:19:15Z"
+      },
+      {
+        "sha": "d347d65",
+        "author": "Dominik Scherrer",
+        "message": "Add work packages section to README",
+        "at": "2026-09-24T12:45:28Z"
       }
     ]
   },
-  "headline": {
-    "phase": "Architecture → first implementation",
-    "status": "design_ready",
-    "summary": "The ingestion architecture is defined and a runtime/semantic-compiler PR is open. No executable pipeline modules or baseline corpus are committed under pipeline/ yet."
-  },
-  "modules": [
-    {
-      "id": "baseline",
-      "name": "Baseline corpus",
-      "status": "not_started",
-      "confidence": "high",
-      "evidence": [
-        "No pipeline/baseline directory is committed."
-      ],
-      "next": "Commit the Claude/Cowork reference corpus for the seven municipalities."
-    },
-    {
-      "id": "fetch",
-      "name": "HTTP fetch + snapshot",
-      "status": "not_started",
-      "confidence": "high",
-      "evidence": [
-        "BUILD_PLAN defines this as an implementation phase; no src code exists under pipeline/."
-      ],
-      "next": "Implement deterministic HTTP fetch, metadata, hashes, cache and errors."
-    },
-    {
-      "id": "pageir",
-      "name": "Cleaner + PageIR",
-      "status": "not_started",
-      "confidence": "high",
-      "evidence": [
-        "PageIR is specified in PR #3 docs only."
-      ],
-      "next": "Define schema and deterministic parser."
-    },
-    {
-      "id": "browser",
-      "name": "Browser fallback",
-      "status": "not_started",
-      "confidence": "high",
-      "evidence": [
-        "Headless-browser escalation is documented but not implemented."
-      ],
-      "next": "Prototype Playwright/Crawl4AI fallback only for JS-dependent pages."
-    },
-    {
-      "id": "planner",
-      "name": "CrawlPlan planner",
-      "status": "designed",
-      "confidence": "high",
-      "evidence": [
-        "SEMANTIC_COMPILER.md defines municipal-crawl-plan/v1."
-      ],
-      "next": "Create schema and planner adapter."
-    },
-    {
-      "id": "executor",
-      "name": "Small Apertus executor",
-      "status": "designed",
-      "confidence": "high",
-      "evidence": [
-        "Small-model page classification and ClaimIR are designed in PR #3."
-      ],
-      "next": "Build constrained classifier/extractor behind a model-neutral adapter."
-    },
-    {
-      "id": "provenance",
-      "name": "Provenance + trust",
-      "status": "designed",
-      "confidence": "high",
-      "evidence": [
-        "PROVENANCE_AND_TRUST.md and SERVICE_MODEL.md exist."
-      ],
-      "next": "Turn the document model into schemas and validation code."
-    },
-    {
-      "id": "evals",
-      "name": "Evaluation harness",
-      "status": "designed",
-      "confidence": "medium",
-      "evidence": [
-        "EVALS.md defines criteria; no executable eval harness is committed."
-      ],
-      "next": "Convert benchmark criteria into fixtures/tests."
-    },
-    {
-      "id": "mcp",
-      "name": "MCP publication",
-      "status": "deferred",
-      "confidence": "high",
-      "evidence": [
-        "Build plan explicitly says prove ingestion boundary first."
-      ],
-      "next": "Wait until the first three municipalities work end-to-end."
-    }
-  ],
   "open_questions": [
     {
       "priority": "now",
-      "question": "When will the seven-municipality baseline corpus be committed under pipeline/baseline/?",
-      "owner": "pipeline"
+      "area": "convergence",
+      "question": "Which architectural source is authoritative when the MVP plan and MMP/ADR documents differ?"
     },
     {
       "priority": "now",
-      "question": "Which first runtime should we prototype: Crawl4AI or a thinner HTTP + Playwright stack?",
-      "owner": "pipeline"
+      "area": "implementation",
+      "question": "Who owns the first end-to-end executable slice: crawl/extraction, MCP runtime, and integration?"
     },
     {
       "priority": "now",
-      "question": "Can direct HTTP access reach the municipal domains from the intended runtime, or do we need browser fallback for network reasons as well as rendering?",
-      "owner": "pipeline"
+      "area": "model",
+      "question": "Can Apertus reliably call the MCP tools and perform constrained extraction/classification at the required quality?"
+    },
+    {
+      "priority": "now",
+      "area": "baseline",
+      "question": "When will the municipality baseline/reference corpus be committed and linked to acceptance tests?"
     },
     {
       "priority": "next",
-      "question": "What confidence/escalation threshold should move a task from small Apertus to the large planner?",
-      "owner": "pipeline"
+      "area": "standards",
+      "question": "Is eCH-0070 a hackathon dependency, later enrichment, or canonical identity layer? Current docs are not fully aligned."
     },
     {
       "priority": "next",
-      "question": "How do we version and validate reusable site adapters generated by the planner?",
-      "owner": "pipeline"
+      "area": "governance",
+      "question": "Does a municipality need sign-off before publication, and who is publisher of record?"
+    },
+    {
+      "priority": "next",
+      "area": "runtime",
+      "question": "Which crawler/runtime do we standardize on for the first slice: Crawl4AI or thinner HTTP + Playwright?"
     }
   ],
   "next_actions": [
-    "Merge/review PR #3 so the semantic-compiler/runtime design becomes the shared baseline.",
-    "Commit the baseline corpus for Binn, Biel/Bienne and Zürich first.",
-    "Implement SourceSnapshot and PageIR schemas.",
-    "Build HTTP-first fetcher with cache, hashes and explicit browser escalation.",
-    "Add a first small-model classifier and compare it against the baseline."
+    "Converge the team on one MVP contract: URL → evidence-backed service inventory → MCP.",
+    "Merge/review PR #3 and make its ingestion boundaries part of the shared implementation plan.",
+    "Commit the baseline/reference corpus and convert Ausserberg + selected municipalities into fixtures.",
+    "Build the first executable vertical slice: fetch → snapshot → extract → validate → inventory.",
+    "Bring up a fixture MCP server with the four planned tools and test a real host/model.",
+    "Turn provenance/Judge principles into automated acceptance checks.",
+    "Keep the observatory repo-wide and refresh it from Git + project evidence, not manual optimism."
   ],
-  "flow": [
-    "Municipality context",
-    "Reconnaissance",
-    "Large planner / semantic compiler",
-    "CrawlPlan IR",
-    "Deterministic fetch runtime",
-    "SourceSnapshot + PageIR",
-    "Small Apertus classifier/extractor",
-    "ClaimIR",
-    "Validation + provenance",
-    "Service records",
-    "MCP"
+  "tensions": [
+    {
+      "title": "MVP scope vs. richer MMP architecture",
+      "detail": "The MVP plan explicitly excludes Dominik's documents from its design, while the wider project contains MMP vocabulary, ADRs and quality/governance concepts. The team needs to decide which parts converge now versus remain post-hackathon."
+    },
+    {
+      "title": "Commercial baseline vs. Apertus goal",
+      "detail": "The MVP plan uses commercial LLMs for build-time extraction first; the pipeline design aims for a large-planner/small-Apertus execution architecture. This is compatible if treated as baseline → replacement experiment, but should be stated explicitly."
+    },
+    {
+      "title": "eCH-0070 timing",
+      "detail": "Research recommends eCH-0070 as canonical service identity; the MVP plan treats it as later enrichment. This is an explicit architectural decision still needing alignment."
+    }
   ],
   "history": [
     {
+      "at": "2026-09-24T11:52:45Z",
+      "kind": "pr",
+      "title": "MMP architecture contribution opened",
+      "detail": "Dominik's glossary, ADRs and open questions entered through PR #1 and were merged."
+    },
+    {
+      "at": "2026-09-24T12:11:52Z",
+      "kind": "pr",
+      "title": "Information classification contribution",
+      "detail": "Mark's static/dynamic information classification entered through PR #2 and was merged."
+    },
+    {
+      "at": "2026-09-24T12:45:28Z",
+      "kind": "commit",
+      "title": "Work packages added",
+      "detail": "Repository README gained Data Acquisition, UX, System Architecture, QA and Deployment/GTM work packages."
+    },
+    {
       "at": "2026-09-24T13:19:15Z",
       "kind": "commit",
-      "title": "Concept docs committed",
-      "detail": "Initial adaptive ingestion, provenance, benchmark, service model and build plan were added under pipeline/."
+      "title": "Pipeline concept docs committed",
+      "detail": "Adaptive ingestion, provenance, municipality benchmark, service model and build plan were added under pipeline/."
     },
     {
       "at": "2026-09-24T13:32:42Z",
-      "kind": "pull_request",
-      "title": "PR #3 opened",
-      "detail": "HTTP-first runtime, browser escalation, OSS tooling options and semantic-compiler architecture proposed."
+      "kind": "pr",
+      "title": "Pipeline semantic-compiler PR opened",
+      "detail": "PR #3 proposes HTTP-first runtime, browser escalation, OSS tooling choices and large-planner/small-Apertus execution."
     },
     {
-      "at": "2026-09-24T14:54:00+02:00",
+      "at": "2026-09-24T13:40:20Z",
+      "kind": "pr",
+      "title": "Living observatory PR opened",
+      "detail": "PR #4 introduced the first static build-state dashboard."
+    },
+    {
+      "at": "2026-09-24T16:27:00+02:00",
       "kind": "analysis",
-      "title": "Build observatory initialized",
-      "detail": "Current state classified as design-ready; implementation modules remain unstarted in pipeline/."
+      "title": "Observatory widened to project scope",
+      "detail": "The dashboard now integrates repository-wide project streams and Git metadata while preserving pipeline/observatory as the only write location."
     }
   ]
 }

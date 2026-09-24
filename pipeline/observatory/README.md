@@ -1,32 +1,42 @@
-# Pipeline Build Observatory
+# Project Build Observatory
 
-A lightweight, static dashboard for the current state and history of the ingestion pipeline.
+A project-wide, evidence-based coordination dashboard stored under `pipeline/observatory/`.
 
-Open `index.html` directly in a browser.
+## Important scope distinction
 
-## What it shows
+The observatory **reads the whole repository and Git state** but **writes only inside `pipeline/observatory/`**.
 
-- current build phase
-- operational pipeline flow
-- module-by-module status
-- next actions
-- open questions
-- development history
-- relevant pull requests
+This preserves ownership boundaries while giving the team one integrated view.
 
-The dashboard deliberately distinguishes **designed** from **implemented** work.
+## It tracks
+
+- product/MMP concept
+- municipality/service research
+- data acquisition pipeline
+- MVP implementation
+- MCP runtime
+- UX/reference client
+- QA/Judge/provenance
+- deployment/GTM
+- Git commits and PRs
+- cross-stream tensions and open decisions
+- project history and next actions
+
+## What it is not
+
+It is not a task tracker that guesses completion from filenames.
+
+A document can prove that something is **designed**. Only runtime/code/test evidence should move implementation modules to **implemented**.
 
 ## Files
 
-- `index.html` — self-contained visual dashboard
-- `state.json` — machine-readable current state
-- `history.jsonl` — append-only material history events
-- `REFRESH_PROMPT.md` — instructions for an agentic refresh job
+- `index.html` — project-wide visual dashboard
+- `state.json` — current machine-readable integrated state
+- `history.jsonl` — material project history
+- `REFRESH_PROMPT.md` — agentic repo-analysis contract
 
-## Refresh cadence
+## Scheduling
 
-The intended cadence is every 30 minutes during active hacking.
+The desired active-hack cadence is every 30 minutes.
 
-ChatGPT scheduled tasks currently support at most hourly execution, so a 30-minute refresh needs an external scheduler (for example GitHub Actions or another runner) invoking an authorized model/tooling workflow.
-
-The dashboard itself has no runtime dependency and can be rebuilt by replacing its embedded state.
+ChatGPT scheduled tasks have a minimum one-hour cadence, so a true 30-minute rebuild requires an external scheduler such as GitHub Actions or another authorized runner. The refresh contract is runner-agnostic.
