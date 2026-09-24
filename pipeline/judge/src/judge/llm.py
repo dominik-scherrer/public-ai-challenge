@@ -242,8 +242,15 @@ def call_judge_ensemble(
         attempts_left = max_retries + 1
         parsed: dict[str, Any] | None = None
         while attempts_left > 0 and parsed is None:
-            raw = call_fn(system_prompt, instruction)
-            parsed = extract_and_parse_json(raw) if raw else None
+            try:
+                raw = call_fn(system_prompt, instruction)
+                parsed = extract_and_parse_json(raw) if raw else None
+            except Exception as exc:
+                print(
+                    f"[judge] WARNING: Model '{label}' call failed ({type(exc).__name__}: {exc}); "
+                    f"retries left: {attempts_left - 1}"
+                )
+                parsed = None
             attempts_left -= 1
         results.append((label, parsed))
 

@@ -15,6 +15,7 @@ from .contracts import (
     BuildInfo,
     CatalogSuggestion,
     CoverageSummary,
+    DiscoveryFailure,
     Handling,
     HandlingType,
     IndexRelation,
@@ -139,7 +140,8 @@ async def run_scout(
     index = load_service_index()
     recon_result, root = recon(url)
     strategy = await choose_strategy(recon_result, index, use_agent)
-    pages = execute_strategy(root, strategy, all_terms(index))
+    failures: list[DiscoveryFailure] = []
+    pages = execute_strategy(root, strategy, all_terms(index), failures=failures)
     page_by_id = {page.source_id: page for page in pages}
 
     findings = discover_findings(pages, index)
@@ -226,7 +228,7 @@ async def run_scout(
         services=services,
         catalog_suggestions=suggestions,
         coverage=coverage,
-        failures=[],
+        failures=failures,
     )
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -248,6 +250,7 @@ async def run_scout(
             "run_id": run_id,
             "strategy": strategy.model_dump(mode="json"),
             "pages_fetched": len(pages),
+            "failures_encountered": len(failures),
             "findings": len(findings),
             "indexed_services_checked": len(index.services),
         }, ensure_ascii=False, indent=2),

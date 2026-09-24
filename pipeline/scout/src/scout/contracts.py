@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StrategyMode(StrEnum):
@@ -182,7 +182,7 @@ class CoverageSummary(BaseModel):
 
 
 class DiscoveryFailure(BaseModel):
-    url: AnyHttpUrl | None = None
+    url: str | None = None
     stage: str
     error: str
 

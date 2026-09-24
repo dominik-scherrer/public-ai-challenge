@@ -28,7 +28,7 @@ jobs:
       - name: Lint with Ruff
         run: uv run ruff check .
       - name: Type check with mypy
-        run: uv run mypy src
+        run: uv run mypy src tests
       - name: Run tests with coverage
         run: uv run pytest --cov=scout tests/
 
@@ -51,6 +51,6 @@ jobs:
       - name: Lint with Ruff
         run: uv run ruff check .
       - name: Type check with mypy
-        run: uv run mypy src
+        run: uv run mypy src tests
       - name: Run tests with coverage
         run: uv run pytest --cov=judge tests/

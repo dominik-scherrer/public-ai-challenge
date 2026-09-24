@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import heapq
 import ipaddress
+import logging
 import re
 import socket
 import urllib.error
@@ -12,7 +13,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from html.parser import HTMLParser
 
-from .contracts import ReconResult, ScoutStrategy, StrategyMode
+from .contracts import DiscoveryFailure, ReconResult, ScoutStrategy, StrategyMode
+
+logger = logging.getLogger(__name__)
 
 USER_AGENT = "MunicipalityScout/0.1 (+Swiss public-service discovery)"
 TRACKING_PREFIXES = ("utm_", "pk_", "mc_")
@@ -253,6 +256,7 @@ def broad_crawl(
     root: PageIR,
     strategy: ScoutStrategy,
     terms_by_service: dict[str, list[str]] | None = None,
+    failures: list[DiscoveryFailure] | None = None,
 ) -> list[PageIR]:
     terms = [term for values in (terms_by_service or {}).values() for term in values]
     pages = [root]
@@ -279,7 +283,10 @@ def broad_crawl(
         seen.add(url)
         try:
             page = fetch_page(url)
-        except (urllib.error.URLError, TimeoutError, ValueError, OSError):
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+            logger.warning("Failed to fetch %s: %s: %s", url, type(exc).__name__, exc)
+            if failures is not None:
+                failures.append(DiscoveryFailure(url=url, stage="crawl", error=f"{type(exc).__name__}: {exc}"))
             continue
         # Redirects and aliases can land on a page we already have, or leave the
         # municipality's site entirely (e.g. a link that redirects to the canton).
@@ -299,6 +306,7 @@ def targeted_crawl(
     root: PageIR,
     strategy: ScoutStrategy,
     terms_by_service: dict[str, list[str]],
+    failures: list[DiscoveryFailure] | None = None,
 ) -> list[PageIR]:
     pages = [root]
     scored: list[tuple[int, str]] = []
@@ -322,7 +330,10 @@ def targeted_crawl(
             break
         try:
             pages.append(fetch_page(url))
-        except (urllib.error.URLError, TimeoutError, ValueError, OSError):
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+            logger.warning("Failed to fetch %s: %s: %s", url, type(exc).__name__, exc)
+            if failures is not None:
+                failures.append(DiscoveryFailure(url=url, stage="crawl", error=f"{type(exc).__name__}: {exc}"))
             continue
     return pages
 
@@ -331,7 +342,8 @@ def execute_strategy(
     root: PageIR,
     strategy: ScoutStrategy,
     terms_by_service: dict[str, list[str]],
+    failures: list[DiscoveryFailure] | None = None,
 ) -> list[PageIR]:
     if strategy.mode == StrategyMode.BROAD_SMALL_SITE:
-        return broad_crawl(root, strategy, terms_by_service)
-    return targeted_crawl(root, strategy, terms_by_service)
+        return broad_crawl(root, strategy, terms_by_service, failures=failures)
+    return targeted_crawl(root, strategy, terms_by_service, failures=failures)

@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from scout.agents import (
     choose_strategy,
@@ -337,6 +337,113 @@ class AgentsAndAppTests(unittest.IsolatedAsyncioTestCase):
         # Verify sources.jsonl has 2 lines (root + abfall)
         lines = sources_file.read_text(encoding="utf-8").strip().split("\n")
         self.assertEqual(len(lines), 2)
+
+    def test_crawl_records_network_failures(self):
+        import urllib.error
+
+        from scout.contracts import DiscoveryFailure, ScoutStrategy
+        from scout.runtime import broad_crawl, targeted_crawl
+
+        now = datetime.now(UTC)
+        root = PageIR(
+            source_id="src_root",
+            url="https://example.ch/",
+            retrieved_at=now,
+            title="Root",
+            language="de",
+            headings=[],
+            text="hello",
+            links=[
+                {"url": "https://example.ch/broken1", "text": "Broken 1", "internal": True},
+                {"url": "https://example.ch/broken2", "text": "abfall Broken 2", "internal": True},
+            ],
+            forms=[],
+            documents=[],
+        )
+
+        strategy_broad = ScoutStrategy(
+            mode=StrategyMode.BROAD_SMALL_SITE,
+            reason="test",
+            roots=["https://example.ch/"],
+            max_pages=5,
+            max_depth=2,
+        )
+        strategy_targeted = ScoutStrategy(
+            mode=StrategyMode.TARGETED,
+            reason="test",
+            roots=["https://example.ch/"],
+            max_pages=5,
+            max_depth=1,
+            target_services=["waste_collection"],
+        )
+
+        failures_broad: list[DiscoveryFailure] = []
+        with patch("scout.runtime.fetch_page", side_effect=urllib.error.URLError("Connection refused")):
+            with self.assertLogs("scout.runtime", level="WARNING") as cm:
+                pages = broad_crawl(root, strategy_broad, failures=failures_broad)
+                self.assertEqual(len(pages), 1)  # only root kept
+                self.assertEqual(len(failures_broad), 2)
+                self.assertEqual(failures_broad[0].stage, "crawl")
+                self.assertIn("Connection refused", failures_broad[0].error)
+                self.assertTrue(any("Failed to fetch" in msg for msg in cm.output))
+
+        failures_targeted: list[DiscoveryFailure] = []
+        with patch("scout.runtime.fetch_page", side_effect=TimeoutError("Timed out")):
+            with self.assertLogs("scout.runtime", level="WARNING") as cm:
+                pages = targeted_crawl(
+                    root,
+                    strategy_targeted,
+                    {"waste_collection": ["abfall"]},
+                    failures=failures_targeted,
+                )
+                self.assertEqual(len(pages), 1)
+                self.assertEqual(len(failures_targeted), 1)
+                self.assertEqual(failures_targeted[0].stage, "crawl")
+                self.assertIn("TimeoutError", failures_targeted[0].error)
+
+    async def test_agent_call_exceptions_fall_back_to_heuristics(self):
+        from scout.catalog import load_service_index
+        from scout.contracts import IndexRelation, ScoutFinding
+
+        index = load_service_index()
+        recon_res = ReconResult(entrypoint="https://example.ch/", internal_links=10)
+
+        # Mock pydantic_ai.Agent to raise an error during run()
+        mock_agent_instance = MagicMock()
+        mock_agent_instance.run = AsyncMock(side_effect=RuntimeError("OpenAI API rate limit"))
+
+        with patch.dict("os.environ", {"SCOUT_MODEL": "test-model"}):
+            with patch("pydantic_ai.Agent", return_value=mock_agent_instance):
+                with self.assertLogs("scout.agents", level="WARNING") as cm:
+                    # Strategy selection fallback
+                    strat = await choose_strategy(recon_res, index, use_agent=True)
+                    self.assertEqual(strat.mode, StrategyMode.BROAD_SMALL_SITE)
+                    self.assertTrue(any("Agent strategy selection failed" in msg for msg in cm.output))
+
+                with self.assertLogs("scout.agents", level="WARNING") as cm:
+                    # Service inspection fallback
+                    finding = ScoutFinding(
+                        service_id="waste_collection",
+                        local_name="Abfall",
+                        index_relation=IndexRelation.INDEXED,
+                        confidence=0.8,
+                        source_ids=["src_1"],
+                    )
+                    page = PageIR(
+                        source_id="src_1",
+                        url="https://example.ch/abfall",
+                        retrieved_at=datetime.now(UTC),
+                        title="Abfall",
+                        language="de",
+                        headings=["Abfall"],
+                        text="Abfallentsorgung",
+                        links=[],
+                        forms=[],
+                        documents=[],
+                    )
+                    interp = await inspect_service(finding, page, use_agent=True)
+                    self.assertEqual(interp.service_id, "waste_collection")
+                    self.assertTrue(any("Agent service inspection failed" in msg for msg in cm.output))
 
 
 if __name__ == "__main__":
