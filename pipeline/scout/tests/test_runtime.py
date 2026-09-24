@@ -71,10 +71,16 @@ class RuntimeTests(unittest.TestCase):
                 f"{base}/gemeinde/news/28082026-baugesuch-muster-913",
                 f"{base}/gemeinde/bild.webp",
                 f"{base}/gemeinde/verwaltung/abfallbewirtschaftung",
+                f"{base}/gemeinde/verwaltung/bauwesen/abfrage-baudossiers",
                 f"{base}/gemeinde/verwaltung",
             ]),
         }
-        aliases = {f"{base}/": f"{base}/home", f"{base}/index": f"{base}/home"}
+        aliases = {
+            f"{base}/": f"{base}/home",
+            f"{base}/index": f"{base}/home",
+            # An internal link that redirects to the canton must not become a municipal page.
+            f"{base}/gemeinde/verwaltung/bauwesen/abfrage-baudossiers": "https://www.vs.ch/baudossiers",
+        }
 
         def fake_fetch(url):
             final = aliases.get(url, url)
@@ -95,6 +101,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(len(urls), len(set(urls)))
         self.assertEqual(urls.count(f"{base}/home"), 1)
         self.assertNotIn(f"{base}/gemeinde/bild.webp", urls)
+        self.assertFalse(any("vs.ch" in url for url in urls))
         self.assertEqual(urls[2:], [
             f"{base}/gemeinde/verwaltung/abfallbewirtschaftung",
             f"{base}/gemeinde/verwaltung",

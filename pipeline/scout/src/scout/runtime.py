@@ -281,8 +281,11 @@ def broad_crawl(
             page = fetch_page(url)
         except Exception:
             continue
-        # Redirects and aliases can land on a page we already have.
+        # Redirects and aliases can land on a page we already have, or leave the
+        # municipality's site entirely (e.g. a link that redirects to the canton).
         if page.url in seen and page.url != url or page.source_id in seen_bodies:
+            continue
+        if urllib.parse.urlsplit(page.url).hostname != urllib.parse.urlsplit(root.url).hostname:
             continue
         seen.add(page.url)
         seen_bodies.add(page.source_id)
