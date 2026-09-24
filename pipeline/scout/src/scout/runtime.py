@@ -156,7 +156,7 @@ def fetch_page(url: str, timeout: int = 20) -> PageIR:
     retrieved_at = datetime.now(UTC)
     source_id = "src_" + hashlib.sha256(body).hexdigest()[:16]
     host = urllib.parse.urlsplit(final_url).netloc.lower()
-    links = []
+    links: list[dict[str, str | bool]] = []
     seen = set()
     for link in parser.links:
         candidate = normalize_url(link["url"])
@@ -188,14 +188,14 @@ def fetch_page(url: str, timeout: int = 20) -> PageIR:
 
 def recon(entrypoint: str) -> tuple[ReconResult, PageIR]:
     page = fetch_page(entrypoint)
-    directory_candidates = []
-    sampled = []
+    directory_candidates: list[str] = []
+    sampled: list[str] = []
     for link in page.links:
         text = f"{link['text']} {link['url']}".lower()
         if link["internal"] and any(term in text for term in (
             "dienstleistung", "online-schalter", "service", "guichet", "sportello"
         )):
-            directory_candidates.append(link["url"])
+            directory_candidates.append(str(link["url"]))
         if link["internal"] and len(sampled) < 30:
             sampled.append(str(link["text"] or link["url"]))
 
@@ -283,7 +283,7 @@ def broad_crawl(
             continue
         # Redirects and aliases can land on a page we already have, or leave the
         # municipality's site entirely (e.g. a link that redirects to the canton).
-        if page.url in seen and page.url != url or page.source_id in seen_bodies:
+        if (page.url in seen and page.url != url) or page.source_id in seen_bodies:
             continue
         if urllib.parse.urlsplit(page.url).hostname != urllib.parse.urlsplit(root.url).hostname:
             continue

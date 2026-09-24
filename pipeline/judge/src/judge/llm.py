@@ -111,7 +111,7 @@ def call_openai(system_prompt: str, instruction: str) -> str | None:
             "or run the judge pipeline with --dry-run to exercise the deterministic "
             "path only."
         )
-    from openai import (
+    from openai import (  # type: ignore[import-not-found]
         OpenAI,  # imported lazily so --dry-run never needs the package configured
     )
 

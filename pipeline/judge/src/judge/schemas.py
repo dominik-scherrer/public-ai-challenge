@@ -8,11 +8,11 @@ on that merge. Revisit once pydantic lands on main.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class Verdict(str, Enum):
+class Verdict(StrEnum):
     """A judge's decision on one claim. No numeric score — see docs/architecture/adr/0004."""
 
     PASS = "pass"

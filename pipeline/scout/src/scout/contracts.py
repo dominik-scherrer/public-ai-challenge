@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import AnyHttpUrl, BaseModel, Field
+from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field
 
 
 class StrategyMode(StrEnum):
@@ -63,7 +63,7 @@ class SourceRole(StrEnum):
 class Municipality(BaseModel):
     name: str
     canton: str = Field(min_length=2, max_length=2)
-    official_url: AnyHttpUrl
+    official_url: str
 
 
 class BuildInfo(BaseModel):
@@ -79,17 +79,25 @@ class ServiceIndexEntry(BaseModel):
 
 
 class ServiceIndex(BaseModel):
-    schema: Literal["service-index/v1"] = "service-index/v1"
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    schema_version: Literal["service-index/v1"] = Field(
+        default="service-index/v1", alias="schema"
+    )
     version: str
     services: list[ServiceIndexEntry]
 
+    @property
+    def schema(self) -> str:  # type: ignore[override]
+        return self.schema_version
+
 
 class ReconResult(BaseModel):
-    entrypoint: AnyHttpUrl
+    entrypoint: str
     title: str | None = None
     language: str | None = None
     internal_links: int = 0
-    service_directory_candidates: list[AnyHttpUrl] = []
+    service_directory_candidates: list[str] = []
     sampled_links: list[str] = []
     notes: list[str] = []
 
@@ -97,7 +105,7 @@ class ReconResult(BaseModel):
 class ScoutStrategy(BaseModel):
     mode: StrategyMode
     reason: str
-    roots: list[AnyHttpUrl]
+    roots: list[str]
     max_pages: int = Field(ge=1, le=100)
     max_depth: int = Field(ge=0, le=5)
     target_services: list[str] = []
@@ -105,7 +113,7 @@ class ScoutStrategy(BaseModel):
 
 class SourceRef(BaseModel):
     source_id: str
-    url: AnyHttpUrl
+    url: str
     role: SourceRole
     retrieved_at: datetime | None = None
     discovered_from: str | None = None
@@ -180,7 +188,11 @@ class DiscoveryFailure(BaseModel):
 
 
 class MunicipalityDiscovery(BaseModel):
-    schema: Literal["municipality-discovery/v1"] = "municipality-discovery/v1"
+    model_config = ConfigDict(populate_by_name=True, serialize_by_alias=True)
+
+    schema_version: Literal["municipality-discovery/v1"] = Field(
+        default="municipality-discovery/v1", alias="schema"
+    )
     municipality: Municipality
     build: BuildInfo
     strategy: ScoutStrategy
@@ -188,3 +200,7 @@ class MunicipalityDiscovery(BaseModel):
     catalog_suggestions: list[CatalogSuggestion] = []
     coverage: CoverageSummary
     failures: list[DiscoveryFailure] = []
+
+    @property
+    def schema(self) -> str:  # type: ignore[override]
+        return self.schema_version
