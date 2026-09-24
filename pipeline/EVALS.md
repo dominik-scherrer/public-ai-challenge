@@ -1,165 +1,240 @@
-# Evaluation Plan
+# Scout Evaluation Plan
 
-## 1. Core metrics
+## 1. What we evaluate
+
+Scout should be evaluated as a two-stage agent:
+
+```text
+Step 1: did it scout the municipality intelligently?
+Step 2: did it understand and compile the local service reality correctly?
+```
+
+A high-quality Scout run must do both.
+
+## 2. Step 1 — adaptive scouting metrics
 
 ### Discovery recall
 
-Of a manually verified set of municipal services, how many did the pipeline find?
+Against a manually checked reference set:
 
-### Precision
+> How many real municipal services did Scout find?
 
-Of extracted service candidates, how many are actually municipal public services?
+### Discovery precision
 
-Especially important for:
+Of the candidates Scout retained:
 
-- Bosco/Gurin
-- Binn
-- mixed tourism / municipal sites
+> How many are actually municipal public services?
 
-### Provenance coverage
+Especially important for mixed-content municipalities.
 
-Percentage of populated structured fields that can be traced to exact evidence.
+### Strategy quality
 
-Target:
+Did the chosen strategy fit the municipality?
 
-```text
-100% for hackathon demo
-```
+Evaluate:
 
-A field without evidence should be absent or explicitly marked unresolved.
-
-### Language coverage
-
-For multilingual municipalities:
-
-- were all relevant language variants discovered?
-- were equivalent services paired?
-- were false duplicates created?
+- unnecessary pages fetched
+- useful service/source yield
+- missed obvious structural shortcut
+- excessive broad crawling
+- failure to switch strategy when reconnaissance contradicted expectations
 
 ### Crawl efficiency
 
 Track:
 
 ```text
+requests
 pages fetched
 pages retained
-services discovered
+service candidates
+indexed services resolved
 model calls
-tokens consumed
-time elapsed
+tokens
+elapsed time
 ```
 
-Useful derived metrics:
+Useful ratios:
 
 ```text
-services / 100 pages
-services / model call
-evidence-bearing fields / token
+services / 100 requests
+useful sources / 100 requests
+indexed services resolved / model call
 ```
 
-## 2. Per-municipality stress tests
+## 3. Step 2 — semantic compilation metrics
 
-### Zürich
+### Service Index match accuracy
 
-Question:
+For each discovered service:
 
-> Can we avoid crawling the whole site while still finding a useful service set?
+- correct indexed service
+- correct variant
+- correct possible-new suggestion
+- false match
 
-Primary metrics:
+### Handling accuracy
 
-- pages avoided
-- service yield
-- directory discovery accuracy
+Does `handling` correctly capture how the municipality implements the service?
 
-### Biel/Bienne
+Check:
 
-Question:
+- handling type
+- interaction type
+- live/static status
+- external-system presence
+- source roles
+- semantic summary
 
-> Can we recognize that German and French pages represent the same service?
+### Semantic summary usefulness
 
-Primary metrics:
+The handling summary should let the MCP Factory understand the implementation without reopening the whole website.
 
-- multilingual pairing precision
-- duplicate rate
-- language coverage parity
+Test question:
+
+> Could a downstream builder choose an implementation pattern from the municipality JSON and source bundle?
+
+### Availability accuracy
+
+Distinguish correctly:
+
+- supported
+- partial
+- handoff_only
+- unavailable
+- not_observed
+
+Especially penalize converting `not_observed` into `unavailable`.
+
+### Catalog suggestion quality
+
+For `possible_new` / `variant` suggestions:
+
+- source-backed?
+- genuinely outside the current index?
+- useful enough to review?
+- duplicate of existing concept?
+
+## 4. Provenance
+
+Every supported/partial/handoff service should answer:
+
+```text
+Which sources support this?
+Who publishes them?
+When were they retrieved?
+Which source is primary?
+Which statements are semantic interpretations?
+```
+
+The semantic handling summary is inferred.
+
+The source bundle is evidence.
+
+## 5. Benchmark municipalities
 
 ### Binn
 
-Question:
+Primary question:
 
-> Is a broad deterministic crawl cheaper and more complete than agentic planning?
+> Can Scout efficiently achieve broad coverage on a tiny municipality?
 
-Primary metrics:
+Focus:
 
-- total site pages
-- service precision
-- crawl completeness
+- recall
+- unusual local services
+- sensible `possible_new` suggestions
+- low orchestration overhead
+
+### Ausserberg
+
+Primary question:
+
+> Can Scout produce a municipality artifact useful to the actual product/factory scenarios?
+
+Focus:
+
+- forms
+- official handoffs
+- administrative pages
+- contact/service responsibility
+- factory usefulness
+
+### Dübendorf
+
+Primary question:
+
+> Can Scout recognize and exploit a structured service catalogue?
+
+Focus:
+
+- strategy selection
+- directory yield
+- reusable structural hints
+- request efficiency
 
 ### Bosco/Gurin
 
-Question:
+Primary question:
 
-> Can we separate public authority information from tourism, associations and commerce?
+> Can Scout separate municipal capabilities from tourism/community noise?
 
-Primary metrics:
+Focus:
 
-- false-positive service rate
-- source-authority classification
+- precision
+- authority classification
+- false positive rate
 
-## 3. Trust / provenance checks
+### Zürich
 
-Every returned field should answer:
+Primary question:
 
-```text
-What?
-Where from?
-Who published it?
-When fetched?
-How transformed?
-What exact evidence supports it?
-Official / observed / derived / inferred / dynamic?
-```
+> Can Scout resolve indexed services on a very large site without attempting a broad crawl?
 
-## 4. Failure modes worth demonstrating
+Focus:
 
-- stale source
-- conflicting fee values
-- missing language variant
-- official page linking to external eGov portal
-- service described only inside a departmental page
-- PDF containing required documents
-- tourism page falsely resembling a service
-- service pages duplicated across languages
-- target page unavailable
-- unsupported municipality structure
+- targeted strategy
+- requests avoided
+- service resolution
+- portal/API/handoff interpretation
 
-## 5. Hackathon demo idea
+## 6. End-to-end Factory readiness metric
 
-Show the same pipeline on:
+The most important integration metric:
 
-```text
-Binn
-→ FULL_CRAWL
+> Can the MCP Factory consume `MunicipalityDiscovery` without rediscovering the municipality website?
 
-Biel/Bienne
-→ multilingual SECTION/DIRECTORY crawl
+Score each service:
 
-Zürich
-→ DIRECTORY_CRAWL with bounded page budget
-```
+- `factory_ready`
+- `needs_targeted_source_followup`
+- `needs_rescout`
+- `unusable`
 
-Then expose:
+This becomes the clearest measure of whether the Scout/Factory boundary works.
 
-```text
-service result
-+
-source evidence
-+
-crawl strategy
-+
-why the system stopped
-```
+## 7. Failure modes worth demonstrating
 
-The demo claim becomes:
+- tiny site with weak information architecture
+- large site where broad crawl would explode
+- structured service directory
+- tourism page resembling municipal content
+- official external service portal
+- service represented by HTML + PDF + contact page
+- possible new local service
+- ambiguous indexed-service mapping
+- inaccessible source
+- dynamic/JS-only page
+- conflicting official sources
+- model output failing validation
+- crawl budget exhausted before coverage target
 
-> One ingestion architecture, different acquisition strategies, inspectable provenance everywhere.
+## 8. Demo claim
+
+The strongest demo is not:
+
+> “The crawler found pages.”
+
+It is:
+
+> **The same Scout agent chose different strategies for different municipalities, semantically understood their heterogeneous service implementations, and compiled them into one stable municipality contract for the MCP Factory.**

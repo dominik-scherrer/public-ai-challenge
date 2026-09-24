@@ -1,239 +1,205 @@
-# Build Plan — First Vertical Slice
+# Build Plan — Scout MVP
 
 ## Goal
 
-Prove this end-to-end path:
+Build one working Scout pipeline:
 
 ```text
-municipality URL
-→ reconnaissance
-→ CrawlPlan IR
-→ adaptive fetch
-→ source snapshot
-→ PageIR
-→ small-model classification/extraction
-→ ClaimIR
-→ deterministic validation/provenance
-→ targeted follow-up
-→ canonical service JSON
+Municipality URL
++
+Service Index
+→ adaptive scouting
+→ semantic service inspection
+→ MunicipalityDiscovery JSON
 ```
 
-Do not begin by attempting all seven municipalities.
+The MCP Factory is a downstream workstream.
 
-## Phase 0 — Keep work scoped to pipeline/
+## Phase 1 — Contracts first
 
-All code, schemas, fixtures, baselines and docs for this subsystem stay under this directory.
+Implement Pydantic models for:
 
-Suggested structure:
+- `ServiceIndex`
+- `ServiceIndexEntry`
+- `ScoutStrategy`
+- `ScoutFinding`
+- `SourceRef`
+- `Handling`
+- `MunicipalityService`
+- `CatalogSuggestion`
+- `CoverageSummary`
+- `MunicipalityDiscovery`
+
+The first stable boundary is:
 
 ```text
-pipeline/
-├── docs/                # optional future split; current design docs remain here
-├── baseline/
-├── schemas/
-├── fixtures/
-├── src/
-│   ├── context/
-│   ├── recon/
-│   ├── planner/
-│   ├── crawl/
-│   ├── snapshot/
-│   ├── extract/
-│   ├── normalize/
-│   ├── provenance/
-│   └── orchestrator/
-├── evals/
-└── tests/
+municipality-discovery/v1
 ```
 
-## Phase 1 — Baseline corpus
+## Phase 2 — Service Index
 
-Use the research-agent baseline for the seven municipalities before tuning our crawler.
-
-Purpose:
-
-- reference services
-- real source weirdness
-- multilingual examples
-- evidence/provenance examples
-- comparison target for our pipeline
-
-Treat service-count targets as soft budgets, not quotas.
-
-## Phase 2 — Deterministic fetch + snapshot
-
-Implement HTTP first:
-
-- redirects
-- content type
-- canonical URL when observable
-- timestamps
-- SHA-256
-- raw response storage
-- cache
-- retry/backoff
-- basic robots/rate policy
-- structured error representation
-
-Success:
+Create:
 
 ```text
-URL → reproducible SourceSnapshot
+pipeline/scout/catalog/services.json
 ```
 
-## Phase 3 — Cleaner + PageIR
+Start with the currently agreed factory capabilities/services.
 
-Extract deterministically:
+Each index entry should contain:
 
-- title
-- headings
-- main text
-- internal/external links
-- PDFs
-- forms
-- hreflang
-- canonical link
-- JSON-LD
-- metadata
+- stable ID
+- multilingual labels/synonyms
+- optional discovery hints
+- status/version metadata
 
-Success:
+Scout can propose new or variant services, but the index changes only through review.
 
-```text
-SourceSnapshot → bounded PageIR
-```
+## Phase 3 — deterministic acquisition tools
 
-## Phase 4 — Browser fallback
+Reuse existing crawler work where useful.
 
-Add Playwright/Crawl4AI only when HTTP is insufficient.
+Implement narrow tools/interfaces for:
 
-Record:
+- fetch URL
+- parse page
+- discover links
+- normalize URL
+- snapshot source
+- inspect sitemap
+- inspect navigation
+- classify source/resource type
 
-- fetch tier
-- escalation reason
-- rendering/interaction requirement
+No LLM should own request policy.
 
-Do not make every request a browser request.
+## Phase 4 — Recon + Strategy agent
 
-## Phase 5 — Typed planner
+Build the first PydanticAI reasoning step.
 
-Implement `municipal-crawl-plan/v1`.
+Input:
 
-Planner receives:
-
-- municipality context
+- municipality URL
 - cheap reconnaissance
-- discovered languages
-- site scale signals
+- Service Index metadata
 
-Planner returns:
-
-- strategy
-- roots
-- budgets
-- fetch policy
-- language plan
-- link policy
-- stop rules
-
-Validate before execution.
-
-## Phase 6 — Small Apertus-compatible classifier
-
-Input: PageIR.
-
-Strict output:
-
-- page role
-- service likelihood
-- authority signal
-- follow-up candidates
-- confidence/escalation reason
-
-Start with any available model adapter if needed; keep the interface Apertus-compatible.
-
-## Phase 7 — Service extraction to ClaimIR
-
-Produce evidence-backed candidate claims.
-
-Do not write final service records directly.
-
-Deterministic code handles:
-
-- date/currency parsing
-- schema validation
-- duplicate/conflict detection
-- provenance
-- evidence coverage
-
-## Phase 8 — Compile reusable site adapters
-
-When the planner discovers stable structure, emit cached rules/selectors.
-
-Try adapter-first on subsequent runs.
-
-Measure how much large-model work disappears.
-
-## Phase 9 — Three-municipality proof
-
-First trio:
-
-1. **Binn** — full-crawl baseline
-2. **Biel/Bienne** — multilingual identity test
-3. **Zürich** — selective large-site crawl
-
-Then:
-
-4. Lugano
-5. Lausanne
-6. Ilanz/Glion
-7. Bosco/Gurin
-
-## First hackathon acceptance criteria
-
-For each first-trio municipality:
-
-- real service candidates with exact source references
-- every populated structured field has evidence or is explicitly derived
-- crawl strategy and stop reason recorded
-- HTTP/browser fetch tier visible
-- no fabricated fields
-- multilingual duplicates detectable
-- snapshot reprocessable without refetching
-- at least one targeted follow-up
-- at least one site adapter/rule compiled and replayed
-- model escalation events recorded
-
-## Architectural experiment
-
-Measure:
+Output:
 
 ```text
-large-model calls
-small-model calls
-HTTP vs browser fetches
-compiled-rule coverage
-pages fetched
-services retained
-evidence coverage
-precision / recall against baseline
+ScoutStrategy
 ```
 
-The strongest proof is not "the agent can browse".
+Acceptance:
 
-It is:
+- Binn → broad-small-site style strategy
+- Dübendorf → service-directory style strategy
+- Zürich → targeted-large-city style strategy
+- Bosco/Gurin → mixed-content strategy
 
-> **A capable model can compile an unfamiliar public website into a bounded acquisition program that deterministic software and a smaller public model can execute repeatedly.**
+The exact labels can evolve; the behavioral difference is what matters.
+
+## Phase 5 — Scout Step 1: discover
+
+Execute the strategy.
+
+For indexed services:
+
+```text
+find candidate sources
+→ classify relevance
+→ retain official resources
+→ mark unresolved where necessary
+```
+
+Also collect possible new/variant service candidates.
+
+Output:
+
+```text
+ScoutFindings[]
+```
+
+## Phase 6 — Scout Step 2: understand
+
+For each finding/source bundle, use semantic reasoning to compile:
+
+- local service name
+- index relation
+- availability
+- handling type
+- interaction type
+- semantic handling summary
+- source roles
+- live/static status
+- external system/handoff where applicable
+- limitations / gaps
+
+The model should summarize how the municipality handles the service, not attempt universal deep normalization.
+
+## Phase 7 — Compile + validate
+
+Deterministically compile findings into:
+
+```text
+MunicipalityDiscovery
+```
+
+Validate:
+
+- every supported service has sources
+- every URL is valid
+- every handling enum is legal
+- not-observed remains distinct from unavailable
+- new-service suggestions have evidence
+- crawl strategy and stop reason are preserved
+
+## Phase 8 — First municipality loop
+
+Recommended first loop:
+
+1. **Binn** — small/broad discovery
+2. **Ausserberg** — reference product workflow
+3. **Dübendorf** — structured service catalogue
+4. **Bosco/Gurin** — mixed-content precision
+5. **Zürich** — large-city targeted discovery
+
+The goal is not merely coverage.
+
+Each run should improve:
+
+- Service Index
+- strategy selection
+- semantic handling types
+- discovery prompts
+- source roles
+- factory assumptions
+
+## MVP acceptance
+
+Scout MVP succeeds when:
+
+- one command accepts municipality URL + identity
+- Recon chooses a typed strategy
+- indexed services are explicitly checked
+- new candidates can be proposed
+- discovered services include authoritative source bundles
+- the LLM produces a useful semantic handling description
+- final output validates as `MunicipalityDiscovery`
+- deterministic mode can still fetch/snapshot/validate without model ownership of crawl policy
+- the MCP Factory can consume the JSON without rediscovering the municipality website
 
 ## Defer
 
-Do not spend hackathon time on:
+Do not prioritize yet:
 
-- vector database
-- graph database
-- broad national crawling
-- sophisticated UI
-- stealth/browser fingerprint work
-- complex trust scoring
-- continuous scheduler
+- perfect national ontology
+- full field-level normalization of every service
+- universal eCH-0070 mapping
+- transactions
+- deep PDF interpretation unless needed for the first factory proof
+- complex UI
+- nationwide crawling
+- autonomous browser wandering
 
-Prove the ingestion/compiler boundary first.
+## Primary experiment
+
+> **Can one adaptive Scout agent understand very different municipal websites well enough to compile each into the same stable municipality contract for an MCP Factory?**

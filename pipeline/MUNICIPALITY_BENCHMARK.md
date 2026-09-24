@@ -1,160 +1,165 @@
-# Municipality Benchmark
+# Scout Municipality Benchmark
 
 ## Goal
 
-Use a deliberately heterogeneous municipality set to test whether the ingestion system adapts to different Swiss realities.
+Use real municipalities to test the two core Scout abilities:
 
-The benchmark should stress:
+1. **adaptive scouting**
+2. **semantic compilation of heterogeneous service handling**
 
-- municipality scale
-- site scale
-- language
-- multilingual equivalence
-- administrative complexity
-- eGovernment maturity
-- sparse service representation
-- mixed-content websites
-- rural / merged municipalities
+The benchmark is intentionally heterogeneous.
 
-## Initial benchmark set
+## First implementation batch
 
-| Municipality | Character | Main test |
+| Municipality | Scout challenge | Primary proof |
 |---|---|---|
-| Zürich ZH | very large city | large-site precision and selective discovery |
-| Lausanne VD | large city | French extraction and ontology portability |
-| Lugano TI | medium city | Italian + external/dedicated eGov transactions |
-| Biel/Bienne BE | bilingual city | multilingual service equivalence |
-| Ilanz/Glion GR | small regional municipality | multilingual + merged/decentralized structure |
-| Binn VS | tiny alpine municipality | sparse traditional municipal website |
-| Bosco/Gurin TI | very tiny mountain municipality | municipal / tourism / association content separation |
+| **Binn VS** | tiny traditional municipality | broad-small-site strategy and coverage |
+| **Ausserberg VS** | product reference with forms/handoffs | factory-ready municipality JSON |
+| **Dübendorf ZH** | structured i-web service catalogue | service-directory strategy and repeatability |
+| **Bosco/Gurin TI** | municipality mixed with tourism/community content | mixed-content precision |
+| **Zürich ZH** | very large mature city ecosystem | targeted-large-city strategy |
 
-## Why seven instead of five?
+These five are more useful for the Scout MVP than beginning with language diversity alone.
 
-Five large or well-known cities would bias the system toward mature portals.
+## Why these cases
 
-The additional tiny municipalities test the opposite failure mode:
+### Binn — broad small-site case
 
-> Can the system recognize municipal services when there is no clean service catalogue at all?
-
-## Expected strategy by municipality
-
-### Zürich
-
-Likely:
+Expected strategy:
 
 ```text
-DISCOVERY_CRAWL
-→ DIRECTORY_CRAWL
+broad_small_site
 ```
 
-Do not crawl the entire city website.
+Tests:
 
-Test:
+- near-complete bounded discovery
+- unusual local terminology
+- possible-new service candidates
+- low-cost deterministic acquisition
+- whether complex planning is unnecessary
 
-- directory discovery
-- eGov endpoints
-- page-budget discipline
+### Ausserberg — factory integration case
+
+Expected strategy:
+
+```text
+broad_small_site or targeted administrative sections
+```
+
+Tests:
+
+- move-in/move-out information
+- forms
+- contacts
+- official handoffs
+- local administrative pages
+- whether `MunicipalityDiscovery` is sufficient for downstream MCP generation
+
+### Dübendorf — structured catalogue case
+
+Expected strategy:
+
+```text
+service_directory
+```
+
+Tests:
+
+- detecting `/dienstleistungen/` structure
+- enumerating service pages efficiently
+- repeated templates
+- reusable structural hints
+- distinguishing catalogue service from transaction/handoff resources
+
+### Bosco/Gurin — mixed-content precision case
+
+Expected strategy:
+
+```text
+mixed_content
+```
+
+Tests separation of:
+
+- municipal administration
+- tourism
+- accommodation
+- associations
+- events
+- local commerce
+
+Primary metric:
+
+> false-positive municipal service rate
+
+### Zürich — large-city selectivity case
+
+Expected strategy:
+
+```text
+targeted_large_city
+```
+
+Tests:
+
+- Service Index-driven targeting
 - high branching factor
-- deduplication
+- department/portal boundaries
+- structured APIs/live sources
+- authenticated/external handoffs
+- avoiding whole-site crawl
 
-### Lausanne
+Primary metric:
 
-Likely:
+> useful indexed-service coverage per request
 
-```text
-DISCOVERY_CRAWL
-→ DIRECTORY or SECTION
-```
+## Later benchmark expansion
 
-Test:
+After the core Scout loop works:
 
-- French-language service extraction
-- ontology independence from German terms
+| Municipality | Main later test |
+|---|---|
+| Biel/Bienne BE | bilingual source/service matching |
+| Lausanne VD | French-language portability |
+| Lugano TI | Italian eGovernment ecosystem |
+| Ilanz/Glion GR | smaller multilingual/decentralized structure |
+| Airolo TI | custom form/service implementation |
 
-### Lugano
+These matter, but they are secondary to proving adaptive strategy + semantic handling first.
 
-Likely:
+## Benchmark outputs
 
-```text
-DISCOVERY_CRAWL
-→ DIRECTORY_CRAWL
-→ external official eGov portal
-```
+For each municipality preserve:
 
-Test:
-
-- Italian-language extraction
-- distinction between informational page and executable service endpoint
-
-### Biel/Bienne
-
-Likely:
-
-```text
-SECTION / DIRECTORY
-+ multilingual pairing
-```
-
-Test:
-
-- DE/FR service equivalence
-- duplicate prevention
-- language coverage parity
-
-### Ilanz/Glion
-
-Likely:
-
-```text
-SECTION_CRAWL
-```
-
-Test:
-
-- smaller administration
-- services embedded in departmental pages
-- German / Romansh variation
-- merged municipality structure
-
-### Binn
-
-Likely:
-
-```text
-FULL_CRAWL
-```
-
-Test:
-
-- tiny site
-- low service density
-- traditional CMS
-- whether broad crawling is cheaper than complex planning
-
-### Bosco/Gurin
-
-Likely:
-
-```text
-FULL_CRAWL
-+ aggressive classification
-```
-
-Test:
-
-- distinguish municipal services from:
-  - tourism
-  - accommodation
-  - associations
-  - commercial activity
-  - events
-- very small administration
-- unusual language context
+- Recon result
+- chosen Scout strategy
+- strategy reason
+- requests/pages examined
+- stop reason
+- indexed services checked
+- service findings
+- catalog suggestions
+- final MunicipalityDiscovery JSON
+- factory-readiness assessment
 
 ## Benchmark principle
 
-Zürich primarily tests **recall under bounded crawling**.
+The system should not merely return different content.
 
-Bosco/Gurin primarily tests **precision under noisy crawling**.
+It should demonstrate different **behavior**:
 
-Together, they help test whether adaptive orchestration is actually useful.
+```text
+Binn          → broad
+Dübendorf     → catalogue-driven
+Bosco/Gurin   → broad + aggressive filtering
+Zürich        → targeted
+```
+
+And despite those differences, all runs should compile into the same:
+
+```text
+municipality-discovery/v1
+```
+
+That is the architectural proof.

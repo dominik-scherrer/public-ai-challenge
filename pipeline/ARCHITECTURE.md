@@ -1,248 +1,282 @@
-# Architecture — Adaptive Municipal Service Ingestion
+# Architecture — Scout Agent
 
 ## 1. Goal
 
-Transform an official municipal entry point into structured, typed, provenance-preserving service records while minimizing unnecessary crawling and expensive model use.
+Scout turns an official municipality website into a typed, provenance-preserving **MunicipalityDiscovery** artifact for the MCP Factory.
 
 Input:
 
 ```text
-https://municipality.example.ch/
+official municipality URL
++
+versioned Service Index
 ```
 
 Output:
 
 ```text
-service[]
-authority[]
-jurisdiction[]
-procedure[]
-source[]
-evidence[]
+MunicipalityDiscovery
 ```
 
-The pipeline must work across large city portals, small municipality CMS sites, multilingual websites, external eGovernment portals, PDFs, departmental pages and mixed municipal/tourism content.
+The difficult part is not extracting every field from every page. It is understanding:
 
-## 2. Architecture
+- which indexed services are present
+- which services are not observed
+- which additional or variant services exist
+- how the municipality locally handles each service
+- which official resources define that service
+
+## 2. Two-step Scout
 
 ```text
-MUNICIPALITY
-    │
-    ▼
-CONTEXT ENRICHMENT
-BFS/canton/language context
-    │
-    ▼
-CHEAP RECONNAISSANCE
-homepage / robots / sitemap / nav / hreflang / portal links
-    │
-    ▼
-PLANNER / SEMANTIC COMPILER
-large model only when useful
-    │
-    ▼
-CrawlPlan IR
-    │
-    ▼
-DETERMINISTIC RUNTIME
-HTTP first → browser fallback → interactive fallback
-    │
-    ├── source snapshot
-    └── PageIR
-            │
-            ▼
-SMALL CONSTRAINED MODEL
-classify / extract / rank links
-            │
-            ▼
-ClaimIR
-            │
-            ▼
-VALIDATOR / COMPILER
-schema / provenance / normalization / conflicts
-            │
-      ┌─────┴─────┐
-      │           │
- confident      ambiguous
-      │           │
-      ▼           ▼
-    STORE      LARGE MODEL
+                        SERVICE INDEX
+                              │
+                              ▼
+MUNICIPALITY URL ──→ RECON / STRATEGY
+                              │
+                              ▼
+                    SCOUT STEP 1
+                    adaptive discovery
+                              │
+                       ScoutFindings[]
+                              │
+                              ▼
+                    SCOUT STEP 2
+                    semantic compilation
+                              │
+                              ▼
+                   MunicipalityDiscovery
+                              │
+                              ▼
+                         MCP FACTORY
 ```
 
-## 3. Source snapshot before interpretation
+## 3. Recon and strategy
 
-Never let an extractor directly create the only stored representation.
+Before crawling deeply, Scout inspects enough of the municipality to choose a strategy.
 
-Always preserve:
+Signals include:
 
-```text
-SOURCE SNAPSHOT
-    ↓
-PageIR
-    ↓
-OBSERVATIONS
-    ↓
-ClaimIR
-    ↓
-SERVICE RECORD
+- estimated site size
+- navigation branching
+- service directory presence
+- sitemap availability
+- CMS patterns
+- language structure
+- amount of municipal vs non-municipal content
+- eGovernment portal links
+- static vs rendered content
+- structured feeds/APIs
+
+Typed strategy example:
+
+```json
+{
+  "mode": "service_directory",
+  "reason": "A structured /dienstleistungen/ catalogue was detected.",
+  "roots": ["https://.../dienstleistungen/"],
+  "max_pages": 120,
+  "max_depth": 3,
+  "target_services": ["..."],
+  "allow_external_handoffs": true
+}
 ```
 
-This allows re-running improved extractors without re-fetching, auditing changed interpretations, comparing versions over time and reproducing tests.
+Allowed strategy families:
 
-## 4. Fetch escalation
+- `broad_small_site`
+- `service_directory`
+- `targeted_large_city`
+- `mixed_content`
+- `custom`
 
-A headless browser is not the baseline.
+The agent chooses; deterministic runtime validates and executes.
 
-### Tier 1 — HTTP
+## 4. Step 1 — adaptive service discovery
 
-Prefer direct HTTP when it yields useful source content.
+Scout searches for all services from the Service Index.
 
-Use it for:
+For each candidate it records:
 
-- static HTML
-- sitemaps
-- PDFs
-- JSON/API endpoints
-- canonical metadata
-- most traditional municipal CMS pages
+- local label
+- candidate indexed service
+- confidence
+- official source URLs
+- resource roles
+- discovery evidence
 
-### Tier 2 — Headless browser
+Scout also records:
 
-Escalate when:
+- `possible_new`
+- `possible_variant`
 
-- the HTTP response is a JavaScript shell
-- meaningful content appears only after rendering
-- navigation or content depends on client-side state
-- a service directory requires browser execution
+It never silently changes the Service Index.
 
-### Tier 3 — Agentic browser
+Example finding:
 
-Escalate only when a real interaction is necessary:
+```json
+{
+  "local_name": "Strahlerpatente",
+  "service_id": null,
+  "index_relation": "possible_new",
+  "confidence": 0.94,
+  "sources": [
+    {"url": "...", "role": "service_page"},
+    {"url": "...", "role": "application_pdf"}
+  ]
+}
+```
 
-- multi-step portal navigation
-- menus/forms that cannot be represented by stable selectors
-- dynamic transaction flows needed for discovery
+## 5. Step 2 — semantic municipality compilation
 
-The fetcher records which tier was used and why.
+Step 2 takes the findings and understands how each service is handled locally.
 
-## 5. Agentic boundary
+The model answers questions such as:
 
-Agentic orchestration is justified where the pipeline must choose among known actions.
+- Is this information-only, wayfinding, request or transaction?
+- Is the implementation a static page, PDF, form, handoff, feed, API or mixed?
+- Which source is primary?
+- Which supporting resources belong to the service?
+- Does the municipality expose enough information to call this supported?
+- What is missing or inaccessible?
 
-Good model tasks:
-
-- classify the municipality/site
-- choose FULL / SECTION / DIRECTORY / DISCOVERY
-- choose relevant language variants
-- rank evidence-bearing links
-- compile extraction rules
-- resolve hard multilingual equivalence
-- decide whether uncertainty warrants escalation
-
-Bad model tasks:
-
-- unconstrained browsing
-- unlimited crawling
-- ignoring deterministic URL/domain policy
-- inventing service facts
-- replacing schema validation
-- deciding freshness from intuition
-
-## 6. Semantic compiler boundary
-
-The large model should emit typed intermediate representations rather than directly performing the entire crawl.
+This produces one typed service record.
 
 Example:
 
 ```json
 {
-  "schema": "municipal-crawl-plan/v1",
-  "strategy": "directory_crawl",
-  "roots": [{"url": "...", "role": "service_directory"}],
-  "languages": ["de"],
-  "fetch_policy": {
-    "prefer": "http",
-    "browser_fallback": true
+  "service_id": "move_in",
+  "local_name": "Zuzug",
+  "index_relation": "indexed",
+  "availability": "handoff_only",
+  "handling": {
+    "type": "external_handoff",
+    "interaction": "transaction",
+    "summary": "The municipality explains the move-in process locally and routes the citizen to the official external registration service.",
+    "live": false,
+    "external_system": "eUmzugCH"
   },
-  "budget": {
-    "max_pages": 250,
-    "max_depth": 4
-  },
-  "stop": {
-    "directory_exhausted": true,
-    "novelty_window": 20
-  }
-}
-```
-
-Software validates and executes this plan.
-
-## 7. Small-model execution
-
-The small model receives bounded inputs and strict output schemas.
-
-Example page classification:
-
-```json
-{
-  "page_role": "service",
-  "service_probability": 0.94,
-  "follow_candidates": []
-}
-```
-
-Example field extraction:
-
-```json
-{
-  "claims": [
-    {
-      "field": "fees[0].raw",
-      "value": "CHF 30",
-      "evidence_span": [182, 188]
-    }
+  "sources": [
+    {"url": "...", "role": "municipal_service_page"},
+    {"url": "...", "role": "official_handoff"}
   ]
 }
 ```
 
-Deterministic code then parses currency/amount, validates schema and attaches provenance.
+## 6. MunicipalityDiscovery boundary
 
-## 8. Compile successful behavior into rules
-
-Unknown sites may initially require model help. Repeated crawls should become cheaper.
+The final artifact includes:
 
 ```text
-model discovers structure
-        ↓
-typed selector/extraction plan
-        ↓
-validated
-        ↓
-cached site adapter
-        ↓
-future crawl without large model
+municipality
+build
+strategy
+services[]
+catalog_suggestions[]
+coverage
+failures[]
+sources[]
 ```
 
-This is a core design goal: **discover with intelligence, formalize, replay cheaply.**
+This is the only artifact the MCP Factory needs.
 
-## 9. Strategy selection signals
+Raw HTML, PageIR, crawl queues and browser state remain Scout internals.
 
-Population is only a hint.
+## 7. AI vs deterministic runtime
 
-Strategy depends on:
+### PydanticAI reasoning
+
+Use model intelligence for:
+
+- reconnaissance interpretation
+- strategy choice
+- service classification
+- source relevance
+- service/index matching
+- semantic interpretation of local handling
+- possible new/variant service detection
+- concise handling summary
+
+### Deterministic Python
+
+Software owns:
+
+- URL validation
+- private-network protection
+- redirect handling
+- crawl queue
+- request budgets
+- canonicalization/deduplication
+- caching/snapshots
+- timestamps/hashes
+- provenance
+- schema validation
+- stop conditions
+- artifact serialization
+
+The model may propose. Software decides what is executable.
+
+## 8. Graph orchestration
+
+Conceptual Scout graph:
 
 ```text
-population
-+ estimated site size
-+ sitemap availability
-+ service directory
-+ search
-+ eGov portal presence
-+ language structure
-+ branching factor
-+ content density
-+ browser requirement
-+ observed crawl cost
+ReconNode
+    ↓
+StrategyNode
+    ↓
+ScoutNode
+    ↓
+CoverageCheck
+   ↙        ↘
+follow-up   enough
+   ↓         ↓
+ScoutNode  InspectServices
+               ↓
+          CompileDiscovery
+               ↓
+             Validate
 ```
 
-Website evidence overrides demographic expectations.
+The graph state is typed.
+
+It should be possible to inspect:
+
+- current strategy
+- URLs visited
+- budget remaining
+- indexed services found
+- indexed services still unresolved
+- candidate new services
+- follow-up reasons
+- stop reason
+
+## 9. Source discipline
+
+Always preserve source snapshots or source metadata before semantic interpretation.
+
+```text
+source
+ ↓
+observation
+ ↓
+semantic interpretation
+ ↓
+MunicipalityService
+```
+
+Official does not mean current, and not-observed does not mean unavailable.
+
+## 10. Relationship to MCP Factory
+
+Scout describes local reality.
+
+The MCP Factory converts that description into a municipality-specific implementation inside a fixed runtime standard.
+
+```text
+Scout:       "how does this municipality handle the service?"
+Factory:     "how should that become an MCP capability?"
+```
+
+Those responsibilities must remain separate.

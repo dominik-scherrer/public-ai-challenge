@@ -1,162 +1,243 @@
-# Crawl Strategies
+# Scout Strategies
 
-## 1. One orchestrator, multiple bounded strategies
+## 1. One Scout, multiple bounded strategies
 
-There is no universal scraper.
+Scout is agentic because it adapts how it searches to the municipality it encounters.
 
-Reconnaissance produces a typed plan selecting one of four main strategies plus a fetch tier.
+There is no universal crawl plan.
 
-## 2. Fetch tiers
+Reconnaissance produces a typed `ScoutStrategy` that selects one bounded acquisition mode.
+
+## 2. Strategy families
+
+### broad_small_site
+
+Best for:
+
+- tiny municipalities
+- low page counts
+- weak information architecture
+- services embedded across general administration pages
+
+Behavior:
+
+```text
+official domain
+→ bounded broad exploration
+→ classify service-bearing pages
+→ retain official resources
+→ stop when queue/budget exhausted
+```
+
+Primary question:
+
+> Is broad discovery cheaper and more complete than complex planning?
+
+### service_directory
+
+Best for:
+
+- structured service catalogues
+- i-web-like `/dienstleistungen/` patterns
+- mature municipal online counters
+- predictable repeated service templates
+
+Behavior:
+
+```text
+service directory
+→ enumerate service links
+→ inspect representative/detail pages
+→ retain forms/PDFs/handoffs
+→ compile reusable structural hints
+```
+
+Primary question:
+
+> Can one discovered structure cheaply cover many services?
+
+### targeted_large_city
+
+Best for:
+
+- very large city websites
+- many departments
+- mature portals
+- high branching factor
+
+Behavior:
+
+```text
+Service Index
+→ search/discover high-value roots
+→ inspect only relevant sections
+→ avoid whole-site crawl
+```
+
+Primary question:
+
+> Can Scout find indexed services without crawling the city?
+
+### mixed_content
+
+Best for:
+
+- small sites mixing municipality and tourism/community content
+- associations, hotels, events and local commerce living near official pages
+
+Behavior:
+
+```text
+bounded broad discovery
++ aggressive authority/service classification
++ municipal source filtering
+```
+
+Primary question:
+
+> Can Scout retain municipal capabilities without turning into a generic local-content crawler?
+
+### custom
+
+Typed escape hatch for unusual structures.
+
+A custom strategy still requires:
+
+- explicit reason
+- roots
+- budgets
+- allowed domains
+- stop conditions
+
+It is not permission for unconstrained browsing.
+
+## 3. Fetch tiers
+
+The scouting strategy is separate from the fetch mechanism.
 
 ```text
 HTTP
   ↓ insufficient
 HEADLESS_BROWSER
-  ↓ interaction required
-AGENT_BROWSER
+  ↓ genuine interaction required
+INTERACTIVE_BROWSER
 ```
 
-Default to HTTP. Escalation must record a reason.
+Default to HTTP.
 
-We are crawling public-information sources at low volume, so optimization should focus on **avoiding unnecessary requests**, not bypassing anti-bot protections.
+Every escalation records a reason.
 
-Operational defaults:
+## 4. Targeted follow-up
 
-- clear and stable user agent
-- conservative concurrency
-- per-host rate limits
-- cache aggressively
-- reuse snapshots
-- respect robots and obvious site constraints
-- prefer sitemap/directory traversal over brute-force crawling
-- stop when coverage converges
+Scout does not stop after the first candidate page when the source bundle is clearly incomplete.
 
-## 3. FULL_CRAWL
-
-Best for tiny municipalities, low page counts and weak information architecture.
+Example:
 
 ```text
-official domain
-→ bounded breadth-first crawl
-→ classify every page
-→ retain service evidence
-→ discard unrelated content
+found:
+✓ waste service page
+
+linked:
+? calendar PDF
+? recycling point page
+? regional operator
+
+Scout may issue a bounded follow-up
+because those sources change how the service is handled.
 ```
 
-Primary risk: tourism, news, associations and local-business noise.
+Follow-ups should answer a specific unresolved question.
 
-## 4. SECTION_CRAWL
+Examples:
 
-Best for small/medium municipalities with identifiable administration sections.
+- missing primary source
+- unclear handling type
+- external handoff boundary
+- possible live feed/API
+- service/index match ambiguity
+
+## 5. Service Index-aware planning
+
+The Service Index is part of the scouting plan.
+
+For a large municipality:
 
 ```text
-homepage
-→ discover service-bearing departments
-→ crawl selected subtrees
+indexed services
+→ targeted discovery queries/roots
+→ unresolved-service queue
 ```
 
-Examples: Einwohnerkontrolle, Kanzlei, Soziales, Bauverwaltung, Steueramt, Online-Schalter.
-
-## 5. DIRECTORY_CRAWL
-
-Best for large cities and mature portals.
+For a tiny municipality:
 
 ```text
-service directory
-→ service links
-→ detail pages
-→ transaction endpoints
-→ official supporting documents
+broad crawl
+→ classify discovered capabilities
+→ compare against Service Index
 ```
 
-Avoid news archives, political archives, media pages, broad tourism content and unrelated departmental history.
+The same index supports different strategies.
 
-## 6. DISCOVERY_CRAWL
-
-Best for unclear structures, portal ecosystems and unusual CMSs.
-
-```text
-shallow reconnaissance
-→ discover structure
-→ compile CrawlPlan
-→ switch to FULL / SECTION / DIRECTORY
-```
-
-Discovery must remain shallow; it should not become the long-running scraper.
-
-## 7. Targeted follow-up
-
-After initial extraction, fetch only evidence likely to close real gaps.
-
-```text
-known:
-✓ service name
-✓ authority
-✓ description
-
-missing:
-✗ eligibility
-✗ fee
-✗ required documents
-✗ transaction endpoint
-```
-
-The planner/small model can rank candidate links, but deterministic policy caps follow-ups.
-
-## 8. Language-aware planning
+## 6. Language-aware planning
 
 Keep distinct:
 
-```text
-administrative language
-population language
-website language
-```
+- administrative language
+- population language
+- website language
+- source language
 
-Language context influences which site variants to inspect, expected coverage and multilingual service pairing.
+Language metadata guides scouting but does not prove a service exists in that language.
 
-Population-language data is a planning signal, not proof that a municipality publishes services in that language.
+Perfect multilingual equivalence is not a prerequisite for Scout MVP; preserve original labels and source URLs.
 
-## 9. Multilingual equivalence
+## 7. Stop rules
 
-Two pages do not automatically mean two services.
-
-```text
-Wohnsitzbestätigung
-        \
-         → canonical service
-        /
-attestation de domicile
-```
-
-Merge only with sufficient evidence and preserve every official label and source.
-
-## 10. Stop rules
-
-Stop because of explicit conditions, never because a model "feels done".
+Scout stops because deterministic conditions are met, not because the model “feels done.”
 
 Possible conditions:
 
-- page budget reached
-- discovered service directory exhausted
-- no new services in the last N retained pages
-- remaining links classified low relevance
-- language coverage target met
+- request/page budget reached
+- queue exhausted
+- service directory exhausted
+- unresolved indexed-service budget exhausted
 - repeated-content threshold reached
+- remaining candidate links scored below threshold
+- target roots exhausted
 - external-domain boundary reached
-- coverage objective reached
+- time budget reached
 
-Every crawl records the stop reason.
+Every run records its stop reason.
 
-## 11. Site adapters
+## 8. Site knowledge
 
-A successful discovery crawl may compile a reusable adapter containing:
+Successful runs may preserve reusable structural hints:
 
-- allowed roots
-- service-link selectors
+- known service-directory root
+- useful selectors
 - exclusion patterns
-- language routing
-- field selectors
-- portal transition rules
+- language routes
+- CMS signature
+- portal transition patterns
 
-Adapters are cached and versioned. They are hints/programs, never authority: provenance still points to the current source snapshot.
+These hints can improve future reconnaissance.
+
+They never replace current-source provenance.
+
+## 9. Example strategy expectations
+
+```text
+Binn
+→ broad_small_site
+
+Dübendorf
+→ service_directory
+
+Zürich
+→ targeted_large_city
+
+Bosco/Gurin
+→ mixed_content
+```
+
+The benchmark is successful when Scout actually behaves differently, not merely when four strategy labels are emitted.
