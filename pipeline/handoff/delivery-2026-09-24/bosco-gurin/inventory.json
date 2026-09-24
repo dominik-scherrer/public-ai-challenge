@@ -1,0 +1,147 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "build_id": "bosco-gurin-seed-20260924",
+  "built_at": "2026-09-24T14:55:00Z",
+  "build_status": "partial",
+  "runtime_compatibility": {
+    "tools": [
+      "list_services",
+      "find_service",
+      "get_service",
+      "search_documents"
+    ]
+  },
+  "municipality": {
+    "name": "Bosco/Gurin",
+    "canton": "TI",
+    "official_url": "https://www.bosco-gurin.ch/"
+  },
+  "source_languages": [
+    "it"
+  ],
+  "services": [
+    {
+      "id": "ch.ti.bosco_gurin.municipal_office",
+      "title": "Cancelleria comunale",
+      "labels": {
+        "it": "Cancelleria comunale"
+      },
+      "category": "municipal_contact",
+      "summary": "Municipal office contact and opening hours.",
+      "delivery_mode": [
+        "in_person"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_bg_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.ti.bosco_gurin.regulations",
+      "title": "Regolamenti e ordinanze",
+      "labels": {
+        "it": "Regolamenti e ordinanze"
+      },
+      "category": "regulations",
+      "summary": "Municipal regulations include waste, parking, cemetery and zoning.",
+      "delivery_mode": [
+        "document"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_bg_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    },
+    {
+      "id": "ch.ti.bosco_gurin.social_office",
+      "title": "Ufficio sociale Vallemaggia",
+      "labels": {
+        "it": "Ufficio sociale Vallemaggia"
+      },
+      "category": "authority_routing",
+      "summary": "Municipal page routes social-office contacts to the regional Vallemaggia service.",
+      "delivery_mode": [
+        "external_office"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_bg_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src_bg_001",
+      "url": "https://www.bosco-gurin.ch/it/comune",
+      "title": "Comune",
+      "classification": "official",
+      "publisher": {
+        "name": "Bosco/Gurin",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "it"
+    }
+  ],
+  "generation": {
+    "method": "source-backed-seed",
+    "native_crawler_execution": false
+  }
+}
