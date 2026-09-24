@@ -135,8 +135,8 @@ synthesis_agent = Agent[ServiceProcessingDeps, SynthesizedContent](
 )
 ```
 
-### 02_02. Tool Generation  {#SP_GMP_02_02}
-Purpose: Analyzes synthesized Markdown and source content to generate Python MCP tools.
+### 02_02. Inventory Data Extraction  {#SP_GMP_02_02}
+Purpose: Analyzes synthesized Markdown and source content to extract structured service inventory data.
 
 Input:
 
@@ -151,54 +151,52 @@ Output:
 
 | Return | Type | Description |
 |---|---|---|
-| tools | GeneratedTools | Generated Python code and tool names. |
+| result | ExtractedData | Extracted Service Inventory JSON and service name. |
 
 Errors:
 
 | Error | Condition | Result |
 |---|---|---|
-| Generation Failure | LLM fails to generate valid code after 3 retries | Write empty `_tools.py` file. |
+| Extraction Failure | LLM fails to generate valid inventory after 3 retries | Write minimal unavailable `_inventory.json` file. |
 
 Processing logic pseudocode:
 ```python
 if not service.available or not fragments_fetched:
-    return
+    return write_unavailable_inventory(service.name)
 
-tools = tool_gen_agent.run(
+inventory = data_extraction_agent.run(
     markdown_content,
     source_contents,
     service.name,
     service.description,
     deps
 )
-write_file(f"output/{service.name}_tools.py", tools.python_code)
+write_file(f"output/{service.name}_inventory.json", inventory.json_data)
 ```
 
 Agent Definition:
 ```python
-tool_gen_agent = Agent[ServiceProcessingDeps, GeneratedTools](
+data_extraction_agent = Agent[ServiceProcessingDeps, ExtractedData](
     model='openai:gpt-4o',
     deps_type=ServiceProcessingDeps,
-    output_type=GeneratedTools,
-    system_prompt="...",  # Instructs to identify actions/facts, generate action/informational tools, determine form parameters, use semantic names, decorate with @tool_meta, use httpx, and handle errors.
+    output_type=ExtractedData,
+    system_prompt=(
+        "You are a municipal service data extractor. Extract structured attributes "
+        "including description, requirements, fees, documents, contacts, and delivery mode "
+        "into a valid mmp-service-inventory/v0 dictionary structure. Ensure factual accuracy."
+    ),
     retries=3,
+    defer_model_check=True,
 )
 
-@tool_gen_agent.output_validator
-def validate_generated_code(
-    ctx: RunContext[ServiceProcessingDeps], output: GeneratedTools
-) -> GeneratedTools:
-    code = output.python_code.strip()
-    if code.startswith("```"):
-        code = code.split("\n", 1)[1].rsplit("```", 1)[0].strip()
-    try:
-        ast.parse(code)
-    except SyntaxError as e:
-        raise ModelRetry(
-            f"SyntaxError at line {e.lineno}, offset {e.offset}: {e.msg}. "
-            f"Code near error: {e.text}. Fix the syntax and return valid Python."
-        )
-    output.python_code = code
+@data_extraction_agent.output_validator
+def validate_extracted_data(
+    ctx: RunContext[ServiceProcessingDeps], output: ExtractedData
+) -> ExtractedData:
+    if not isinstance(output.json_data, dict):
+        raise ModelRetry("json_data must be a valid dictionary structure.")
+    if "schema" not in output.json_data:
+        output.json_data["schema"] = "mmp-service-inventory/v0"
     return output
 ```
 

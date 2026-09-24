@@ -1,6 +1,7 @@
 """Gemeinde MCP Pipeline package."""
 
-from .agents import process_service_content, synthesis_agent
+from .agents import data_extraction_agent, process_service_content, synthesis_agent
+from .data_generator import generate_inventory
 from .extraction import (
     convert_to_markdown,
     extract_html_to_markdown,
@@ -28,5 +29,7 @@ __all__ = [
     "extract_pdf_to_markdown",
     "convert_to_markdown",
     "synthesis_agent",
+    "data_extraction_agent",
     "process_service_content",
+    "generate_inventory",
 ]

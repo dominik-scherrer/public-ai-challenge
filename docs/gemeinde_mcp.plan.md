@@ -33,7 +33,7 @@ Implement a pipeline that reads scouted services, extracts HTML and PDF content,
 ## Progress
 - [x] Phase 1 — Project Setup & Scouting
 - [x] Phase 2 — Content Extraction & Synthesis
-- [ ] Phase 3 — Inventory Generation
+- [x] Phase 3 — Inventory Generation
 - [ ] Phase 4 — MCP Server
 - [ ] Phase 5 — End-to-End Pipeline
 
@@ -79,7 +79,7 @@ Notes:
 - Synthesized output saves to `output/{service.name}.md`.
 - Returns raw fetched contents for Phase 3.
 
-### Phase 3 — Inventory Generation [TODO]
+### Phase 3 — Inventory Generation [DONE]
 **Depends on:** Phase 1
 **Implements:** [SP_GMP_03](./gemeinde_mcp.sp.md#SP_GMP_03)
 **Verify:** SP_GMP_05_03, SP_GMP_05_04, SP_GMP_05_10

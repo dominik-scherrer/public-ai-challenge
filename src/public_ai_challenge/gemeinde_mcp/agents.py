@@ -8,10 +8,10 @@ import logging
 from pathlib import Path
 from typing import List, Tuple
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, ModelRetry, RunContext
 
 from .extraction import convert_to_markdown, fetch_content
-from .models import ScoutedService, ServiceProcessingDeps, SynthesizedContent
+from .models import ExtractedData, ScoutedService, ServiceProcessingDeps, SynthesizedContent
 
 logger = logging.getLogger(__name__)
 
@@ -139,3 +139,46 @@ async def process_service_content(
 
     md_file.write_text(synthesized.markdown, encoding="utf-8")
     return synthesized, raw_contents
+
+
+# [C_GMP_03_01] [SP_GMP_02_02] data_extraction_agent
+data_extraction_agent: Agent[ServiceProcessingDeps, ExtractedData] = Agent(
+    model="openai:gpt-4o",
+    deps_type=ServiceProcessingDeps,
+    output_type=ExtractedData,
+    system_prompt=(
+        "You are an expert municipal service data extractor. "
+        "Analyze the provided service description, synthesized markdown, and raw source materials. "
+        "Extract structured service attributes conforming to mmp-service-inventory/v0. "
+        "Your output must include a dictionary json_data containing:\n"
+        "- schema: 'mmp-service-inventory/v0'\n"
+        "- id: canonical service id\n"
+        "- title: official title of the service\n"
+        "- category: service category\n"
+        "- summary: brief summary\n"
+        "- requirements: list of conditions/prerequisites\n"
+        "- fees: list of fees/costs\n"
+        "- documents: list of required documents\n"
+        "- contacts: list of responsible departments/contacts\n"
+        "- handoffs: list of online forms or external portals\n"
+        "Ensure all facts are supported by the sources without hallucination."
+    ),
+    retries=3,
+    defer_model_check=True,
+)
+
+
+# [C_GMP_03_01] [SP_GMP_02_02] [SP_GMP_05_10] validate_extracted_data
+@data_extraction_agent.output_validator
+def validate_extracted_data(
+    ctx: RunContext[ServiceProcessingDeps], output: ExtractedData
+) -> ExtractedData:
+    """Validate that extracted data is a valid dictionary and conforms to schema requirements."""
+    if not isinstance(output.json_data, dict) or not output.json_data:
+        raise ModelRetry("json_data must be a non-empty dictionary structure.")
+    if "title" not in output.json_data and "name" not in output.json_data:
+        raise ModelRetry("json_data must contain at least a 'title' or 'name' field.")
+    if "schema" not in output.json_data:
+        output.json_data["schema"] = "mmp-service-inventory/v0"
+    return output
+
