@@ -81,3 +81,14 @@ It exists to unblock the MCP person now.
 It should be replaced by native crawler-produced batches as the crawler matures, while preserving the same `mmp-service-inventory/v0` contract.
 
 That replacement should require no MCP-side architecture change.
+
+
+## Why capabilities, not MCP tool names?
+
+Patrick's live MCP now exposes a broad capability-oriented tool surface: moving, forms, permits, waste, facilities, finance, reporting and municipal information.
+
+That does not change the ingestion architecture. It clarifies it.
+
+The Service Inventory should describe stable semantic capabilities such as `residence_registration`, `office_hours`, `forms` or `building_application`. Patrick's runtime decides whether those capabilities are exposed as one tool, several tools, or renamed tools.
+
+This prevents a deployment detail in the MCP server from becoming part of the crawler's canonical schema.
