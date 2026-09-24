@@ -7,7 +7,6 @@ from .contracts import (
     Availability,
     Handling,
     HandlingType,
-    IndexRelation,
     InteractionType,
     ReconResult,
     ScoutFinding,

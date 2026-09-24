@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from scout.contracts import (
     Availability,
@@ -30,7 +30,7 @@ class ContractTests(unittest.TestCase):
             ),
             build=BuildInfo(
                 run_id="binn-test",
-                scouted_at=datetime.now(timezone.utc),
+                scouted_at=datetime.now(UTC),
                 service_index_version="mvp-1",
             ),
             strategy=ScoutStrategy(

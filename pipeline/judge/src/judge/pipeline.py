@@ -36,7 +36,6 @@ from judge.llm import call_judge_ensemble, load_rubric
 from judge.schemas import (
     BuildJudgeResult,
     Claim,
-    CoverageResult,
     InjectionFinding,
     ProvenanceVerdict,
     ServiceJudgeResult,
@@ -49,7 +48,7 @@ DEFAULT_BUILD_FLOOR = 0.5
 def _municipality_domain(inventory_path: Path) -> str:
     payload = json.loads(inventory_path.read_text(encoding="utf-8"))
     url = payload.get("municipality", {}).get("official_url", "")
-    return urlparse(url).netloc.lstrip("www.") if url else ""
+    return urlparse(url).netloc.removeprefix("www.") if url else ""
 
 
 def judge_provenance(claim: Claim, *, dry_run: bool) -> ProvenanceVerdict:

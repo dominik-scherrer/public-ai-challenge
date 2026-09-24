@@ -18,10 +18,8 @@ import os
 from pathlib import Path
 
 import pytest
-
-from judge.injection import deterministic_check
 from judge.pipeline import judge_injection, judge_provenance
-from judge.schemas import Claim, Verdict
+from judge.schemas import Claim
 
 pytestmark = pytest.mark.skipif(
     not os.getenv("OPENAI_API_KEY"), reason="OPENAI_API_KEY not set -- skipping live-model gold set validation"

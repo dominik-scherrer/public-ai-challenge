@@ -4,7 +4,7 @@ import asyncio
 import json
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import patch
 
@@ -22,7 +22,7 @@ from scout.runtime import PageIR
 
 class ScoutIntegrationTests(unittest.TestCase):
     def test_sibling_subdomain_is_retained_as_official_handoff(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         page = PageIR(
             source_id="src_patent",
             url="https://www.binn.ch/gemeinde/allgemein/strahlerpatente",
@@ -55,7 +55,7 @@ class ScoutIntegrationTests(unittest.TestCase):
         page = PageIR(
             source_id="src_bau",
             url="https://www.binn.ch/gemeinde/verwaltung/bauwesen",
-            retrieved_at=datetime.now(timezone.utc),
+            retrieved_at=datetime.now(UTC),
             title="Bauwesen",
             language="de",
             headings=["Bauwesen"],
@@ -75,7 +75,7 @@ class ScoutIntegrationTests(unittest.TestCase):
         self.assertEqual(handoffs, ["https://www.vs.ch/de/web/sajmte/portail-utilisateurs"])
 
     def test_fixture_run_compiles_discovery_json(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         root = PageIR(
             source_id="src_root",
             url="https://example.ch/",
@@ -174,7 +174,7 @@ class ScoutIntegrationTests(unittest.TestCase):
     def test_navigation_text_does_not_match_every_service(self):
         # Mirrors Binn: every page body starts with the full site navigation and
         # a 'Webcam' widget heading; a dated news item mentions 'Baugesuch'.
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         nav = "Home Strahlerpatente Verwaltung Bauwesen Abfallbewirtschaftung Formulare Kontakt"
 
         def page(slug, title, headings=()):

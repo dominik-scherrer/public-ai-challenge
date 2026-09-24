@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
-from datetime import datetime, timezone
-from pathlib import Path
 import hashlib
+import json
 import urllib.parse
+from datetime import UTC, datetime
+from pathlib import Path
 
 from .agents import choose_strategy, inspect_service
 from .catalog import all_terms, load_service_index
@@ -209,7 +209,7 @@ async def run_scout(
         new_candidates=len(suggestions),
     )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     run_id = f"{municipality.lower().replace(' ', '-')}-{now.strftime('%Y%m%dT%H%M%SZ')}"
     discovery = MunicipalityDiscovery(
         municipality=Municipality(

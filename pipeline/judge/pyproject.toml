@@ -13,6 +13,7 @@ judge = "judge.pipeline:main"
 [dependency-groups]
 dev = [
   "pytest>=8.0",
+  "pytest-cov",
 ]
 
 [build-system]

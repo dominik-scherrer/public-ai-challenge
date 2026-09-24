@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import patch
 
 from scout.agents import heuristic_strategy
@@ -54,7 +54,7 @@ class RuntimeTests(unittest.TestCase):
             return PageIR(
                 source_id="src_" + (body or url),
                 url=url,
-                retrieved_at=datetime.now(timezone.utc),
+                retrieved_at=datetime.now(UTC),
                 title=url,
                 language="de",
                 headings=[],

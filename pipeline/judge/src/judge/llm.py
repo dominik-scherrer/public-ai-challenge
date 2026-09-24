@@ -31,8 +31,9 @@ import os
 import re
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 import yaml
 
@@ -74,7 +75,7 @@ def load_rubric(name: str) -> RubricPrompt:
 _JSON_BLOCK_RE = re.compile(r"\{.*\}", re.DOTALL)
 
 
-def extract_and_parse_json(response_text: str) -> Optional[dict[str, Any]]:
+def extract_and_parse_json(response_text: str) -> dict[str, Any] | None:
     """Best-effort JSON extraction — models wrap JSON in prose or code fences."""
     if not response_text:
         return None
@@ -102,7 +103,7 @@ def openai_is_configured() -> bool:
     return bool(os.getenv("OPENAI_API_KEY"))
 
 
-def call_openai(system_prompt: str, instruction: str) -> Optional[str]:
+def call_openai(system_prompt: str, instruction: str) -> str | None:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise JudgeConfigError(
@@ -110,7 +111,9 @@ def call_openai(system_prompt: str, instruction: str) -> Optional[str]:
             "or run the judge pipeline with --dry-run to exercise the deterministic "
             "path only."
         )
-    from openai import OpenAI  # imported lazily so --dry-run never needs the package configured
+    from openai import (
+        OpenAI,  # imported lazily so --dry-run never needs the package configured
+    )
 
     client = OpenAI(api_key=api_key)
     response = client.responses.create(
@@ -140,7 +143,7 @@ def apertus_is_configured() -> bool:
     return bool(_apertus_endpoint()) and bool(os.getenv("PUBLIC_AI_MODEL", "").strip())
 
 
-def call_apertus(system_prompt: str, instruction: str) -> Optional[str]:
+def call_apertus(system_prompt: str, instruction: str) -> str | None:
     endpoint = _apertus_endpoint()
     model = os.getenv("PUBLIC_AI_MODEL", "").strip()
     api_key = os.getenv("PUBLIC_AI_API_KEY", "").strip()
@@ -187,7 +190,7 @@ def call_apertus(system_prompt: str, instruction: str) -> Optional[str]:
 
 # --- ensemble ---------------------------------------------------------------
 
-_PROVIDERS: dict[str, tuple[Callable[[], bool], Callable[[str, str], Optional[str]]]] = {
+_PROVIDERS: dict[str, tuple[Callable[[], bool], Callable[[str, str], str | None]]] = {
     "openai": (openai_is_configured, call_openai),
     "apertus": (apertus_is_configured, call_apertus),
 }
@@ -198,7 +201,7 @@ _PROVIDERS: dict[str, tuple[Callable[[], bool], Callable[[str, str], Optional[st
 JUDGE_MODELS: tuple[str, ...] = ("openai", "apertus")
 
 
-def resolve_judge_models(models: Optional[tuple[str, ...]] = None) -> list[str]:
+def resolve_judge_models(models: tuple[str, ...] | None = None) -> list[str]:
     """Which providers are actually usable right now, with a loud warning if that's fewer than intended."""
     candidates = models or JUDGE_MODELS
     configured = [label for label in candidates if _PROVIDERS[label][0]()]
@@ -222,9 +225,9 @@ def call_judge_ensemble(
     rubric: RubricPrompt,
     *,
     max_retries: int = 1,
-    models: Optional[list[str]] = None,
+    models: list[str] | None = None,
     **template_vars: Any,
-) -> list[tuple[str, Optional[dict[str, Any]]]]:
+) -> list[tuple[str, dict[str, Any] | None]]:
     """Calls every configured judge model, returns [(model_label, parsed_json_or_None), ...].
 
     A None result means the model failed to produce parseable JSON after
@@ -232,12 +235,12 @@ def call_judge_ensemble(
     """
     system_prompt, instruction = rubric.render(**template_vars)
     active_models = models if models is not None else resolve_judge_models()
-    results: list[tuple[str, Optional[dict[str, Any]]]] = []
+    results: list[tuple[str, dict[str, Any] | None]] = []
 
     for label in active_models:
         _, call_fn = _PROVIDERS[label]
         attempts_left = max_retries + 1
-        parsed: Optional[dict[str, Any]] = None
+        parsed: dict[str, Any] | None = None
         while attempts_left > 0 and parsed is None:
             raw = call_fn(system_prompt, instruction)
             parsed = extract_and_parse_json(raw) if raw else None

@@ -9,7 +9,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from judge.injection import deterministic_check
 from judge.schemas import Claim
 

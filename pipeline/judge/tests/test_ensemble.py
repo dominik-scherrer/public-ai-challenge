@@ -6,10 +6,8 @@ No real network calls or keys needed: openai_is_configured/apertus_is_configured
 only check env vars.
 """
 
-import os
 
 import pytest
-
 from judge.llm import (
     JUDGE_MODELS,
     JudgeConfigError,

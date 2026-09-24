@@ -5,14 +5,14 @@ import heapq
 import ipaddress
 import re
 import socket
+import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from html.parser import HTMLParser
 
 from .contracts import ReconResult, ScoutStrategy, StrategyMode
-
 
 USER_AGENT = "MunicipalityScout/0.1 (+Swiss public-service discovery)"
 TRACKING_PREFIXES = ("utm_", "pk_", "mc_")
@@ -153,7 +153,7 @@ def fetch_page(url: str, timeout: int = 20) -> PageIR:
 
     parser = Parser(final_url)
     parser.feed(body.decode("utf-8", errors="replace"))
-    retrieved_at = datetime.now(timezone.utc)
+    retrieved_at = datetime.now(UTC)
     source_id = "src_" + hashlib.sha256(body).hexdigest()[:16]
     host = urllib.parse.urlsplit(final_url).netloc.lower()
     links = []
@@ -279,7 +279,7 @@ def broad_crawl(
         seen.add(url)
         try:
             page = fetch_page(url)
-        except Exception:
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError):
             continue
         # Redirects and aliases can land on a page we already have, or leave the
         # municipality's site entirely (e.g. a link that redirects to the canton).
@@ -322,7 +322,7 @@ def targeted_crawl(
             break
         try:
             pages.append(fetch_page(url))
-        except Exception:
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError):
             continue
     return pages
 
