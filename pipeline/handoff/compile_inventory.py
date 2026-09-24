@@ -99,12 +99,44 @@ def completeness(service: dict[str, Any]) -> dict[str, str]:
     return result
 
 
+CAPABILITY_BY_CONCEPT = {
+    "residence_registration": ["residence_registration"],
+    "residence_deregistration": ["residence_deregistration"],
+    "residence_certificate": ["residence_certificate"],
+    "municipal_contact": ["municipal_contact", "authority_routing", "office_hours"],
+    "forms_documents": ["forms"],
+    "building_application": ["building_application", "authority_routing"],
+    "facility_rental": ["facilities", "facility_options"],
+    "regulations": ["regulations"],
+    "official_notices": ["official_notices", "local_notices"],
+    "waste_collection": ["waste_collection"],
+    "population_services": ["residence_registration", "residence_certificate", "identity_document_guidance"],
+    "service_portal": ["service_catalog"],
+    "applications": ["forms"],
+    "driving_permits": ["road_permit"],
+    "authority_routing": ["authority_routing"],
+}
+
+
+def infer_service_capabilities(service: dict[str, Any]) -> list[str]:
+    concept = service.get("concept") or "unmapped"
+    caps = set(CAPABILITY_BY_CONCEPT.get(concept, []))
+    if service.get("documents"):
+        caps.add("documents")
+    if service.get("contacts"):
+        caps.add("municipal_contact")
+    if service.get("actions"):
+        caps.add("official_handoff")
+    return sorted(caps)
+
+
 def service_projection(service: dict[str, Any], languages: list[str]) -> dict[str, Any]:
     projected = {
         "id": service.get("service_id"),
         "title": preferred_label(service, languages),
         "labels": service.get("labels") or {},
         "category": service.get("concept") or "unmapped",
+        "capabilities": infer_service_capabilities(service),
         "summary": service.get("description"),
         "delivery_mode": delivery_modes(service),
         "requirements": service.get("requirements") or [],
@@ -179,9 +211,14 @@ def main() -> None:
         "build_id": build_id,
         "built_at": now,
         "build_status": args.status,
-        "runtime_compatibility": {
-            "tools": ["list_services", "find_service", "get_service", "search_documents"]
-        },
+        "capabilities": sorted({
+            "service_catalog",
+            *(
+                capability
+                for service in projected_services
+                for capability in service.get("capabilities", [])
+            ),
+        }),
         "municipality": municipality,
         "source_languages": languages,
         "services": projected_services,
