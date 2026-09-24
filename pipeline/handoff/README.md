@@ -1,6 +1,20 @@
 # MCP Inventory Handoff
 
-This directory is the boundary between crawler work and the shared MCP runtime.
+This directory is the collaboration boundary between the ingestion/scraping workstream and the shared MCP runtime.
+
+## Start here
+
+If you work on the MCP/runtime side, read:
+
+- [MCP_CONSUMER.md](MCP_CONSUMER.md) — what to load, what the runtime can assume, and recommended integration order
+- [WHY_THIS_HANDOFF.md](WHY_THIS_HANDOFF.md) — why the boundary is a typed Service Inventory rather than crawler internals
+- [MESSAGE_TO_MCP.md](MESSAGE_TO_MCP.md) — short handoff message for the runtime owner
+
+First delivery:
+
+- [delivery-2026-09-24/](delivery-2026-09-24/) — Ausserberg + seven benchmark municipalities
+
+## Contract
 
 The crawler may use any internal representation. The downstream contract is a versioned **Service Inventory** built from:
 
@@ -28,28 +42,12 @@ ausserberg-v0/
 └── build-report.json
 ```
 
-## Contract
+`inventory.json` is the primary runtime handoff.
 
-`inventory.json` is the primary runtime handoff. It contains:
+The MCP workstream should integrate against this artifact, **not against crawler internals** such as PageIR, snapshots, or a specific scraping implementation.
 
-- municipality/build metadata
-- runtime compatibility
-- service records
-- official handoff URLs
-- source references
-- field-level evidence
-- completeness
-- trust/conflict state
-- only the source metadata referenced by published services
+## First integration municipality
 
-`documents.jsonl` is the document/search sidecar for `search_documents`.
+Use **Ausserberg** first because the repository's MVP plan already defines its user scenarios and it exposes several service shapes: information, forms, municipal requests, documents and external official routing.
 
-`build-report.json` is the quality gate. A batch is not silently promoted: unresolved source references fail compilation, and unchecked evidence/conflicts remain visible as warnings.
-
-The MCP team should integrate against this artifact, **not against crawler internals** such as PageIR, snapshots, or a specific scraping implementation.
-
-## First integration batch
-
-Use **Ausserberg** for the first product/MCP integration because the repository's MVP plan already defines its user scenarios and heterogeneous service shapes. Keep Binn, Biel/Bienne and Zürich as pipeline stress tests.
-
-A useful first Ausserberg inventory is small and evidence-rich: roughly 6–10 services covering residence/moving, office/contact, facility requests, forms/documents and at least one external official handoff.
+Binn, Biel/Bienne and Zürich remain important crawler/architecture stress tests, with Lausanne, Lugano, Ilanz/Glion and Bosco/Gurin extending the language and small-municipality coverage.
