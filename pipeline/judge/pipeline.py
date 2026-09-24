@@ -16,9 +16,9 @@ than say something wrong"):
     parse / can't be reached                       -> FAIL (fail closed)
 
 A claim is never shown because one judge liked it; it has to survive all
-of them. With JUDGE_MODELS currently at one entry (see llm.py), this is
-equivalent to trusting that one model — which is exactly the gap flagged
-in llm.py's module docstring, not an oversight here.
+of them. The ensemble is OpenAI + Apertus (see llm.py); if only one is
+actually configured, llm.py's resolve_judge_models() prints a loud
+warning rather than silently running as a 1-model "ensemble."
 """
 
 from __future__ import annotations
@@ -119,23 +119,33 @@ def judge_injection(claim: Claim, municipality_domain: str, *, dry_run: bool) ->
         text=str(claim.value),
         municipality_domain=municipality_domain,
     )
-    label, parsed = results[0]
-    if parsed is None:
-        # Fail closed: an unparseable safety check is treated as a flag, not a pass.
-        return InjectionFinding(
-            claim=claim,
-            flagged=True,
-            category="instruction_injection",
-            reason=f"Judge '{label}' returned no parseable verdict — flagging for review.",
-            detector=label,
-        )
-    return InjectionFinding(
-        claim=claim,
-        flagged=bool(parsed.get("flagged")),
-        category="instruction_injection" if parsed.get("flagged") else "none",
-        reason=parsed.get("reason", ""),
-        detector=label,
-    )
+
+    # Fail closed across the whole ensemble, not just the first model: any
+    # model flagging, or any model failing to return a parseable verdict,
+    # is enough to flag. ADR-0007 says injection "flags -- never passes
+    # through" -- that bar has to survive a two-model ensemble the same
+    # way it survives one, so agreement is required to clear a claim, not
+    # to flag it (the inverse of the unanimity rule in judge_provenance).
+    detectors = ",".join(label for label, _ in results)
+    for label, parsed in results:
+        if parsed is None:
+            return InjectionFinding(
+                claim=claim,
+                flagged=True,
+                category="instruction_injection",
+                reason=f"Judge '{label}' returned no parseable verdict — flagging for review.",
+                detector=detectors,
+            )
+        if parsed.get("flagged"):
+            return InjectionFinding(
+                claim=claim,
+                flagged=True,
+                category="instruction_injection",
+                reason=parsed.get("reason", f"Judge '{label}' flagged this text."),
+                detector=detectors,
+            )
+
+    return InjectionFinding(claim=claim, flagged=False, category="none", reason="", detector=detectors)
 
 
 def run_judge(

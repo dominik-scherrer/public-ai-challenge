@@ -102,5 +102,5 @@ Status legend: 🟢 implemented · 🟡 proposed, needs a team decision before b
 
 ## Cross-cutting gaps, same for all six
 
-- **Single-model judge.** Only OpenAI is wired up (`pipeline/judge/llm.py`). ADR-0004 makes the Judge the *only* gate — one model is a single point of failure regardless of which rubric it's running.
+- **Ensemble is decided (OpenAI + Apertus), access isn't.** `pipeline/judge/llm.py` now calls both — Apertus through the same `PUBLIC_AI_*` env vars the crawler prototype already uses — but this hackathon team doesn't have a reachable Apertus endpoint yet. Every run until then prints a loud warning and produces a single-model result, not the validated consensus ADR-0004 assumes. Whoever owns Apertus/Swisscom access should treat unblocking this as part of the Judge workstream, not a separate ask.
 - **Not validated against real data yet.** Every rubric above needs to run against `pipeline/judge/fixtures/gold_set.json` (or an extended version, once #4–#6 are built) before anyone trusts it in production — same reasoning as the thesis methodology this pipeline borrowed: measure against known-correct/known-wrong cases first, don't just ship the prompt.

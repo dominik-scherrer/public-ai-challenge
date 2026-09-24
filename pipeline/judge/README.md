@@ -35,17 +35,23 @@ Every claim currently comes back **withheld**. That's correct, not broken: `docu
 Because of that gap, the only way to actually validate the judge models today is against `fixtures/gold_set.json` — a small hand-built set of claims with real, fabricated, and unrelated evidence, plus injection attempts a keyword filter would and wouldn't catch. This is the same move as the thesis's `eval/human_eval_kits/`: **measure the judge against known-correct and known-wrong cases before trusting it**, especially given ADR-0004 makes it the *only* gate, with zero human review. Its main finding transfers directly here too — disagreement is usually the rubric being ambiguous, not the model being bad, so if a gold-set case fails, tighten `rubrics/*.yml` wording before assuming the model is at fault.
 
 ```bash
-cp .env.example .env   # add a real OPENAI_API_KEY
+cp .env.example .env   # add a real OPENAI_API_KEY, and PUBLIC_AI_* for Apertus if you have access
 uv sync
 OPENAI_API_KEY=... uv run pytest pipeline/judge/tests/test_gold_set_live.py -v
 ```
 
+## Ensemble: OpenAI + Apertus
+
+`llm.py`'s `JUDGE_MODELS = ("openai", "apertus")` is the intended ensemble — two independent models, because ADR-0004 makes the Judge the *only* gate and one model would be a single point of failure for that. Apertus is called through the exact same env vars (`PUBLIC_AI_ENDPOINT` / `PUBLIC_AI_BASE_URL` / `PUBLIC_AI_API_KEY` / `PUBLIC_AI_MODEL`) that `pipeline/prototype/scraper.py`'s model adapter already uses — one Apertus endpoint configuration serves both.
+
+`resolve_judge_models()` checks what's actually configured at call time and only uses that subset. **It prints a loud `WARNING` line if that's fewer than both** — a 1-model run must never look like a validated 2-model consensus just because Apertus access wasn't provisioned yet. As of this writing, only `OPENAI_API_KEY` is realistically available to this hackathon team; treat every judge-report produced until Apertus is reachable as a single-model result, not the real gate.
+
 ## Known gaps (don't build past these without a decision)
 
-- **Single-model judge.** `llm.py`'s `JUDGE_MODELS` has one entry (OpenAI only — that's what this repo has a key for). ADR-0004 makes the Judge the *only* gate; one model is a single point of failure. Add a second provider before this runs on real municipalities, not after.
+- **Apertus access isn't provisioned yet.** The ensemble code supports two models; whether the team actually has a reachable Apertus/Swisscom endpoint for this hackathon is a separate, open question. Until then every run prints the "N/2 configured" warning above — that's expected, not a bug to silence.
 - **Coverage reference list is a placeholder.** `config/reference_categories.yml` is six categories pulled from `docs/architecture/CONTEXT.md` and the seed data's own tags — not the real eCH-0070 Gemeinde-Leistungen list ADR-0001 calls for. `coverage.py` doesn't need to change when that lands; only the config file does.
 - **No Build Floor number is defensible yet.** `DEFAULT_BUILD_FLOOR = 0.5` in `pipeline.py` is a placeholder, not a measured threshold. Pick a real one only after running coverage against a few real Builds.
-- **Injection LLM pass is single-shot, no retry.** Unlike provenance (which retries once by default), `judge_injection` takes the first model response as final. Fine for now given it fails closed either way, but tighten if this becomes a cost/reliability issue.
+- **Same rubric text for both models.** `provenance_judge.yml` / `injection_judge.yml` are sent unmodified to both OpenAI and Apertus. That's the standard ensemble move (independent models, identical instructions), but Apertus is explicitly the "small, constrained" model in this project's own architecture docs (`pipeline/SEMANTIC_COMPILER.md`) — if it turns out to need simpler prompting to perform reliably, that's a per-provider rubric variant to add, not a reason to drop it from the ensemble.
 
 ## Layout
 

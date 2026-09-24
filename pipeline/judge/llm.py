@@ -5,12 +5,23 @@ eval/src/pipeline/score_answers.py — same shape (a rubric YAML with a
 system+instruction template, several independent judge models, retry on
 parse failure) adapted for binary verdicts instead of 1-10 scores.
 
-Ensemble note: the thesis called three independent models (gemini, openai,
-qwen) per claim because a single-model judge is a single point of failure
-— see docs/architecture/adr/0004 ("the Judge is the only quality gate").
-This repo currently only has an OpenAI key wired up (scripts/test_openai.py),
-so JUDGE_MODELS has one entry for now. Add a second provider before this
-runs in production, not after.
+Ensemble: OpenAI + Apertus. Two providers, not one, because ADR-0004 makes
+the Judge the *only* gate — a single model would be a single point of
+failure for that. The Apertus call reuses the exact env-var convention
+pipeline/prototype/model_adapter.py already established
+(PUBLIC_AI_ENDPOINT / PUBLIC_AI_BASE_URL / PUBLIC_AI_API_KEY /
+PUBLIC_AI_MODEL) rather than inventing a second naming scheme for the
+same "OpenAI-compatible endpoint" concept — see pipeline/README.md and
+pipeline/SEMANTIC_COMPILER.md for why Apertus specifically (small,
+constrained, eventually Swiss-sovereign execution model).
+
+Each provider only participates once it's actually configured (env vars
+present). With zero or one configured, the ensemble still runs — but
+resolve_judge_models() prints a warning, because a "2-model ensemble"
+that's silently running as 1 model is exactly the failure mode this
+exists to avoid. Use --dry-run (see pipeline.py) when neither is
+configured; don't let the pipeline pretend a 1-model run is a validated
+ensemble result.
 """
 
 from __future__ import annotations
@@ -18,18 +29,14 @@ from __future__ import annotations
 import json
 import os
 import re
+import urllib.error
+import urllib.request
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import yaml
 
 RUBRICS_DIR = Path(__file__).resolve().parent / "rubrics"
-
-# (label, model_id). Extend this list — don't just swap the one entry —
-# once a second provider is available. See module docstring.
-JUDGE_MODELS: list[tuple[str, str]] = [
-    ("openai", "gpt-6-luna"),
-]
 
 
 class JudgeConfigError(RuntimeError):
@@ -86,12 +93,16 @@ def extract_and_parse_json(response_text: str) -> Optional[dict[str, Any]]:
     return None
 
 
-def call_model(model: str, system_prompt: str, instruction: str, *, temperature: float = 0.0) -> Optional[str]:
-    """One call to one model. Returns raw text, or None on failure.
+# --- provider: openai ------------------------------------------------------
 
-    Isolated in its own function so tests can monkeypatch it instead of
-    hitting a real API — see tests/test_pipeline_dry_run.py.
-    """
+OPENAI_MODEL = "gpt-6-luna"  # matches scripts/test_openai.py
+
+
+def openai_is_configured() -> bool:
+    return bool(os.getenv("OPENAI_API_KEY"))
+
+
+def call_openai(system_prompt: str, instruction: str) -> Optional[str]:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise JudgeConfigError(
@@ -103,18 +114,115 @@ def call_model(model: str, system_prompt: str, instruction: str, *, temperature:
 
     client = OpenAI(api_key=api_key)
     response = client.responses.create(
-        model=model,
+        model=OPENAI_MODEL,
         reasoning={"effort": "low"},
         input=f"{system_prompt}\n\n{instruction}",
     )
     return response.output_text
 
 
+# --- provider: apertus -------------------------------------------------
+# Dependency-free OpenAI-compatible call, matching
+# pipeline/prototype/model_adapter.py's ModelConfig.from_env() exactly —
+# same env vars, so anyone who's already pointed the crawler at an Apertus
+# endpoint doesn't need to configure anything twice.
+
+
+def _apertus_endpoint() -> str:
+    endpoint = os.getenv("PUBLIC_AI_ENDPOINT", "").strip()
+    if endpoint:
+        return endpoint
+    base_url = os.getenv("PUBLIC_AI_BASE_URL", "").strip().rstrip("/")
+    return f"{base_url}/chat/completions" if base_url else ""
+
+
+def apertus_is_configured() -> bool:
+    return bool(_apertus_endpoint()) and bool(os.getenv("PUBLIC_AI_MODEL", "").strip())
+
+
+def call_apertus(system_prompt: str, instruction: str) -> Optional[str]:
+    endpoint = _apertus_endpoint()
+    model = os.getenv("PUBLIC_AI_MODEL", "").strip()
+    api_key = os.getenv("PUBLIC_AI_API_KEY", "").strip()
+
+    if not endpoint or not model:
+        raise JudgeConfigError(
+            "Apertus is not configured. Set PUBLIC_AI_ENDPOINT (or PUBLIC_AI_BASE_URL) "
+            "and PUBLIC_AI_MODEL — same variables pipeline/prototype/scraper.py uses — "
+            "or run the judge pipeline with --dry-run."
+        )
+
+    payload = {
+        "model": model,
+        "temperature": 0,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": instruction},
+        ],
+    }
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:1000]
+        raise JudgeConfigError(f"Apertus endpoint returned HTTP {exc.code}: {detail}") from exc
+    except urllib.error.URLError as exc:
+        raise JudgeConfigError(f"Apertus request failed: {exc}") from exc
+
+    try:
+        return data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise JudgeConfigError("Unexpected Apertus response shape") from exc
+
+
+# --- ensemble ---------------------------------------------------------------
+
+_PROVIDERS: dict[str, tuple[Callable[[], bool], Callable[[str, str], Optional[str]]]] = {
+    "openai": (openai_is_configured, call_openai),
+    "apertus": (apertus_is_configured, call_apertus),
+}
+
+# The full intended ensemble, in order. resolve_judge_models() filters this
+# down to what's actually configured right now — extend this tuple, don't
+# just swap entries, if a third provider is added later.
+JUDGE_MODELS: tuple[str, ...] = ("openai", "apertus")
+
+
+def resolve_judge_models(models: Optional[tuple[str, ...]] = None) -> list[str]:
+    """Which providers are actually usable right now, with a loud warning if that's fewer than intended."""
+    candidates = models or JUDGE_MODELS
+    configured = [label for label in candidates if _PROVIDERS[label][0]()]
+
+    if len(configured) < len(candidates):
+        missing = [label for label in candidates if label not in configured]
+        print(
+            f"[judge] WARNING: running with {len(configured)}/{len(candidates)} configured "
+            f"judge model(s); missing: {', '.join(missing)}. A result from this ensemble is "
+            f"NOT the validated {len(candidates)}-model consensus ADR-0004 assumes.",
+        )
+    if not configured:
+        raise JudgeConfigError(
+            f"No judge model is configured out of {list(candidates)}. "
+            "Configure at least one, or run the judge pipeline with --dry-run."
+        )
+    return configured
+
+
 def call_judge_ensemble(
     rubric: RubricPrompt,
     *,
     max_retries: int = 1,
-    models: Optional[list[tuple[str, str]]] = None,
+    models: Optional[list[str]] = None,
     **template_vars: Any,
 ) -> list[tuple[str, Optional[dict[str, Any]]]]:
     """Calls every configured judge model, returns [(model_label, parsed_json_or_None), ...].
@@ -123,13 +231,15 @@ def call_judge_ensemble(
     retries — callers must treat that as "could not verify", never as pass.
     """
     system_prompt, instruction = rubric.render(**template_vars)
+    active_models = models if models is not None else resolve_judge_models()
     results: list[tuple[str, Optional[dict[str, Any]]]] = []
 
-    for label, model in models or JUDGE_MODELS:
+    for label in active_models:
+        _, call_fn = _PROVIDERS[label]
         attempts_left = max_retries + 1
         parsed: Optional[dict[str, Any]] = None
         while attempts_left > 0 and parsed is None:
-            raw = call_model(model, system_prompt, instruction)
+            raw = call_fn(system_prompt, instruction)
             parsed = extract_and_parse_json(raw) if raw else None
             attempts_left -= 1
         results.append((label, parsed))
