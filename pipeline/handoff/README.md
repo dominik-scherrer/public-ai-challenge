@@ -8,6 +8,7 @@ If you work on the MCP/runtime side, read:
 
 - [MCP_CONSUMER.md](MCP_CONSUMER.md) — what to load, what the runtime can assume, and recommended integration order
 - [WHY_THIS_HANDOFF.md](WHY_THIS_HANDOFF.md) — why the boundary is a typed Service Inventory rather than crawler internals
+- [MCP_CAPABILITY_MATRIX.md](MCP_CAPABILITY_MATRIX.md) — Patrick's live MCP tools mapped to the canonical data/capabilities ingestion must supply
 - [MESSAGE_TO_MCP.md](MESSAGE_TO_MCP.md) — short handoff message for the runtime owner
 
 First delivery:
@@ -42,7 +43,7 @@ ausserberg-v0/
 └── build-report.json
 ```
 
-`inventory.json` is the primary runtime handoff.
+`inventory.json` is the primary runtime handoff. It exposes semantic capability tags rather than binding the data contract to Patrick's current MCP tool names.
 
 The MCP workstream should integrate against this artifact, **not against crawler internals** such as PageIR, snapshots, or a specific scraping implementation.
 
