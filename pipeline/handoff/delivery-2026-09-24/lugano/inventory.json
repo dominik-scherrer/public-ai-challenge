@@ -3,14 +3,6 @@
   "build_id": "lugano-seed-20260924",
   "built_at": "2026-09-24T14:55:00Z",
   "build_status": "partial",
-  "runtime_compatibility": {
-    "tools": [
-      "list_services",
-      "find_service",
-      "get_service",
-      "search_documents"
-    ]
-  },
   "municipality": {
     "name": "Lugano",
     "canton": "TI",
@@ -53,7 +45,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "residence_certificate"
+      ]
     },
     {
       "id": "ch.ti.lugano.departure_certificate",
@@ -88,7 +83,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "residence_certificate"
+      ]
     },
     {
       "id": "ch.ti.lugano.residence_certificates",
@@ -123,7 +121,10 @@
       "trust": {
         "authority": "high",
         "freshness": "retrieved_current_run"
-      }
+      },
+      "capabilities": [
+        "residence_certificate"
+      ]
     }
   ],
   "sources": [
@@ -167,5 +168,9 @@
   "generation": {
     "method": "source-backed-seed",
     "native_crawler_execution": false
-  }
+  },
+  "capabilities": [
+    "residence_certificate",
+    "service_catalog"
+  ]
 }
