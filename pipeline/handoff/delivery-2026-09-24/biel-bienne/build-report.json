@@ -1,0 +1,22 @@
+{
+  "schema": "mmp-build-report/v0",
+  "build_id": "biel-bienne-seed-20260924",
+  "municipality": {
+    "name": "Biel/Bienne",
+    "canton": "BE",
+    "official_url": "https://www.biel-bienne.ch/"
+  },
+  "counts": {
+    "referenced_sources": 0,
+    "services": 0,
+    "documents": 0,
+    "unchecked_evidence_quotes": 0,
+    "conflicts": 0
+  },
+  "warnings": [
+    "Seed batch was assembled from retrievable official sources rather than executed by the native crawler.",
+    "Official website could not be reliably retrieved in this run; inventory intentionally empty rather than filled from non-authoritative sources."
+  ],
+  "handoff_ready": false,
+  "coverage": "partial"
+}

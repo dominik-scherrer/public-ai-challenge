@@ -1,0 +1,264 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "build_id": "ilanz-glion-seed-20260924",
+  "built_at": "2026-09-24T14:55:00Z",
+  "build_status": "partial",
+  "municipality": {
+    "name": "Ilanz/Glion",
+    "canton": "GR",
+    "official_url": "https://www.ilanz-glion.ch/"
+  },
+  "source_languages": [
+    "de",
+    "rm"
+  ],
+  "services": [
+    {
+      "id": "ch.gr.ilanz_glion.eumzug",
+      "title": "eUmzugCH",
+      "labels": {
+        "de": "eUmzugCH"
+      },
+      "category": "residence_registration",
+      "summary": "Municipality links eUmzugCH as a public service.",
+      "delivery_mode": [
+        "external_online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_ig_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "residence_registration"
+      ]
+    },
+    {
+      "id": "ch.gr.ilanz_glion.room_reservation",
+      "title": "Raumreservationen",
+      "labels": {
+        "de": "Raumreservationen"
+      },
+      "category": "facility_rental",
+      "summary": "Municipality exposes room reservations as a service.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_ig_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "facilities",
+        "facility_options"
+      ]
+    },
+    {
+      "id": "ch.gr.ilanz_glion.driving_permits",
+      "title": "Fahrbewilligungen",
+      "labels": {
+        "de": "Fahrbewilligungen"
+      },
+      "category": "driving_permits",
+      "summary": "Municipality exposes driving permits as a service.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_ig_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "road_permit"
+      ]
+    },
+    {
+      "id": "ch.gr.ilanz_glion.population_office",
+      "title": "Einwohnerkontrolle",
+      "labels": {
+        "de": "Einwohnerkontrolle"
+      },
+      "category": "population_services",
+      "summary": "Population office handles registrations, certificates, ID applications and related services.",
+      "delivery_mode": [
+        "in_person"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_ig_002"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "identity_document_guidance",
+        "residence_certificate",
+        "residence_registration"
+      ]
+    },
+    {
+      "id": "ch.gr.ilanz_glion.building",
+      "title": "Bauamt",
+      "labels": {
+        "de": "Bauamt"
+      },
+      "category": "building_application",
+      "summary": "Building office handles permits, planning advice and digital building platform routing.",
+      "delivery_mode": [
+        "hybrid"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_ig_003"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "authority_routing",
+        "building_application"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src_ig_001",
+      "url": "https://www.ilanz-glion.ch/",
+      "title": "Service hub",
+      "classification": "official",
+      "publisher": {
+        "name": "Ilanz/Glion",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_ig_002",
+      "url": "https://www.ilanz-glion.ch/gemeinde/gemeindeverwaltung/kanzlei/einwohnerkontrolle",
+      "title": "Einwohnerkontrolle",
+      "classification": "official",
+      "publisher": {
+        "name": "Ilanz/Glion",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_ig_003",
+      "url": "https://www.ilanz-glion.ch/gemeinde/gemeindeverwaltung/planung-und-bau/bauamt",
+      "title": "Bauamt",
+      "classification": "official",
+      "publisher": {
+        "name": "Ilanz/Glion",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    }
+  ],
+  "generation": {
+    "method": "source-backed-seed",
+    "native_crawler_execution": false
+  },
+  "capabilities": [
+    "authority_routing",
+    "building_application",
+    "facilities",
+    "facility_options",
+    "identity_document_guidance",
+    "residence_certificate",
+    "residence_registration",
+    "road_permit",
+    "service_catalog"
+  ]
+}
