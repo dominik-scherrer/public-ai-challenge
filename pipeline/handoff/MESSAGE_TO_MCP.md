@@ -2,57 +2,54 @@
 
 **Scraping calling MCP 👋**
 
-I have a first handoff ready from the ingestion/scraping side.
+Saw the live `minigmeind` tool surface — this actually makes the boundary cleaner.
 
-The important thing: you do **not** need to integrate against my crawler or PageIR. I added a stable handoff contract under:
+I adapted the ingestion handoff so I am **not** generating data tied to individual MCP tool names. Instead, the municipality inventories now expose canonical data + provenance + semantic capability tags.
 
-```text
-pipeline/handoff/
-```
-
-For the first batch, use:
-
-```text
-pipeline/handoff/delivery-2026-09-24/
-```
-
-Each municipality has:
-
-```text
-inventory.json
-documents.jsonl
-build-report.json
-```
-
-The main file for you is `inventory.json` (`mmp-service-inventory/v0`).
-
-It is shaped for the four planned MCP tools:
-
-- `list_services`
-- `find_service`
-- `get_service`
-- `search_documents`
-
-I would start with **Ausserberg** because it has the richest mix of service types and is already our reference municipality.
-
-The current batch also includes Binn, Zürich, Lausanne, Lugano, Ilanz/Glion and Bosco/Gurin. Biel/Bienne is intentionally included as an explicit empty/partial build because the official site retrieval failed in this first pass.
-
-One important caveat: this first delivery is a **source-backed seed batch**, not yet the full native crawler output. I did that deliberately so you can already build against the interface. As the crawler improves, I can replace these inventories without you having to change your MCP integration.
-
-Docs:
-
-```text
-pipeline/handoff/MCP_CONSUMER.md
-pipeline/handoff/WHY_THIS_HANDOFF.md
-pipeline/handoff/README.md
-```
-
-So the contract between us is basically:
+So:
 
 ```text
 scraping / ingestion
-→ Service Inventory
-→ MCP runtime
+→ canonical Service Inventory + capabilities
+→ your MCP adapters/tools
 ```
 
-If that shape works for your runtime, I’ll treat it as the stable boundary and keep feeding newer batches into it.
+For example:
+
+```text
+residence_registration
+→ get_move_in_requirements / register_move_in
+
+office_hours
+→ get_office_hours
+
+building_application
+→ get_building_application_requirements
+
+facilities
+→ list_facilities / get_facility_options
+```
+
+This means your tool surface can evolve without forcing the crawler schema to change.
+
+I also mapped the tool surface from your latest screenshot to the fields/evidence the ingestion pipeline needs to provide:
+
+`pipeline/handoff/MCP_CAPABILITY_MATRIX.md`
+
+The first data batch is still here:
+
+`pipeline/handoff/delivery-2026-09-24/`
+
+I would start with **Ausserberg** and replace a small useful slice of dummy tools with grounded data first:
+
+- `list_services`
+- `get_move_in_requirements`
+- `find_responsible_office`
+- `get_office_hours`
+- `list_forms`
+- `get_building_application_requirements`
+- `list_facilities` / `get_facility_options`
+
+For action tools like `register_move_in` or `request_facility_booking`, my suggestion is that the first real version prepares/routes to the official endpoint rather than claiming the municipality accepted a transaction.
+
+If this boundary works for you, I'll treat the capability matrix as the ingestion backlog and keep feeding richer inventories into the same contract.
