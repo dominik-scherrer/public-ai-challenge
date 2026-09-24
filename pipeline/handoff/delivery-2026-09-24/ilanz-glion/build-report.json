@@ -1,0 +1,21 @@
+{
+  "schema": "mmp-build-report/v0",
+  "build_id": "ilanz-glion-seed-20260924",
+  "municipality": {
+    "name": "Ilanz/Glion",
+    "canton": "GR",
+    "official_url": "https://www.ilanz-glion.ch/"
+  },
+  "counts": {
+    "referenced_sources": 3,
+    "services": 5,
+    "documents": 0,
+    "unchecked_evidence_quotes": 0,
+    "conflicts": 0
+  },
+  "warnings": [
+    "Seed batch was assembled from retrievable official sources rather than executed by the native crawler."
+  ],
+  "handoff_ready": true,
+  "coverage": "partial"
+}
