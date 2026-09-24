@@ -1,137 +1,184 @@
-# Tooling and Runtime — What to Reuse
+# Scout Tooling and Runtime
 
-## 1. Principle
+## 1. Architectural split
 
-Do not build browser plumbing unless the challenge needs it.
+Scout combines:
 
-The open-source scraping and browser-agent ecosystem already converges on a useful pattern:
+- **PydanticAI reasoning**
+- typed graph/state orchestration
+- deterministic acquisition/runtime tools
 
-> **use cheap deterministic extraction where possible, escalate to a browser when necessary, and use models to discover/repair structure rather than repeatedly doing all work.**
+The agent should reason about the municipality.
 
-## 2. Candidate: Crawl4AI
+It should not own raw networking or unrestricted browsing.
 
-Strong candidate for the first implementation because it already provides:
+## 2. Planned framework
 
-- browser-backed crawling
-- cleaned HTML / markdown representations
-- structured extraction
-- CSS/XPath extraction
-- model-assisted extraction
-- session handling
-- adaptive crawling patterns
+### Pydantic models
 
-Most relevant pattern:
+Use Pydantic models as contracts for:
 
-```text
-model inspects unfamiliar page
-        ↓
-compile extraction schema/selectors
-        ↓
-reuse deterministic extraction
-```
+- Service Index
+- Recon result
+- Scout strategy
+- Scout finding
+- service handling
+- municipality service
+- MunicipalityDiscovery
 
-This maps directly to the semantic-compiler architecture.
+### PydanticAI
 
-### Use in this project
+Use PydanticAI agents for semantic decisions:
 
-Potential role:
+- interpret reconnaissance
+- choose scouting strategy
+- match local pages/services to indexed services
+- classify possible new/variant services
+- understand local service handling
+- produce concise grounded summaries
 
-- initial runtime/prototype
-- browser fallback
-- DOM cleaning
-- structured extraction
-- proof that compiled selectors can replace repeated LLM work
+### Typed graph orchestration
 
-Do not make the project architecture depend on one library. Keep internal IR and provenance schemas library-neutral.
+Represent Scout as explicit state transitions rather than one open-ended autonomous loop.
 
-## 3. Candidate: Crawlee + Playwright
-
-Crawlee is useful if we want a lower-level crawler runtime with explicit separation between lightweight HTTP/HTML crawling and Playwright browser crawling.
-
-Potential role:
-
-- crawl queue
-- concurrency/rate controls
-- request deduplication
-- browser escalation
-- production-ish crawl runtime
-
-Playwright should be treated as the rendering/interaction engine, not as the orchestration architecture.
-
-## 4. Candidate: Stagehand
-
-Stagehand is useful as an architectural reference for hybrid deterministic/AI browser automation.
-
-Interesting ideas to borrow:
-
-- observe before act
-- typed extraction
-- use AI only where page structure is uncertain
-- convert successful model-driven behavior into repeatable operations
-- separate planning/trajectory from execution
-
-Potential role:
-
-- interactive eGov edge cases
-- reference implementation for model→browser action boundaries
-
-Not the default crawler.
-
-## 5. Candidate: Browser Use
-
-Useful as a reference for full browser-agent loops and typed action schemas.
-
-Potential role:
-
-- study action/observation schemas
-- complex portal interaction experiments
-
-Not recommended as the default ingestion engine because most municipal pages do not justify a fully autonomous browser agent.
-
-## 6. Recommended first stack
-
-For the hackathon:
+Conceptual nodes:
 
 ```text
-HTTP client
-  + HTML parser
-  + cache/snapshot layer
-  + Crawl4AI or Playwright fallback
-  + JSON Schema / Pydantic-like typed IR
-  + Apertus-compatible model adapter
+Recon
+→ Strategy
+→ Discover
+→ CoverageCheck
+→ FollowUp?
+→ InspectServices
+→ Compile
+→ Validate
 ```
 
-The architecture must keep these replaceable.
+## 3. Deterministic tool layer
 
-## 7. Anti-blocking / crawler etiquette
+Keep narrow replaceable interfaces.
 
-This project should not optimize for stealth.
-
-Instead:
-
-- fetch only public information needed for the service corpus
-- identify the crawler reasonably
-- use conservative request rates
-- cache every successful fetch
-- avoid repeated requests for unchanged pages
-- use sitemaps/service directories
-- limit depth and page budgets
-- back off on errors
-- record failed/blocked access as evidence, not as a prompt to bypass controls
-
-This is both operationally safer and aligned with the project goal: efficient public-information acquisition.
-
-## 8. Runtime interfaces
-
-Keep the core independent from tooling through narrow interfaces:
+Examples:
 
 ```text
-Fetcher.fetch(url, mode) -> SourceSnapshot
-Cleaner.clean(snapshot) -> PageIR
-Planner.plan(Context, Recon) -> CrawlPlan
-Classifier.classify(PageIR) -> PageClassification
-Extractor.extract(PageIR, ServiceSchema) -> ClaimIR
-Validator.validate(ClaimIR) -> ValidatedClaims
+fetch(url) -> SourceSnapshot
+parse(snapshot) -> PageIR
+discover_links(page) -> Link[]
+inspect_sitemap(url) -> SitemapResult
+normalize_url(url) -> URL
+snapshot(response) -> SourceSnapshot
 ```
 
-A future runtime can swap Crawl4AI, Crawlee, Playwright or another implementation without changing the service/provenance model.
+The agent may choose which legal tool to use.
+
+The tool implementation enforces:
+
+- HTTP safety
+- domain policy
+- redirect validation
+- rate limits
+- cache
+- request budgets
+- provenance
+
+## 4. Browser tooling
+
+Do not make browser automation the architecture.
+
+Escalation order:
+
+```text
+HTTP
+  ↓ insufficient
+headless browser
+  ↓ genuine interaction required
+interactive browser
+```
+
+Possible implementations remain replaceable:
+
+- Crawl4AI
+- Crawlee / Playwright
+- Stagehand-like interaction patterns
+- Browser Use for difficult research cases
+
+## 5. Scout strategies
+
+A strategy defines *how to search*, not what is true.
+
+Initial strategy families:
+
+### broad_small_site
+Broad bounded exploration for small municipal sites.
+
+### service_directory
+Enumerate a structured service catalogue and related resources.
+
+### targeted_large_city
+Search specifically for indexed services and high-value roots; avoid full-site crawling.
+
+### mixed_content
+Broad enough for small sites but with aggressive municipal-vs-tourism/community filtering.
+
+### custom
+Typed escape hatch for unusual structures.
+
+## 6. Tool-use principle
+
+The model should operate inside a legal action space.
+
+Good:
+
+```text
+"service directory found; inspect it next"
+```
+
+Bad:
+
+```text
+"browse anywhere on the internet until satisfied"
+```
+
+Scout is agentic because it adapts its plan, not because it has unlimited autonomy.
+
+## 7. Semantic inspection principle
+
+The semantic layer should receive bounded evidence.
+
+Prefer:
+
+```text
+Service Index entry
++ relevant PageIRs
++ source/resource metadata
+```
+
+over:
+
+```text
+entire raw website
+```
+
+This reduces tokens and keeps reasoning inspectable.
+
+## 8. Provider independence
+
+The agent architecture should not depend on one commercial model.
+
+Provider/model adapters can change while:
+
+- Pydantic contracts
+- graph state
+- deterministic tools
+- provenance
+- MunicipalityDiscovery
+
+remain stable.
+
+## 9. Current repo transition
+
+Existing crawler/prototype/baseline utilities should be treated as reusable acquisition components.
+
+They are not the final Scout abstraction.
+
+The implementation should migrate useful code behind Scout tools rather than preserving old `crawler → normalized service inventory` boundaries for architectural reasons.

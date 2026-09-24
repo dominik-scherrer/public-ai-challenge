@@ -1,109 +1,185 @@
-# Swiss Grounding MCP — Provenance-Aware Service Ingestion
+# Pipeline = Scout
 
-This directory defines the ingestion pipeline that turns heterogeneous Swiss municipal websites into structured, provenance-preserving service records suitable for an MCP server.
+The `pipeline/` workstream is now the **Scout agent**.
 
-The core claim:
+Scout receives a municipality URL and a versioned Service Index, dynamically explores the municipality, semantically understands how its services are implemented, and compiles one validated municipality JSON artifact for the MCP Factory.
 
-> **Do not build a generic scraper. Build a provenance-preserving municipal-service compiler with adaptive acquisition strategies.**
+> **Scout converts heterogeneous municipal reality into a stable machine-readable municipality contract.**
 
-The system should answer not only what service exists, but also where every claim came from, when it was fetched, how it was transformed, how fresh it is, and why the crawler stopped.
-
-## System boundary
+## Boundary
 
 ```text
-municipality
-    ↓
-context enrichment
-    ↓
-cheap reconnaissance
-    ↓
-planner / semantic compiler
-    ↓
-typed CrawlPlan IR
-    ↓
-deterministic crawl runtime
-    ↓
-source snapshots + PageIR
-    ↓
-small-model classification / extraction
-    ↓
-typed ClaimIR
-    ↓
-deterministic validation / normalization
-    ↓
-service records + provenance
-    ↓
-MCP-facing knowledge layer
+Municipality URL
+      +
+Service Index
+      ↓
+┌────────────────────────────┐
+│ SCOUT STEP 1 — DISCOVER    │
+│                            │
+│ recon municipality         │
+│ choose scouting strategy   │
+│ find indexed services      │
+│ notice new/variant services│
+└─────────────┬──────────────┘
+              ↓
+        ScoutFindings[]
+              ↓
+┌────────────────────────────┐
+│ SCOUT STEP 2 — COMPILE     │
+│                            │
+│ inspect service sources    │
+│ understand local handling  │
+│ preserve provenance        │
+│ validate typed output      │
+└─────────────┬──────────────┘
+              ↓
+   MunicipalityDiscovery JSON
+              ↓
+         MCP FACTORY
 ```
 
-The LLM is **not** the scraper and **not** the authority.
+Scout does **not** generate the MCP server.
 
-### Large-model role
+## Why AI matters
 
-Use a capable planner only where the website is unfamiliar or the evidence is ambiguous:
+Municipal services are semantically similar but implemented heterogeneously.
 
-- understand an unfamiliar site structure
-- select a crawl strategy
-- choose relevant languages
-- set budgets and stop rules
-- compile site-specific extraction plans
-- resolve hard conflicts or multilingual identity questions
+The same service may appear as:
 
-### Small-model role
+- a static page
+- a structured service page
+- a PDF or downloadable form
+- an HTML form
+- an external official portal
+- a live feed
+- a structured API
+- a combination of several sources
 
-Use a cheaper constrained model, ultimately Apertus, for repetitive typed work:
+Scout uses model reasoning to understand that local implementation and compress it into a stable typed representation.
 
-- page classification
-- service-vs-noise classification
-- field extraction into strict schemas
-- link relevance ranking
-- obvious multilingual pairing
+Example:
 
-### Deterministic runtime role
+```json
+{
+  "service_id": "waste_collection",
+  "local_name": "Abfallentsorgung",
+  "availability": "supported",
+  "handling": {
+    "type": "mixed",
+    "interaction": "information",
+    "summary": "The municipality publishes general waste guidance locally and provides the collection schedule as an official PDF.",
+    "live": false
+  },
+  "sources": [
+    {"url": "...", "role": "service_page"},
+    {"url": "...", "role": "calendar_pdf"}
+  ]
+}
+```
 
-Software owns:
+## Why Scout is agentic
 
-- HTTP fetching
-- browser escalation
-- domain boundaries
-- crawl budgets
-- caching and snapshots
-- canonicalization
-- hashing and timestamps
-- schema validation
-- normalization
-- duplicate/conflict detection
-- stop conditions
-- provenance bookkeeping
+There is no universal municipal crawl plan.
 
-## Fetch principle
+Scout first performs reconnaissance, then selects a bounded strategy such as:
 
-Use the cheapest sufficient tool:
+- `broad_small_site`
+- `service_directory`
+- `targeted_large_city`
+- `mixed_content`
+- `custom`
+
+Examples:
+
+- **Binn** → broad small-site scouting
+- **Dübendorf** → structured service-directory scouting
+- **Zürich** → targeted large-city scouting
+- **Bosco/Gurin** → broad scouting with aggressive municipal/noise discrimination
+
+The model chooses the strategy; deterministic runtime enforces legal actions, budgets, URLs and stop rules.
+
+## Service Index
+
+Scout receives a versioned index of service concepts to actively investigate.
+
+The index provides:
+
+- stable service ID
+- labels/synonyms
+- optional discovery hints
+- expected service family
+
+Scout must also detect:
+
+- `possible_new`
+- `possible_variant`
+
+These are proposals for later index evolution, not automatic changes.
+
+## Scout output
+
+The primary handoff is:
 
 ```text
-HTTP fetch
-   ↓ insufficient / JS shell
+municipality-discovery/v1
+```
+
+It contains:
+
+- municipality identity
+- run/build metadata
+- Service Index version
+- Scout strategy and reason
+- service records
+- local service names
+- availability / coverage
+- handling description
+- source/resource bundle
+- evidence / provenance
+- index relation
+- new-service suggestions
+- discovery failures
+- coverage summary
+
+See `SERVICE_MODEL.md`.
+
+## Framework
+
+The target implementation uses:
+
+- **Pydantic models** for all contracts
+- **PydanticAI agents** for semantic planning and inspection
+- typed graph/state orchestration for the two Scout stages
+- ordinary Python for deterministic runtime operations
+
+The LLM never owns network policy, crawl limits or provenance truth.
+
+## Runtime principle
+
+Use the cheapest sufficient acquisition method:
+
+```text
+HTTP
+ ↓ insufficient
 headless browser
-   ↓ real interaction required
-agentic browser
+ ↓ genuine interaction required
+interactive/agentic browser
 ```
 
-A browser is a fallback, not the default.
+Browser escalation is an acquisition detail, not the Scout architecture.
 
-## Documents
+## Core documents
 
-- `ARCHITECTURE.md` — end-to-end pipeline and model/runtime boundaries
-- `CRAWL_STRATEGIES.md` — adaptive crawl modes, fetch escalation and stop rules
-- `TOOLING_AND_RUNTIME.md` — candidate OSS components and runtime choices
-- `SEMANTIC_COMPILER.md` — planner → typed IR → small-model execution design
-- `PROVENANCE_AND_TRUST.md` — trust, provenance and evidence model
-- `MUNICIPALITY_BENCHMARK.md` — seven representative test municipalities
-- `SERVICE_MODEL.md` — canonical service representation
-- `BUILD_PLAN.md` — first vertical slice and implementation sequence
-- `EVALS.md` — benchmark and evaluation criteria
+- `ARCHITECTURE.md` — two-step Scout architecture
+- `SERVICE_MODEL.md` — MunicipalityDiscovery contract
+- `BUILD_PLAN.md` — implementation sequence
+- `SEMANTIC_COMPILER.md` — semantic compression of heterogeneous services
+- `CRAWL_STRATEGIES.md` — scouting strategies
+- `TOOLING_AND_RUNTIME.md` — deterministic/agent framework split
+- `PROVENANCE_AND_TRUST.md` — evidence boundary
+- `MUNICIPALITY_BENCHMARK.md` — municipality stress cases
+- `EVALS.md` — Scout evaluation
 
-## Hackathon fit
+## Core claim
 
-The Swiss Grounding MCP challenge values grounding quality, useful Swiss coverage, jurisdiction, freshness, citations, unsupported-query handling, agent efficiency, response size, latency, caching, refresh design, maintainability and MCP contract quality.
-
-This pipeline is designed to make those properties explicit and testable rather than implicit.
+> **The common standard is not how Swiss municipalities implement services. The common standard is the typed contract Scout compiles from that heterogeneity.**

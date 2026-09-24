@@ -1,246 +1,183 @@
-# Semantic Compiler — Large Planner, Small Apertus Executor
+# Semantic Compiler — Scout Step 2
 
-## 1. Goal
+## 1. Purpose
 
-Use the model hierarchy efficiently:
+The semantic compiler is no longer a generic field-normalization stage.
 
-> **large model for unfamiliar architecture and planning; small Apertus model for repetitive constrained execution; deterministic software for authority and validation.**
+It is **Scout Step 2**:
 
-The model should not own the crawl state or final truth.
+> **compress heterogeneous local service implementations into one typed MunicipalityDiscovery contract.**
 
-## 2. Three layers
+Scout Step 1 finds the service and source bundle.
 
-### Planner
+Scout Step 2 understands what that bundle means.
 
-Large capable model.
+## 2. Input
 
-Responsibilities:
-
-- understand an unfamiliar municipality/site
-- choose acquisition strategy
-- set language plan and crawl budget
-- identify promising roots
-- propose extraction rules
-- resolve ambiguous conflicts
-- handle exceptions escalated from the small model
-
-Output must be typed IR.
-
-### Executor
-
-Small Apertus model.
-
-Responsibilities:
-
-- classify page role
-- service-vs-noise classification
-- map text spans to allowed service fields
-- rank candidate follow-up links
-- perform obvious multilingual equivalence checks
-
-The executor receives only bounded context and enumerated output choices.
-
-### Runtime/compiler
-
-Deterministic code.
-
-Responsibilities:
-
-- fetch
-- parse
-- validate IR
-- enforce URL/domain/budget policy
-- execute crawl plan
-- normalize dates/currencies/URLs
-- hash snapshots
-- attach provenance
-- detect conflicts
-- decide whether confidence thresholds trigger escalation
-
-## 3. CrawlPlan IR
-
-Example:
-
-```json
-{
-  "schema": "municipal-crawl-plan/v1",
-  "target": {
-    "municipality": "Zürich",
-    "jurisdiction": "CH-ZH-Zurich"
-  },
-  "strategy": "directory_crawl",
-  "roots": [
-    {
-      "url": "https://...",
-      "role": "service_directory"
-    }
-  ],
-  "languages": ["de"],
-  "fetch_policy": {
-    "prefer": "http",
-    "browser_fallback": true,
-    "agent_browser": false
-  },
-  "link_policy": {
-    "allow_roles": ["service", "form", "egov", "official_pdf"],
-    "deny_roles": ["news", "events", "politics", "tourism"]
-  },
-  "budget": {
-    "max_pages": 250,
-    "max_depth": 4,
-    "max_targeted_followups_per_service": 3
-  },
-  "stop": {
-    "directory_exhausted": true,
-    "novelty_window": 20
-  }
-}
-```
-
-The runtime rejects invalid plans before crawling.
-
-## 4. PageIR
-
-Do not feed raw browser state to the executor when deterministic parsing can reduce it first.
-
-Example:
-
-```json
-{
-  "url": "...",
-  "title": "...",
-  "language": "de",
-  "headings": ["..."],
-  "main_text": "...",
-  "links": [
-    {"url": "...", "text": "...", "internal": true}
-  ],
-  "forms": [],
-  "documents": [],
-  "source_ref": "src_123"
-}
-```
-
-## 5. Small-model classifier
-
-Input: PageIR + allowed labels.
-
-Output:
-
-```json
-{
-  "page_role": "service",
-  "service_probability": 0.94,
-  "authority_signal": "official",
-  "follow_candidates": [
-    {
-      "url": "...",
-      "role": "official_pdf",
-      "reason_code": "missing_requirements"
-    }
-  ]
-}
-```
-
-Prefer enums/reason codes over prose.
-
-## 6. ClaimIR
-
-The executor must extract evidence-backed candidate claims, not final facts.
-
-```json
-{
-  "claims": [
-    {
-      "field": "fees[0].raw",
-      "value": "CHF 30",
-      "source_ref": "src_123",
-      "evidence_span": [182, 188],
-      "semantic_classification": "official_observation"
-    }
-  ]
-}
-```
-
-Then deterministic code derives:
-
-```json
-{
-  "amount": 30,
-  "currency": "CHF",
-  "classification": "derived"
-}
-```
-
-## 7. Confidence and escalation
-
-The executor should not improvise outside its schema.
+For one service candidate:
 
 ```text
-small model result
-      ↓
-schema valid?
-  no → retry/large model
-      ↓
-confidence/evidence sufficient?
-  yes → continue
-  no  → large model
+Service Index entry (optional)
++
+ScoutFinding
++
+official source bundle
++
+municipality context
 ```
 
-Escalation reasons should be typed, for example:
+## 3. Questions the model answers
 
-- `ambiguous_service_identity`
-- `conflicting_official_sources`
-- `unknown_page_structure`
-- `language_pair_uncertain`
-- `portal_boundary_uncertain`
+The semantic inspection agent should determine:
 
-## 8. Compile once, replay cheaply
+1. What service/capability does this represent?
+2. Is it an indexed service, a variant, or possibly new?
+3. Is it supported, partial, handoff-only, unavailable or merely not observed?
+4. How is the service handled locally?
+5. What interaction class applies?
+6. Which source/resource is primary?
+7. Is there a live/structured source?
+8. Is an external official system involved?
+9. What information is missing or inaccessible?
 
-The planner may produce reusable site rules:
+## 4. Handling model
+
+Recommended handling types:
+
+- `static_page`
+- `structured_page`
+- `pdf`
+- `html_form`
+- `external_handoff`
+- `live_feed`
+- `structured_api`
+- `mixed`
+- `unknown`
+
+Interaction types:
+
+- `information`
+- `wayfinding`
+- `request`
+- `transaction`
+
+Example:
 
 ```json
 {
-  "adapter": "stadt-zuerich/v1",
-  "service_link_selector": "...",
-  "exclude_patterns": ["/news/", "/politik/"],
-  "language_routes": {"de": "..."},
-  "field_rules": {}
+  "type": "mixed",
+  "interaction": "information",
+  "summary": "Waste guidance is published on a municipal page while collection dates are provided in a linked official PDF calendar.",
+  "live": false,
+  "external_system": null
 }
 ```
 
-After validation, future crawls should try the adapter first.
+The `summary` is intentionally semantic.
 
-Large-model cost should trend toward zero for stable sites.
+It lets the model express local reality without requiring one enormous universal schema.
 
-## 9. Evaluation hypothesis
+## 5. Availability semantics
 
-Primary architectural experiment:
+Use:
 
-> Can a large model inspect one municipality once and compile enough rules that most subsequent service discovery/extraction is handled by deterministic code plus a small Apertus model?
+- `supported`
+- `partial`
+- `handoff_only`
+- `unavailable`
+- `not_observed`
 
-Measure:
+Definitions:
 
-- large-model calls per municipality
-- small-model calls per page/service
-- percentage of pages handled by HTTP vs browser
-- percentage of extraction handled by compiled rules
-- escalation rate
-- evidence coverage
-- precision/recall versus the baseline corpus
+### supported
+Enough official material exists for the factory to build a useful capability.
 
-## 10. Long-term Apertus path
+### partial
+The service is visible, but important implementation information is incomplete or inaccessible.
 
-The architecture should work even if the small model has modest reasoning ability.
+### handoff_only
+The municipality exposes the service primarily by routing to another official system.
 
-Make execution easy by:
+### unavailable
+The source explicitly indicates that this channel/service is unavailable.
 
-- reducing raw HTML to PageIR
-- enumerating allowed page roles
-- exposing only legal next actions
-- using strict schemas
-- providing exact evidence spans
-- normalizing deterministically
-- routing hard exceptions upward
+### not_observed
+Scout did not find sufficient evidence.
 
-This is the semantic-compiler/JEV principle applied to web ingestion: **software defines the legal state/action space; the small model performs fuzzy classification inside it.**
+Not-observed is not negative evidence.
+
+## 6. Pydantic output
+
+The semantic agent should return typed Pydantic output rather than prose plus post-parsing.
+
+Conceptually:
+
+```python
+class Handling(BaseModel):
+    type: HandlingType
+    interaction: InteractionType
+    summary: str
+    live: bool = False
+    external_system: str | None = None
+
+class MunicipalityService(BaseModel):
+    service_id: str | None
+    local_name: str
+    index_relation: IndexRelation
+    availability: Availability
+    handling: Handling
+    sources: list[SourceRef]
+    confidence: float
+```
+
+## 7. Why this is the AI-heavy layer
+
+Traditional scraping can discover:
+
+- text
+- links
+- forms
+- PDFs
+- APIs
+
+Scout Step 2 has to infer:
+
+- which sources collectively implement one service
+- whether a portal is a handoff or the actual service
+- whether a local label maps to an indexed capability
+- whether a strange local service is a new capability candidate
+- how to describe the local implementation meaningfully to the MCP Factory
+
+That semantic compression is the core AI advantage.
+
+## 8. Deterministic validation
+
+After model output:
+
+- validate schema
+- validate source references
+- validate URLs
+- enforce allowed enums
+- attach provenance
+- detect missing primary sources
+- reject impossible claims
+
+The model does not make its own output true.
+
+## 9. Factory relationship
+
+Scout Step 2 should not decide the final MCP tool implementation.
+
+It describes reality:
+
+```text
+"HTML form plus municipal information page"
+```
+
+The MCP Factory decides:
+
+```text
+"generate guidance + form-handoff adapter"
+```
+
+That separation preserves a stable inter-agent contract.
