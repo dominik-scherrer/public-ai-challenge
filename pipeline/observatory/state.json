@@ -1,243 +1,1006 @@
 {
-  "schema": "project-build-observatory/v2",
-  "generated_at": "2026-09-24T16:27:00+02:00",
+  "schema": "scout-observatory/v5",
+  "generated_at": "2026-09-24T19:45:00+02:00",
   "scope": {
     "read": "entire repository + Git metadata",
     "write": "pipeline/observatory/ only",
     "repository": "dominik-scherrer/public-ai-challenge"
   },
-  "headline": {
-    "phase": "Convergence → implementation",
-    "status": "architecture_converging",
-    "summary": "The project has substantial research, an MVP implementation plan, service/domain framing and a provenance-aware ingestion architecture. The main gap is convergence into executable code: most core components are still documented rather than implemented."
+  "status_scale": [
+    "planned",
+    "in_progress",
+    "needs_refinement",
+    "implemented"
+  ],
+  "scout": {
+    "title": "Scout Architecture",
+    "subtitle": "Adaptive municipal discovery and semantic compilation",
+    "story": "Swiss municipalities are heterogeneous. Scout uses AI to adapt its search strategy and to understand how each municipality handles its services, then compiles that heterogeneity into one stable municipality contract for the MCP Factory.",
+    "principle": {
+      "title": "Scout does not build the MCP server.",
+      "text": "Scout understands heterogeneous municipal reality and compiles it into one stable municipality contract."
+    },
+    "inputs": [
+      {
+        "id": "url",
+        "name": "Municipality URL",
+        "icon": "globe",
+        "desc": "The official municipality website.",
+        "status": "implemented",
+        "where": "PR #13",
+        "summary": "Validated before the first request: public http(s) only, non-global IPs rejected, redirects re-checked. Same guarantees in Agent Scrap and the older prototype.",
+        "next": "Add BFS number to the municipality identity.",
+        "evidence": [
+          {
+            "path": "pipeline/scout/src/scout/runtime.py",
+            "ref": "feat/scout-mvp-1"
+          },
+          {
+            "path": "pipeline/scout/tests/test_runtime.py",
+            "ref": "feat/scout-mvp-1"
+          }
+        ]
+      },
+      {
+        "id": "index",
+        "name": "Service Index",
+        "icon": "list",
+        "desc": "Known service concepts Scout actively looks for.",
+        "bullets": [
+          "versioned, stable service IDs",
+          "labels, synonyms, discovery hints",
+          "Scout may suggest variants and new services — never edits the index itself"
+        ],
+        "status": "implemented",
+        "summary": "service-index/v1, version mvp-1: five entries — waste_collection, move_in, office_hours, forms, building_application — with German labels and synonyms. Patrick's plan standardizes 7 services, and the grounding matrix tracks 32 tools.",
+        "next": "Align the index with the Factory's 7 standard services.",
+        "evidence": [
+          {
+            "path": "pipeline/scout/catalog/services.json",
+            "ref": "feat/scout-mvp-1"
+          },
+          {
+            "path": "pipeline/scout/src/scout/catalog.py",
+            "ref": "feat/scout-mvp-1"
+          }
+        ],
+        "where": "PR #13"
+      }
+    ],
+    "steps": [
+      {
+        "id": "discover",
+        "name": "Step 1 — Scout / Discover",
+        "tagline": "Find what exists",
+        "tone": "discover",
+        "output": "findings",
+        "cards": [
+          {
+            "id": "recon",
+            "name": "Recon",
+            "icon": "search",
+            "desc": "Inspect site shape, language, structure, portals.",
+            "status": "in_progress",
+            "summary": "Fetches the homepage and records title, language, internal link count, sampled links and service-directory candidates (dienstleistung, online-schalter, guichet, sportello). No sitemap, CMS, portal or site-size probe yet.",
+            "next": "Add sitemap + CMS fingerprint so Dübendorf is recognised as a directory site.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/runtime.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ],
+            "where": "PR #13"
+          },
+          {
+            "id": "strategy",
+            "name": "Choose strategy",
+            "icon": "fork",
+            "desc": "A typed, bounded plan: mode, reason, roots, budgets.",
+            "status": "implemented",
+            "summary": "A PydanticAI Strategy Agent returns a typed ScoutStrategy from the recon result; without a model a heuristic picks it (≤80 links and no directory → broad, else targeted). Heuristic path tested; the agent path has not been run against a live model.",
+            "next": "Run the agent path on the five benchmark sites.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/agents.py",
+                "ref": "feat/scout-mvp-1"
+              },
+              {
+                "path": "pipeline/scout/tests/test_runtime.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ],
+            "where": "PR #13"
+          },
+          {
+            "id": "modes",
+            "name": "Scouting strategy",
+            "icon": "layers",
+            "desc": "Execute one bounded strategy family.",
+            "tags": [
+              "broad_small_site",
+              "service_directory",
+              "targeted_large_city",
+              "mixed_content"
+            ],
+            "tag_kind": "strategy",
+            "status": "in_progress",
+            "where": "PR #13",
+            "summary": "Two modes run: broad_small_site and a generic `targeted` (the docs call it targeted_large_city). service_directory and mixed_content are not implemented yet.",
+            "next": "service_directory next — Dübendorf proves it.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/runtime.py",
+                "ref": "feat/scout-mvp-1"
+              },
+              {
+                "path": "pipeline/scout/src/scout/contracts.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ]
+          },
+          {
+            "id": "discover-services",
+            "name": "Discover services",
+            "icon": "doc",
+            "desc": "Find indexed services; notice possible new or variant ones.",
+            "status": "implemented",
+            "where": "PR #13",
+            "summary": "Pages are matched against Service Index labels and synonyms; unmatched service-like pages become possible_new catalog suggestions. `variant` exists in the contract but is never emitted.",
+            "next": "Emit variant when a page matches an indexed service with a local twist.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/discovery.py",
+                "ref": "feat/scout-mvp-1"
+              },
+              {
+                "path": "pipeline/scout/src/scout/app.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ]
+          },
+          {
+            "id": "bundles",
+            "name": "Source bundles",
+            "icon": "stack",
+            "desc": "Group the official material behind one service.",
+            "tags": [
+              "service page",
+              "PDF",
+              "form",
+              "contact page",
+              "handoff",
+              "API"
+            ],
+            "tag_kind": "plain",
+            "status": "implemented",
+            "where": "PR #13",
+            "summary": "Each service keeps its forms, PDFs and official handoffs with Scout source roles. Real Binn finding: strahlerpatente.binn.ch is kept as an official_handoff on a municipality-owned sibling subdomain without being crawled (tested).",
+            "next": "Add contact pages and structured feeds to the bundle.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/app.py",
+                "ref": "feat/scout-mvp-1"
+              },
+              {
+                "path": "pipeline/scout/tests/test_scout.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "compile",
+        "name": "Step 2 — Understand / Compile",
+        "tagline": "Turn into a contract",
+        "tone": "compile",
+        "output": "discovery",
+        "cards": [
+          {
+            "id": "inspect",
+            "name": "Semantic service inspection",
+            "icon": "brain",
+            "desc": "What service is this? How is it handled here?",
+            "status": "in_progress",
+            "summary": "A PydanticAI Service Inspector returns a typed ServiceInterpretation per finding; without a model a keyword heuristic stands in. The agent path has never been run against a live model.",
+            "next": "Run the inspector with SCOUT_MODEL on Binn and review the output.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/agents.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ],
+            "where": "PR #13"
+          },
+          {
+            "id": "handling",
+            "name": "Handling interpretation",
+            "icon": "gear",
+            "desc": "Classify the local implementation and summarize it.",
+            "tags": [
+              "static page",
+              "PDF",
+              "HTML form",
+              "external handoff",
+              "live feed / API",
+              "mixed"
+            ],
+            "tag_kind": "handling",
+            "status": "in_progress",
+            "summary": "HandlingType and InteractionType are coded enums. The heuristic distinguishes local pages from external handoffs; richer types (PDF, form, live feed, API) depend on the model path.",
+            "next": "Check handling types on real Binn and Ausserberg services.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/contracts.py",
+                "ref": "feat/scout-mvp-1"
+              },
+              {
+                "path": "pipeline/scout/src/scout/agents.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ],
+            "where": "PR #13"
+          },
+          {
+            "id": "availability",
+            "name": "Availability + confidence",
+            "icon": "bars",
+            "desc": "How well the municipality supports it, and how sure we are.",
+            "tags": [
+              "supported",
+              "partial",
+              "handoff_only",
+              "not_observed"
+            ],
+            "tag_kind": "availability",
+            "status": "implemented",
+            "summary": "Availability enum incl. not_observed, coverage counts per status, and a test that not_observed stays distinct from unavailable. Confidence is carried per service.",
+            "next": "Calibrate confidence against hand-labelled Binn services.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/contracts.py",
+                "ref": "feat/scout-mvp-1"
+              },
+              {
+                "path": "pipeline/scout/tests/test_contracts.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ],
+            "where": "PR #13"
+          },
+          {
+            "id": "compile-contract",
+            "name": "Compile municipality contract",
+            "icon": "file",
+            "desc": "Deterministic, typed, validated output.",
+            "status": "needs_refinement",
+            "summary": "run_scout assembles and validates MunicipalityDiscovery and writes discovery.json, sources.jsonl and crawl-report.json. The fixture end-to-end test errors on a test bug (`with A as tmp, (B, C):` makes a tuple); with that one line fixed it passes.",
+            "next": "Fix the with-statement in tests/test_scout.py.",
+            "evidence": [
+              {
+                "path": "pipeline/scout/src/scout/app.py",
+                "ref": "feat/scout-mvp-1"
+              },
+              {
+                "path": "pipeline/scout/tests/test_scout.py",
+                "ref": "feat/scout-mvp-1"
+              }
+            ],
+            "where": "PR #13"
+          }
+        ]
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "findings",
+        "name": "ScoutFindings[]",
+        "desc": "Candidate services with local label, index relation, confidence and source bundle.",
+        "status": "implemented",
+        "where": "PR #13",
+        "summary": "ScoutFinding is a Pydantic model with local label, service_id, index relation, confidence and sources. Agent Scrap's ServiceLead (PR #11) is superseded.",
+        "next": "Serialize findings for debugging runs.",
+        "evidence": [
+          {
+            "path": "pipeline/scout/src/scout/contracts.py",
+            "ref": "feat/scout-mvp-1"
+          },
+          {
+            "path": "pipeline/scout/src/scout/discovery.py",
+            "ref": "feat/scout-mvp-1"
+          }
+        ]
+      },
+      {
+        "id": "discovery",
+        "name": "MunicipalityDiscovery JSON",
+        "schema": "municipality-discovery/v1",
+        "desc": "The only artifact the MCP Factory needs.",
+        "keys": [
+          "municipality",
+          "build",
+          "strategy",
+          "services[]",
+          "  handling",
+          "  sources",
+          "catalog_suggestions[]",
+          "coverage",
+          "failures[]"
+        ],
+        "status": "in_progress",
+        "summary": "municipality-discovery/v1 is a Pydantic model and is produced in the fixture run. No real municipality output has been committed, and Patrick's plan still describes a differently shaped discovery.json.",
+        "next": "Commit a Binn and an Ausserberg discovery.json for the Factory team.",
+        "evidence": [
+          {
+            "path": "pipeline/scout/src/scout/contracts.py",
+            "ref": "feat/scout-mvp-1"
+          },
+          {
+            "path": "ideas-patrick/hackathon-mvp-plan.md"
+          }
+        ],
+        "where": "PR #13"
+      }
+    ],
+    "downstream": {
+      "id": "factory",
+      "name": "MCP Factory",
+      "desc": "Downstream builder. Takes the municipality contract and builds what's next.",
+      "summary": "Out of Scout's scope. Two designs are in flight: Patrick's fixed 7-tool server template with generated adapters, and Mark's per-service LLM-generated tools.",
+      "evidence": [
+        {
+          "path": "ideas-patrick/hackathon-mvp-plan.md"
+        },
+        {
+          "path": "docs/gemeinde_mcp.concept.md",
+          "ref": "service-implementation"
+        }
+      ]
+    },
+    "layers": [
+      {
+        "id": "ai",
+        "name": "AI reasoning",
+        "tech": "PydanticAI",
+        "motto": "Reason with context",
+        "note": "PydanticAI is now a dependency of pipeline/scout (PR #13). Both agents have deterministic fallbacks and have not yet been run against a live model.",
+        "items": [
+          {
+            "id": "ai-recon",
+            "name": "Reconnaissance interpretation",
+            "status": "in_progress",
+            "note": "The Strategy Agent reads the recon result; recon itself is still deterministic."
+          },
+          {
+            "id": "ai-strategy",
+            "name": "Strategy selection",
+            "status": "implemented",
+            "note": "PydanticAI Strategy Agent with typed output and heuristic fallback (PR #13)."
+          },
+          {
+            "id": "ai-matching",
+            "name": "Service matching",
+            "status": "implemented",
+            "note": "Findings matched to Service Index labels and synonyms (PR #13)."
+          },
+          {
+            "id": "ai-summary",
+            "name": "Handling summary",
+            "status": "in_progress",
+            "note": "Service Inspector writes handling summaries; only the heuristic path has run."
+          },
+          {
+            "id": "ai-variants",
+            "name": "New / variant detection",
+            "status": "in_progress",
+            "note": "possible_new suggestions work; variant is never emitted."
+          }
+        ]
+      },
+      {
+        "id": "det",
+        "name": "Deterministic runtime",
+        "tech": "Python runtime",
+        "motto": "Safe, reproducible, trustworthy",
+        "note": "The model may propose. Software decides what is executable.",
+        "items": [
+          {
+            "id": "det-url",
+            "name": "URL safety",
+            "status": "implemented",
+            "note": "Non-global IPs rejected; every redirect re-validated. Tested on main, PR #7 and PR #11."
+          },
+          {
+            "id": "det-budgets",
+            "name": "Crawl budgets",
+            "status": "implemented",
+            "note": "Page and depth limits; truncation reported."
+          },
+          {
+            "id": "det-escalation",
+            "name": "HTTP / browser escalation",
+            "status": "in_progress",
+            "note": "HTTP only in every codebase. No headless or interactive browser path."
+          },
+          {
+            "id": "det-provenance",
+            "name": "Snapshots & provenance",
+            "status": "in_progress",
+            "note": "sources.jsonl with hash-based ids and retrieval time (PR #13). Scout does not store raw snapshots yet; Agent Scrap did."
+          },
+          {
+            "id": "det-schema",
+            "name": "Schema validation",
+            "status": "implemented",
+            "note": "Every artifact is a Pydantic model; MunicipalityDiscovery validates on construction (PR #13)."
+          },
+          {
+            "id": "det-stop",
+            "name": "Stop rules",
+            "status": "in_progress",
+            "note": "Stops on page/depth budget; crawl-report.json records pages and findings but no stop reason."
+          }
+        ]
+      }
+    ],
+    "foundations": [
+      {
+        "id": "contracts",
+        "name": "Contracts (Pydantic models)",
+        "status": "implemented",
+        "summary": "All Scout contracts are Pydantic models: ServiceIndex, ReconResult, ScoutStrategy, ScoutFinding, Handling, MunicipalityService, CatalogSuggestion, CoverageSummary, MunicipalityDiscovery. 2 contract tests pass. Minor: a field named `schema` shadows a BaseModel attribute (warning).",
+        "next": "Rename the `schema` field (alias it) to silence the warning.",
+        "evidence": [
+          {
+            "path": "pipeline/scout/src/scout/contracts.py",
+            "ref": "feat/scout-mvp-1"
+          },
+          {
+            "path": "pipeline/scout/tests/test_contracts.py",
+            "ref": "feat/scout-mvp-1"
+          }
+        ],
+        "where": "PR #13"
+      },
+      {
+        "id": "index-f",
+        "ref_item": "index"
+      },
+      {
+        "id": "provenance",
+        "name": "Provenance",
+        "status": "in_progress",
+        "where": "PR #13",
+        "summary": "Source-level provenance (ids, URLs, retrieval time, roles) flows into every MunicipalityService. Raw snapshots are not stored by Scout yet, and handling summaries are not yet marked as interpretation.",
+        "next": "Carry source_id + retrieved_at into every MunicipalityService.",
+        "evidence": [
+          {
+            "path": "pipeline/scout/src/scout/app.py",
+            "ref": "feat/scout-mvp-1"
+          },
+          {
+            "path": "pipeline/PROVENANCE_AND_TRUST.md",
+            "ref": "docs/scout-pipeline-architecture"
+          }
+        ]
+      },
+      {
+        "id": "evals",
+        "name": "Evals & grounding",
+        "status": "needs_refinement",
+        "where": "PR #10",
+        "summary": "Scout metrics are defined, including factory readiness per service. The grounding loop has 1 failing test of 6; nothing has been measured.",
+        "next": "Fix idempotency in apply_observations.py; hand-label Binn.",
+        "evidence": [
+          {
+            "path": "pipeline/EVALS.md",
+            "ref": "docs/scout-pipeline-architecture"
+          },
+          {
+            "path": "pipeline/grounding/apply_observations.py",
+            "ref": "feat/pipeline-tool-grounding-loop"
+          }
+        ]
+      }
+    ],
+    "maturity": [
+      {
+        "question": "Strategy types defined?",
+        "answer": "yes",
+        "note": "Four families plus custom, in the Scout docs (PR #12)."
+      },
+      {
+        "question": "Service Index defined?",
+        "answer": "yes",
+        "note": "service-index/v1 with 5 entries in code (PR #13); Patrick's plan lists 7."
+      },
+      {
+        "question": "MunicipalityDiscovery contract defined?",
+        "answer": "yes",
+        "note": "Pydantic model in PR #13. Patrick's discovery.json still differs."
+      },
+      {
+        "question": "Grounding / eval logic defined?",
+        "answer": "partial",
+        "note": "Metrics written; grounding loop has a failing test."
+      },
+      {
+        "question": "Real municipality runs available?",
+        "answer": "no",
+        "note": "PR #13 inspected Binn live (subdomain handoff finding) but no run output is committed."
+      },
+      {
+        "question": "Factory handoff stable?",
+        "answer": "no",
+        "note": "Three contract shapes in flight: MunicipalityDiscovery, discovery.json, ServiceMention."
+      }
+    ],
+    "benchmark": [
+      {
+        "id": "binn",
+        "name": "Binn",
+        "canton": "VS",
+        "strategy": "broad_small_site",
+        "purpose": "Broad small-site coverage",
+        "question": "Can Scout reach near-complete coverage on a tiny site cheaply?",
+        "run": "none",
+        "note": "Live inspection found the strahlerpatente.binn.ch handoff (PR #13); no run output committed."
+      },
+      {
+        "id": "ausserberg",
+        "name": "Ausserberg",
+        "canton": "VS",
+        "strategy": "broad_small_site",
+        "purpose": "Reference / factory usefulness",
+        "question": "Is the MunicipalityDiscovery enough for the Factory's real scenarios?",
+        "run": "none",
+        "note": "Hand-seeded inventory exists (PR #8)."
+      },
+      {
+        "id": "duebendorf",
+        "name": "Dübendorf",
+        "canton": "ZH",
+        "strategy": "service_directory",
+        "purpose": "Structured service directory",
+        "question": "Can Scout spot and exploit an i-web /dienstleistungen/ catalogue?",
+        "run": "none"
+      },
+      {
+        "id": "bosco-gurin",
+        "name": "Bosco/Gurin",
+        "canton": "TI",
+        "strategy": "mixed_content",
+        "purpose": "Mixed-content precision",
+        "question": "Can Scout separate municipal services from tourism and community noise?",
+        "run": "none",
+        "note": "Hand-seeded inventory exists (PR #8)."
+      },
+      {
+        "id": "zurich",
+        "name": "Zürich",
+        "canton": "ZH",
+        "strategy": "targeted_large_city",
+        "purpose": "Targeted large-city strategy",
+        "question": "Can Scout resolve indexed services without a broad crawl?",
+        "run": "none",
+        "note": "Hand-seeded inventory exists (PR #8)."
+      }
+    ]
   },
-  "project_streams": [
-    {
-      "id": "product",
-      "name": "Product / MMP concept",
-      "status": "designed",
-      "owner_signal": "Dominik",
-      "sources": [
-        "ideas-dominik/CONTEXT.md",
-        "ideas-dominik/docs/adr/"
+  "headline": {
+    "phase": "Scout MVP-1 in review",
+    "summary": "PR #13 builds Scout as a real package: Pydantic contracts, a 5-service index, recon, a PydanticAI strategy agent and service inspector with deterministic fallbacks, source bundles, possible_new suggestions and MunicipalityDiscovery output. 6 of 7 tests pass; the seventh fails on a one-line test bug. Still missing: service_directory and mixed_content, a live-model run, and any committed real municipality output."
+  },
+  "evidence": {
+    "tests": [
+      {
+        "name": "Scout MVP-1",
+        "where": "PR #13",
+        "ref": "feat/scout-mvp-1",
+        "path": "pipeline/scout/tests/",
+        "passed": 6,
+        "total": 7,
+        "note": "test_fixture_run_compiles_discovery_json errors on a test bug (`with A as tmp, (B, C):`); passes when the with-statement is fixed."
+      },
+      {
+        "name": "Agent Scrap",
+        "where": "PR #11",
+        "ref": "feat/agent-scrap-mvp",
+        "path": "pipeline/agent_scrap/tests/test_agent.py",
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "name": "Grounding loop",
+        "where": "PR #10",
+        "ref": "feat/pipeline-tool-grounding-loop",
+        "path": "pipeline/grounding/tests/test_apply_observations.py",
+        "passed": 5,
+        "total": 6,
+        "note": "test_duplicate_observation_is_idempotent: re-applying an observation adds a duplicate."
+      },
+      {
+        "name": "Prototype crawler",
+        "where": "PR #7",
+        "ref": "fix/pipeline-scraper-baseline",
+        "path": "pipeline/prototype/tests/test_scraper.py",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "Prototype crawler",
+        "where": "main",
+        "path": "pipeline/prototype/tests/test_scraper.py",
+        "passed": 3,
+        "total": 3
+      },
+      {
+        "name": "CI",
+        "where": "main",
+        "path": null,
+        "passed": null,
+        "total": null,
+        "note": "No CI workflow in the repository."
+      }
+    ],
+    "grounding": {
+      "where": "PR #10",
+      "ref": "feat/pipeline-tool-grounding-loop",
+      "path": "pipeline/grounding/tool-grounding-matrix.json",
+      "principle": "Tool contracts begin as hypotheses. Only real Agent Scrap observations advance grounding maturity.",
+      "levels": [
+        "dummy",
+        "grounded_1",
+        "grounded_n",
+        "generalized",
+        "local_only",
+        "rejected"
       ],
-      "summary": "MMP vocabulary, service tiers, sovereign reference-client framing, build semantics and ADRs are documented.",
-      "next": "Resolve governance/verification questions and align terminology with the MVP plan."
+      "counts": {
+        "dummy": 32,
+        "grounded_1": 0,
+        "grounded_n": 0,
+        "generalized": 0,
+        "local_only": 0,
+        "rejected": 0
+      }
     },
-    {
-      "id": "research",
-      "name": "Municipality/service research",
-      "status": "implemented",
-      "owner_signal": "team research",
-      "sources": [
-        "ideas/mmp-swiss-municipality-service-research.md",
-        "ideas-patrick/servicelist_patrick.md",
-        "ideas-patrick/ausserberg_example.md"
-      ],
-      "summary": "A 19-municipality qualitative survey, service taxonomy and Ausserberg/reference-service material exist.",
-      "next": "Turn research into fixtures/baseline corpus and acceptance scenarios."
-    },
-    {
-      "id": "pipeline",
-      "name": "Data acquisition / ingestion pipeline",
-      "status": "designed",
-      "owner_signal": "Achim",
-      "sources": [
-        "pipeline/ARCHITECTURE.md",
-        "pipeline/BUILD_PLAN.md",
-        "pipeline/PROVENANCE_AND_TRUST.md",
-        "pipeline/SEMANTIC_COMPILER.md"
-      ],
-      "summary": "Adaptive crawling, provenance, semantic compiler, Apertus execution model and evaluation criteria are designed; runtime code is not yet committed.",
-      "next": "Baseline corpus → SourceSnapshot → PageIR → HTTP-first fetch → typed planner/executor."
-    },
-    {
-      "id": "mvp",
-      "name": "Hackathon MVP implementation",
-      "status": "designed",
-      "owner_signal": "shared",
-      "sources": [
-        "docs/hackathon-mvp-plan.md",
-        "src/public_ai_challenge/__init__.py",
-        "pyproject.toml"
-      ],
-      "summary": "A detailed 24-hour plan defines URL→inventory→review→MCP package, but the repository currently has only a minimal Python package skeleton.",
-      "next": "Start executable vertical slice using Ausserberg + second municipality."
-    },
-    {
-      "id": "mcp",
-      "name": "MCP runtime",
-      "status": "not_started",
-      "owner_signal": "runtime work package",
-      "sources": [
-        "docs/hackathon-mvp-plan.md"
-      ],
-      "summary": "Tool contract and runtime shape are planned; no MCP server implementation is visible in main.",
-      "next": "Fixture-backed four-tool MCP server, then wire generated inventory."
-    },
-    {
-      "id": "ux",
-      "name": "Citizen / team UX",
-      "status": "designed",
-      "owner_signal": "UX work package",
-      "sources": [
-        "docs/hackathon-mvp-plan.md",
-        "ideas-dominik/CONTEXT.md"
-      ],
-      "summary": "Open WebUI/reference-client and a minimal builder page are proposed; no UI implementation is visible.",
-      "next": "Validate host integration first; keep builder UI minimal."
-    },
-    {
-      "id": "qa",
-      "name": "Quality / trust / Judge",
-      "status": "designed",
-      "owner_signal": "QA work package",
-      "sources": [
-        "ideas-dominik/CONTEXT.md",
-        "ideas-dominik/docs/OPEN-QUESTIONS.md",
-        "pipeline/EVALS.md",
-        "pipeline/PROVENANCE_AND_TRUST.md"
-      ],
-      "summary": "Evidence discipline, withheld attributes, build floor and eval criteria are well described but not automated.",
-      "next": "Turn evidence checks and acceptance criteria into executable tests."
-    },
-    {
-      "id": "deployment",
-      "name": "Deployment / go-to-market",
-      "status": "designed",
-      "owner_signal": "deployment work package",
-      "sources": [
-        "README.md",
-        "docs/hackathon-mvp-plan.md"
-      ],
-      "summary": "Hosted HTTPS demo, downloadable package and adoption framing are planned; no deployment artifact is visible.",
-      "next": "Choose hosting and prove clean package launch before polish."
-    }
-  ],
-  "pipeline_flow": [
-    "Municipality URL",
-    "Context + reconnaissance",
-    "CrawlPlan / semantic compiler",
-    "HTTP-first fetch + browser fallback",
-    "SourceSnapshot + PageIR",
-    "Small Apertus extraction",
-    "ClaimIR + provenance",
-    "Service inventory",
-    "Review / Judge",
-    "MCP runtime",
-    "Citizen client"
-  ],
+    "evals": [
+      {
+        "step": "Step 1",
+        "metric": "Discovery recall",
+        "target": "vs. a hand-checked service list",
+        "status": "not_measured"
+      },
+      {
+        "step": "Step 1",
+        "metric": "Discovery precision",
+        "target": "municipal services only (Bosco/Gurin)",
+        "status": "not_measured"
+      },
+      {
+        "step": "Step 1",
+        "metric": "Strategy quality",
+        "target": "right mode; no needless broad crawl",
+        "status": "not_measured"
+      },
+      {
+        "step": "Step 1",
+        "metric": "Crawl efficiency",
+        "target": "services and useful sources per 100 requests",
+        "status": "not_measured"
+      },
+      {
+        "step": "Step 2",
+        "metric": "Index match accuracy",
+        "target": "indexed / variant / possible_new correct",
+        "status": "not_measured"
+      },
+      {
+        "step": "Step 2",
+        "metric": "Handling accuracy",
+        "target": "type, interaction, live, external system",
+        "status": "not_measured"
+      },
+      {
+        "step": "Step 2",
+        "metric": "Availability accuracy",
+        "target": "never not_observed → unavailable",
+        "status": "not_measured"
+      },
+      {
+        "step": "Step 2",
+        "metric": "Catalog suggestion quality",
+        "target": "source-backed, genuinely new",
+        "status": "not_measured"
+      },
+      {
+        "step": "Integration",
+        "metric": "Factory readiness",
+        "target": "per service: factory_ready / follow-up / rescout / unusable",
+        "status": "not_measured"
+      }
+    ],
+    "acceptance": [
+      {
+        "check": "One command accepts a municipality URL and identity",
+        "status": "met",
+        "note": "`scout URL --municipality --canton --out` (PR #13)."
+      },
+      {
+        "check": "Recon chooses a typed strategy",
+        "status": "met",
+        "note": "ScoutStrategy from recon via agent or heuristic; heuristic tested (PR #13)."
+      },
+      {
+        "check": "Indexed services are explicitly checked",
+        "status": "met",
+        "note": "Every index entry gets a record; unfound ones are not_observed (PR #13)."
+      },
+      {
+        "check": "New service candidates can be proposed",
+        "status": "met",
+        "note": "possible_new catalog suggestions (PR #13)."
+      },
+      {
+        "check": "Discovered services include authoritative source bundles",
+        "status": "met",
+        "note": "Forms, PDFs and official handoffs kept per service (PR #13)."
+      },
+      {
+        "check": "The model writes a useful handling description",
+        "status": "partial",
+        "note": "Inspector agent exists; only heuristic summaries have run."
+      },
+      {
+        "check": "Output validates as MunicipalityDiscovery",
+        "status": "partial",
+        "note": "Validates in the fixture run once the test bug is fixed; no real run yet."
+      },
+      {
+        "check": "Deterministic mode fetches, snapshots and validates without the model",
+        "status": "partial",
+        "note": "--model-mode off works end to end; raw snapshots are not stored."
+      },
+      {
+        "check": "The Factory consumes the JSON without re-crawling",
+        "status": "open"
+      }
+    ]
+  },
   "git": {
     "main_head": {
-      "sha": "a1e557bcb00edc165f09bb2cf1282e58998700b4",
-      "message": "Updated the concept docs",
-      "at": "2026-09-24T13:19:15Z"
+      "sha": "d6823ff",
+      "message": "feat: update to latest plan",
+      "at": "2026-09-24T17:41:00+02:00"
     },
+    "branches": [
+      {
+        "branch": "service-implementation",
+        "author": "MarkYav",
+        "stages": [
+          "factory"
+        ],
+        "note": "Mark's 4-stage Gemeinde MCP concept + a small scraper. 12 commits behind main. No PR."
+      }
+    ],
     "open_prs": [
       {
-        "number": 3,
-        "title": "docs(pipeline): define adaptive scraping runtime and semantic compiler",
+        "number": 13,
+        "title": "feat(pipeline): start Scout MVP-1 package",
         "author": "blackmath88",
-        "state": "open",
-        "scope": "pipeline",
-        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/3"
+        "branch": "feat/scout-mvp-1",
+        "stages": [
+          "discover",
+          "compile",
+          "contracts"
+        ],
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/13",
+        "note": "Includes #12's docs. 6/7 tests pass (one test bug)."
+      },
+      {
+        "number": 12,
+        "title": "docs: redefine pipeline as Scout agent",
+        "author": "blackmath88",
+        "branch": "docs/scout-pipeline-architecture",
+        "stages": [
+          "discover",
+          "compile"
+        ],
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/12",
+        "note": "The current design. Also contained in #13."
+      },
+      {
+        "number": 11,
+        "title": "feat(pipeline): add Agent Scrap MVP",
+        "author": "blackmath88",
+        "branch": "feat/agent-scrap-mvp",
+        "stages": [
+          "discover"
+        ],
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/11",
+        "note": "Superseded by the Scout runtime in #13."
+      },
+      {
+        "number": 10,
+        "title": "feat(pipeline): add iterative MCP tool grounding loop",
+        "author": "blackmath88",
+        "branch": "feat/pipeline-tool-grounding-loop",
+        "stages": [
+          "foundations"
+        ],
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/10",
+        "note": "1 failing test. Also edits the observatory on the old version."
+      },
+      {
+        "number": 9,
+        "title": "docs(pipeline): shift to service-lead discovery boundary",
+        "author": "blackmath88",
+        "branch": "docs/pipeline-service-lead-boundary",
+        "stages": [],
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/9",
+        "note": "Superseded by #12."
+      },
+      {
+        "number": 7,
+        "title": "fix(pipeline): strengthen prototype crawler baseline",
+        "author": "blackmath88",
+        "branch": "fix/pipeline-scraper-baseline",
+        "stages": [
+          "discover"
+        ],
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/7",
+        "note": "Largely superseded by Agent Scrap."
+      },
+      {
+        "number": 6,
+        "title": "docs: clarify project, pipeline and pilot municipalities",
+        "author": "blackmath88",
+        "branch": "docs/readme-project-pipeline",
+        "stages": [],
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/6",
+        "note": "Superseded by #12's README."
+      },
+      {
+        "number": 5,
+        "title": "feat(pipeline): add first scraper prototype",
+        "author": "blackmath88",
+        "branch": "feat/pipeline-scraper-prototype",
+        "stages": [],
+        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/5",
+        "note": "Files already on main."
+      }
+    ],
+    "merged_prs": [
+      {
+        "number": 8,
+        "title": "feat(handoff): compile crawler output into MCP Service Inventory",
+        "author": "blackmath88",
+        "merged_at": "2026-09-24T15:09:52Z"
       },
       {
         "number": 4,
         "title": "feat(pipeline): add living build observatory",
         "author": "blackmath88",
-        "state": "open",
-        "scope": "pipeline/observatory",
-        "url": "https://github.com/dominik-scherrer/public-ai-challenge/pull/4"
-      }
-    ],
-    "merged_prs": [
-      {
-        "number": 1,
-        "title": "docs: add MMP glossary, ADRs and open questions (ideas-dominik)",
-        "author": "dominik-scherrer",
-        "merged_at": "2026-09-24T12:01:08Z"
+        "merged_at": "2026-09-24T14:32:07Z"
       },
       {
-        "number": 2,
-        "title": "info classification from Mark",
-        "author": "MarkYav",
-        "merged_at": "2026-09-24T12:12:19Z"
+        "number": 3,
+        "title": "docs(pipeline): define adaptive scraping runtime and semantic compiler",
+        "author": "blackmath88",
+        "merged_at": "2026-09-24T14:31:20Z"
       }
     ],
     "recent_commits": [
       {
-        "sha": "a1e557b",
-        "author": "blackmath88",
-        "message": "Updated the concept docs",
-        "at": "2026-09-24T13:19:15Z"
+        "sha": "d6823ff",
+        "author": "Patrick Arnecke",
+        "message": "feat: update to latest plan",
+        "at": "2026-09-24T17:41:00+02:00"
       },
       {
-        "sha": "d347d65",
-        "author": "Dominik Scherrer",
-        "message": "Add work packages section to README",
-        "at": "2026-09-24T12:45:28Z"
+        "sha": "dc9ce67",
+        "author": "Patrick Arnecke",
+        "message": "chore: formatting",
+        "at": "2026-09-24T17:25:00+02:00"
+      },
+      {
+        "sha": "3a839bd",
+        "author": "Patrick Arnecke",
+        "message": "feat: setup openai API calling",
+        "at": "2026-09-24T17:11:00+02:00"
       }
     ]
   },
   "open_questions": [
     {
       "priority": "now",
-      "area": "convergence",
-      "question": "Which architectural source is authoritative when the MVP plan and MMP/ADR documents differ?"
+      "area": "discovery",
+      "question": "Which contract does the Factory build against: Scout's municipality-discovery/v1 or Patrick's discovery.json? They differ on normalized fields vs. handling summaries, and on not_observed."
     },
     {
       "priority": "now",
-      "area": "implementation",
-      "question": "Who owns the first end-to-end executable slice: crawl/extraction, MCP runtime, and integration?"
+      "area": "index",
+      "question": "Service Index v1 has 5 entries (PR #13); the Factory plan standardizes 7 services. Which list is canonical?"
     },
     {
       "priority": "now",
-      "area": "model",
-      "question": "Can Apertus reliably call the MCP tools and perform constrained extraction/classification at the required quality?"
+      "area": "factory",
+      "question": "Which Factory design is the team building: Patrick's fixed 7-tool template, or Mark's per-service generated tools?"
     },
     {
       "priority": "now",
-      "area": "baseline",
-      "question": "When will the municipality baseline/reference corpus be committed and linked to acceptance tests?"
+      "area": "compile",
+      "question": "PydanticAI is in (PR #13). Which model for the first live run — gpt-6-luna now, Apertus as the replacement experiment?"
     },
     {
       "priority": "next",
-      "area": "standards",
-      "question": "Is eCH-0070 a hackathon dependency, later enrichment, or canonical identity layer? Current docs are not fully aligned."
+      "area": "modes",
+      "question": "Which strategy family is built second after broad_small_site: service_directory (Dübendorf) or mixed_content (Bosco/Gurin)?"
     },
     {
       "priority": "next",
-      "area": "governance",
-      "question": "Does a municipality need sign-off before publication, and who is publisher of record?"
-    },
-    {
-      "priority": "next",
-      "area": "runtime",
-      "question": "Which crawler/runtime do we standardize on for the first slice: Crawl4AI or thinner HTTP + Playwright?"
+      "area": "factory",
+      "question": "Are action tools (form submission) in scope? Mark's concept has them; Patrick's plan and the Scout docs exclude them."
     }
   ],
   "next_actions": [
-    "Converge the team on one MVP contract: URL → evidence-backed service inventory → MCP.",
-    "Merge/review PR #3 and make its ingestion boundaries part of the shared implementation plan.",
-    "Commit the baseline/reference corpus and convert Ausserberg + selected municipalities into fixtures.",
-    "Build the first executable vertical slice: fetch → snapshot → extract → validate → inventory.",
-    "Bring up a fixture MCP server with the four planned tools and test a real host/model.",
-    "Turn provenance/Judge principles into automated acceptance checks.",
-    "Keep the observatory repo-wide and refresh it from Git + project evidence, not manual optimism."
+    "Fix the with-statement in pipeline/scout/tests/test_scout.py, then merge PR #13 (it includes #12).",
+    "Run Scout on Binn and Ausserberg with a live model and commit both discovery.json files.",
+    "Close #11, #9, #7, #6 and #5 as superseded; decide what survives from #10's grounding loop.",
+    "Add service_directory to recon + strategy and prove it on Dübendorf.",
+    "Store raw snapshots and a stop reason in the Scout run output.",
+    "Align Service Index v1 (5) with the Factory's 7 standard services.",
+    "Hand the Factory team one real discovery.json and agree it replaces Patrick's discovery.json shape."
   ],
   "tensions": [
     {
-      "title": "MVP scope vs. richer MMP architecture",
-      "detail": "The MVP plan explicitly excludes Dominik's documents from its design, while the wider project contains MMP vocabulary, ADRs and quality/governance concepts. The team needs to decide which parts converge now versus remain post-hackathon."
+      "title": "Three discovery contracts",
+      "stages": [
+        "discovery",
+        "factory"
+      ],
+      "detail": "Scout's municipality-discovery/v1 (handling summaries, not_observed), Patrick's discovery.json (normalized service data, field-level evidence, no not_observed) and Mark's ServiceMention list. The Factory can build against only one."
     },
     {
-      "title": "Commercial baseline vs. Apertus goal",
-      "detail": "The MVP plan uses commercial LLMs for build-time extraction first; the pipeline design aims for a large-planner/small-Apertus execution architecture. This is compatible if treated as baseline → replacement experiment, but should be stated explicitly."
+      "title": "Three Factory designs",
+      "stages": [
+        "factory"
+      ],
+      "detail": "Patrick: fixed template, same 7 tools everywhere, no runtime LLM, no submissions. Mark: an LLM writes Python tools per service, including action tools that submit forms. Scout docs only say the Factory decides the MCP shape."
     },
     {
-      "title": "eCH-0070 timing",
-      "detail": "Research recommends eCH-0070 as canonical service identity; the MVP plan treats it as later enrichment. This is an explicit architectural decision still needing alignment."
+      "title": "Three crawler codebases",
+      "stages": [
+        "discover"
+      ],
+      "detail": "pipeline/prototype (main), pipeline/agent_scrap (PR #11) and pipeline/scout/runtime (PR #13) each implement URL safety, fetching and PageIR. Scout's runtime is the one that matches the design; the others should be retired."
+    },
+    {
+      "title": "Service Index: 5, 7 or 32",
+      "stages": [
+        "index"
+      ],
+      "detail": "Scout's index has 5 entries (PR #13), Patrick's Factory plan standardizes 7 services, and the grounding matrix tracks 32 tool hypotheses. Scout checks every index entry, so the list defines coverage."
+    },
+    {
+      "title": "Observatory edited in two places",
+      "stages": [],
+      "detail": "PR #10 edits observatory/index.html, state.json and REFRESH_PROMPT.md on top of the old version; this redesign ships in its own PR. Whichever merges second has to resolve the conflict."
+    },
+    {
+      "title": "eCH-0070 canonical vs. deferred",
+      "stages": [
+        "compile"
+      ],
+      "detail": "ADR-0001 (accepted) makes eCH-0070 canonical; the Scout build plan explicitly defers universal eCH-0070 mapping."
+    },
+    {
+      "title": "Strategy mode names",
+      "stages": [
+        "modes"
+      ],
+      "detail": "The docs define broad_small_site, service_directory, targeted_large_city and mixed_content; the code has broad_small_site and a generic targeted."
     }
   ],
   "history": [
@@ -278,10 +1041,162 @@
       "detail": "PR #4 introduced the first static build-state dashboard."
     },
     {
-      "at": "2026-09-24T16:27:00+02:00",
+      "at": "2026-09-24T14:18:23Z",
+      "kind": "pr",
+      "title": "Scraper prototype opened",
+      "detail": "PR #5 adds the first executable slice: bounded HTTP crawl, snapshots, PageIR, heuristic detection and a model adapter.",
+      "stages": [
+        "discover"
+      ]
+    },
+    {
+      "at": "2026-09-24T14:27:00Z",
       "kind": "analysis",
       "title": "Observatory widened to project scope",
-      "detail": "The dashboard now integrates repository-wide project streams and Git metadata while preserving pipeline/observatory as the only write location."
+      "detail": "The dashboard integrated repository-wide project streams and Git metadata while keeping pipeline/observatory as the only write location."
+    },
+    {
+      "at": "2026-09-24T14:31:20Z",
+      "kind": "pr",
+      "title": "PR #3 and #4 merged",
+      "detail": "Semantic compiler / runtime docs and the observatory landed on main."
+    },
+    {
+      "at": "2026-09-24T14:35:30Z",
+      "kind": "pr",
+      "title": "README clarification opened",
+      "detail": "PR #6 clarifies project, pipeline and pilot municipalities in the root README."
+    },
+    {
+      "at": "2026-09-24T14:44:24Z",
+      "kind": "commit",
+      "title": "Scrapping baseline tooling on main",
+      "detail": "Service, source, municipality and crawl-report schemas, a provenance validator and browser capture helpers were committed.",
+      "stages": [
+        "provenance"
+      ]
+    },
+    {
+      "at": "2026-09-24T14:47:54Z",
+      "kind": "pr",
+      "title": "Crawler hardened",
+      "detail": "PR #7 grows the prototype test suite from 3 to 11 passing tests: URL normalization, redirects, model fallback, tourism negatives.",
+      "stages": [
+        "discover"
+      ]
+    },
+    {
+      "at": "2026-09-24T14:48:25Z",
+      "kind": "pr",
+      "title": "First Service Inventory handoff",
+      "detail": "PR #8 defines mmp-service-inventory/v0 and ships a seed batch: 26 services from 22 official sources across 7 of 8 municipalities."
+    },
+    {
+      "at": "2026-09-24T15:05:00Z",
+      "kind": "analysis",
+      "title": "Architecture restructured into six stages",
+      "detail": "The observatory modelled the system as Discover → Compile → Verify → Serve → Experience, with Operate spanning all stages."
+    },
+    {
+      "at": "2026-09-24T15:09:52Z",
+      "kind": "pr",
+      "title": "Handoff merged and aligned with minigmeind",
+      "detail": "PR #8 merged. A capability matrix maps inventory capabilities onto Patrick's live minigmeind MCP (~31 tools, dummy data).",
+      "stages": [
+        "factory"
+      ]
+    },
+    {
+      "at": "2026-09-24T15:11:00Z",
+      "kind": "commit",
+      "title": "OpenAI API calling set up",
+      "detail": "Patrick added the openai client, a .env setup and scripts/test_openai.py calling gpt-6-luna.",
+      "stages": [
+        "compile"
+      ]
+    },
+    {
+      "at": "2026-09-24T15:28:06Z",
+      "kind": "pr",
+      "title": "Boundary shifted to Service Leads",
+      "detail": "PR #9: Agent 1 discovers services and source bundles; Agent 2 compiles each into a local MCP capability plan."
+    },
+    {
+      "at": "2026-09-24T15:30:00Z",
+      "kind": "analysis",
+      "title": "Observatory redrawn around four blocks",
+      "detail": "Discovery → Service Compiler → MCP Builder → Citizen Experience, with handoff artifacts between them and Trust wrapping the chain."
+    },
+    {
+      "at": "2026-09-24T15:37:13Z",
+      "kind": "pr",
+      "title": "Tool grounding loop opened",
+      "detail": "PR #10: 32 MCP tools start as dummy hypotheses; only real Agent Scrap observations can ground them. 5 of 6 tests pass.",
+      "stages": [
+        "evals"
+      ]
+    },
+    {
+      "at": "2026-09-24T15:41:00Z",
+      "kind": "commit",
+      "title": "MVP plan becomes an MCP server factory",
+      "detail": "Patrick's plan: discovery agent → validated discovery.json → builder agent inside a fixed server template exposing the same 7 tools everywhere.",
+      "stages": [
+        "factory"
+      ]
+    },
+    {
+      "at": "2026-09-24T16:32:32Z",
+      "kind": "pr",
+      "title": "Agent Scrap MVP opened",
+      "detail": "PR #11: bounded crawl, PageIR, heuristic + optional model classification, source bundling, ServiceLead[] and tool observations. 6/6 tests pass.",
+      "stages": [
+        "discover",
+        "bundles"
+      ]
+    },
+    {
+      "at": "2026-09-24T16:51:05Z",
+      "kind": "commit",
+      "title": "Mark's Gemeinde MCP concept",
+      "detail": "service-implementation branch: four stages, with an LLM generating Python MCP tools per service, including action tools.",
+      "stages": [
+        "factory"
+      ]
+    },
+    {
+      "at": "2026-09-24T17:03:34Z",
+      "kind": "pr",
+      "title": "Pipeline redefined as Scout",
+      "detail": "PR #12: Municipality URL + Service Index → Step 1 Discover → Step 2 Understand/Compile → MunicipalityDiscovery → MCP Factory. PydanticAI for reasoning, Python for control.",
+      "stages": [
+        "discover",
+        "compile",
+        "discovery"
+      ]
+    },
+    {
+      "at": "2026-09-24T17:15:00Z",
+      "kind": "analysis",
+      "title": "Observatory rebuilt around Scout",
+      "detail": "The main view is now the Scout architecture itself — inputs, both steps, contracts, runtime layers, benchmark — with live build status on every card."
+    },
+    {
+      "at": "2026-09-24T17:19:00Z",
+      "kind": "pr",
+      "title": "Scout MVP-1 package opened",
+      "detail": "PR #13: pipeline/scout with Pydantic contracts, a 5-service index, recon, PydanticAI strategy agent and service inspector (with fallbacks), source bundles incl. the Binn subdomain handoff, possible_new suggestions and MunicipalityDiscovery output. 6/7 tests pass.",
+      "stages": [
+        "discover",
+        "compile",
+        "contracts"
+      ]
+    },
+    {
+      "at": "2026-09-24T17:45:00Z",
+      "kind": "analysis",
+      "title": "Observatory refreshed for Scout MVP-1",
+      "detail": "Contracts, Service Index, strategy choice, service discovery, source bundles and availability move to implemented; the discovery contract and Step 2 inspection to in progress."
     }
   ]
 }

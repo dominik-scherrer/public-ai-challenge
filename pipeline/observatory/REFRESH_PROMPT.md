@@ -27,7 +27,7 @@ Act as an evidence-based information orchestrator for the whole hackathon build.
 
 Explain:
 - what the project is trying to build
-- where each workstream stands
+- where each Scout part stands (planned / in progress / needs refinement / implemented)
 - what changed in Git
 - what is implemented versus merely designed
 - where team approaches converge or conflict
@@ -46,31 +46,49 @@ Inspect:
 7. tests/evals/fixtures/baselines
 8. open-question and ADR documents
 
+## Scout model (`scout` in state.json)
+
+The observatory is centred on **Scout**, the agent this workstream builds:
+
+```text
+Municipality URL + Service Index
+→ Step 1 Scout / Discover   → ScoutFindings[]
+→ Step 2 Understand / Compile → MunicipalityDiscovery JSON (municipality-discovery/v1)
+→ MCP Factory (downstream, kept abstract)
+```
+
+Source of truth for the design: `pipeline/README.md`, `ARCHITECTURE.md`, `SERVICE_MODEL.md`, `BUILD_PLAN.md`, `EVALS.md` (currently on PR #12, `docs/scout-pipeline-architecture`, until merged).
+
+Shape:
+- `scout.inputs[]`: Municipality URL, Service Index.
+- `scout.steps[]`: `{id: discover|compile, name, tagline, tone, output, cards[]}`. Cards are the diagram boxes: Recon, Choose strategy, Scouting strategy, Discover services, Source bundles / Semantic service inspection, Handling interpretation, Availability + confidence, Compile municipality contract. `tags` + `tag_kind` (`strategy`, `handling`, `availability`, `plain`) render the chips.
+- `scout.artifacts[]`: `findings` (ScoutFindings[]) and `discovery` (MunicipalityDiscovery, with `keys`).
+- `scout.downstream`: the MCP Factory. Keep it short; it is not tracked module by module.
+- `scout.layers[]`: `ai` (PydanticAI) and `det` (Python runtime), each with `items[]`.
+- `scout.foundations[]`: contracts, Service Index (`ref_item: "index"`), provenance, evals.
+- `scout.maturity[]`: architectural questions answered `yes`, `partial` or `no`.
+- `scout.benchmark[]`: Binn, Ausserberg, Dübendorf, Bosco/Gurin, Zürich with expected strategy, purpose and `run` (`none` until a committed Scout run exists).
+
+Every card, artifact, input, foundation and layer item carries `status`, and where useful `where`, `summary`, `next` and `evidence: [{path, ref?}]` (`ref` = branch when not `main`).
+
 ## Status vocabulary
 
-Use only:
-- `not_started`
-- `designed`
-- `in_progress`
-- `implemented`
-- `blocked`
-- `deferred`
+Use only: `planned` → `in_progress` → `needs_refinement` → `implemented`.
 
-Research/document artifacts can be `implemented` as research outputs, but do not use that to imply runtime code exists.
+- `planned`: specified in docs or not at all; no code.
+- `in_progress`: code exists for part of it.
+- `needs_refinement`: code exists but matches an earlier design and has to change for Scout (e.g. ServiceLead → ScoutFinding), or has failing tests.
+- `implemented`: code exists, is tested, and matches the Scout design. Say in `where` if it is only on an open PR.
 
-## Project streams
+Docs never move anything past `planned`. Hand-seeded data is not a Scout run.
 
-At minimum assess:
-- Product / MMP concept
-- Municipality/service research
-- Data acquisition / ingestion
-- MVP implementation
-- MCP runtime
-- UX / reference client
-- Quality / Judge / provenance
-- Deployment / GTM
+## Evidence section (`evidence` in state.json)
 
-Add/remove streams only when repository evidence warrants it.
+Keep current:
+- `tests`: each suite per branch with `passed` / `total`. Run them; don't infer.
+- `grounding`: counts per level from `pipeline/grounding/tool-grounding-matrix.json`. Only real Scout / Agent Scrap observations move a tool out of `dummy`.
+- `evals`: Scout metrics from `pipeline/EVALS.md`, grouped by `step`, `status: not_measured` until a real number exists (then add `value`).
+- `acceptance`: Scout MVP acceptance from `pipeline/BUILD_PLAN.md`, status `open`, `partial` or `met`, and a one-line note.
 
 ## Git section
 
@@ -100,6 +118,13 @@ Do not silently reconcile disagreements. Name them and identify the decision nee
 - `pipeline/observatory/state.json`
 - `pipeline/observatory/history.jsonl`
 - embedded state in `pipeline/observatory/index.html`
+
+### Embedded state in `index.html`
+
+The page is static and must open from `file://`, so it carries a copy of `state.json`.
+Replace only the single line `window.__BUILD_STATE__=…;` inside `<script id="build-state">` with the minified contents of `state.json`. Do not edit the layout or rendering code during a refresh.
+
+List branches that have no PR yet under `git.branches`. Tag `open_prs`, `branches`, `tensions` and `history` entries with `stages: [...]` — any step id (`discover`, `compile`) or item id (card, artifact, input, foundation, `factory`) so they link to the architecture view. Open-question `area` should be a stage id when one fits.
 
 Preserve history. Append only material changes.
 
