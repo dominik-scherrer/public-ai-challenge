@@ -31,32 +31,32 @@ Implement a pipeline that reads scouted services, extracts HTML and PDF content,
 | Skill | `python-cli` from `.dev_flow/skills/` | Phase 5 | CLI structure. |
 
 ## Progress
-- [ ] Phase 1 — Project Setup & Scouting
+- [x] Phase 1 — Project Setup & Scouting
 - [ ] Phase 2 — Content Extraction & Synthesis
-- [ ] Phase 3 — Tool Generation
+- [ ] Phase 3 — Inventory Generation
 - [ ] Phase 4 — MCP Server
 - [ ] Phase 5 — End-to-End Pipeline
 
 ## Phases
 
-### Phase 1 — Project Setup & Scouting [TODO]
+### Phase 1 — Project Setup & Scouting [DONE]
 **Depends on:** none
 **Implements:** [SP_GMP_01](./gemeinde_mcp.sp.md#SP_GMP_01)
-**Verify:** Module import succeeds. JSON parses into `ScoutedService`. Validate `SynthesizedContent` and `GeneratedTools` instances.
+**Verify:** Module import succeeds. JSON parses into `ScoutedService`. Validate `SynthesizedContent` and `ExtractedData` instances.
 
 What to create:
 
 | Entity | Module | Purpose |
 |--------|--------|---------|
 | Dependencies | `pyproject.toml` | Add `pydantic-ai[openai]`, `mcp`, `beautifulsoup4`, `markdownify`, `pymupdf`. |
-| Models | `src/public_ai_challenge/gemeinde_mcp/models.py` | Define `ScoutedService`, `SynthesizedContent`, `GeneratedTools`. |
+| Models | `src/public_ai_challenge/gemeinde_mcp/models.py` | Define `ScoutedService`, `SynthesizedContent`, `ExtractedData`. |
 | Dataclass | `src/public_ai_challenge/gemeinde_mcp/models.py` | Define `ServiceProcessingDeps` with `http_client` and `model_name`. |
 | Test data | `input/scouted_services.json` | 2-3 entries using Ausserberg URLs (mix of `available: true/false`). |
 
 Notes:
 - `ScoutedService` attributes: `name`, `description`, `urls`, `available`.
 - `SynthesizedContent` attributes: `service_name`, `markdown`, `source_urls`.
-- `GeneratedTools` attributes: `service_name`, `python_code`, `tool_names`.
+- `ExtractedData` attributes: `service_name`, `json_data`.
 
 ### Phase 2 — Content Extraction & Synthesis [TODO]
 **Depends on:** Phase 1
@@ -79,7 +79,7 @@ Notes:
 - Synthesized output saves to `output/{service.name}.md`.
 - Returns raw fetched contents for Phase 3.
 
-### Phase 3 — Tool Generation [TODO]
+### Phase 3 — Inventory Generation [TODO]
 **Depends on:** Phase 1
 **Implements:** [SP_GMP_03](./gemeinde_mcp.sp.md#SP_GMP_03)
 **Verify:** SP_GMP_05_03, SP_GMP_05_04, SP_GMP_05_10
@@ -88,13 +88,13 @@ What to create:
 
 | Entity | Module | Purpose |
 |--------|--------|---------|
-| `tool_gen_agent` | `src/public_ai_challenge/gemeinde_mcp/agents.py` | Generates `GeneratedTools` containing action and information tools. |
-| `@tool_gen_agent.output_validator` | `src/public_ai_challenge/gemeinde_mcp/agents.py` | Strips code fences, parses syntax, raises `ModelRetry` on error. |
-| `generate_tools` | `src/public_ai_challenge/gemeinde_mcp/tool_generator.py` | Runs agent using synthesized Markdown and raw content. |
+| `data_extraction_agent` | `src/public_ai_challenge/gemeinde_mcp/agents.py` | Generates `ExtractedData` containing typed JSON attributes. |
+| `@data_extraction_agent.output_validator` | `src/public_ai_challenge/gemeinde_mcp/agents.py` | Validates JSON against schema, raises `ModelRetry` on error. |
+| `generate_inventory` | `src/public_ai_challenge/gemeinde_mcp/data_generator.py` | Runs agent using synthesized Markdown and raw content. |
 
 Notes:
-- Output saves to `output/{service.name}_tools.py`.
-- Empty file writes when `service.available` is false or retries exhaust.
+- Output saves to `output/{service.name}_inventory.json`.
+- Minimal file writes when `service.available` is false or retries exhaust.
 
 ### Phase 4 — MCP Server [TODO]
 **Depends on:** Phase 1
@@ -110,8 +110,8 @@ What to create:
 
 Notes:
 - Registers `output/{name}.md` files as MCP Resources with URI `gemeinde://services/{name}`.
-- Registers public functions from `output/{name}_tools.py` as MCP Tools.
-- Implements cross-service tools: `list_services`, `list_tools`, `search_services`.
+- Exposes generic built-in MCP Tools that read `output/{name}_inventory.json`.
+- Implements cross-service tools: `list_services`, `search_services`.
 
 ### Phase 5 — End-to-End Pipeline [TODO]
 **Depends on:** Phase 2, Phase 3, Phase 4

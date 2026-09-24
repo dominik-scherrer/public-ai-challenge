@@ -26,11 +26,9 @@ The pipeline consists of four stages. This team owns and builds Stage 3 (Service
 ## 2. Domain Model  {#C_GMP_02}
 ### 2.1. Key Entities  {#C_GMP_02_01}
 - **ScoutedService**: A JSON record containing a service name, description, availability status, and source URLs.
-- **Markdown content file**: A synthesized text document containing the unified information about a specific service.
-- **Generated tool file**: A Python file containing LLM-generated functions for a specific service.
-- **MCP Resource**: A read-only data item exposed by the MCP server, mapped to the Markdown content file.
-- **MCP Tool**: An executable action exposed by the MCP server, mapped to the functions in the generated tool file. Tools are categorized as action tools (perform actions) or informational tools (extract facts).
-- **Cross-service tools**: Built-in MCP tools written in the server code that operate across multiple services.
+- **Service Inventory**: A typed JSON document (`mmp-service-inventory/v0`) describing the service attributes, contacts, procedures, and evidence references.
+- **MCP Resource**: A read-only data item exposed by the MCP server, mapped to the Service Inventory or markdown.
+- **Cross-service tools**: Built-in MCP tools written in the server code that read the deterministic JSON state of the server.
 
 ### 2.2. Data Flows  {#C_GMP_02_02}
 The pipeline executes in two phases and four stages:
@@ -40,27 +38,27 @@ Phase 1: Scouting (External)
 Stage 1: Website Crawl (crawls HTML and PDFs) -> Stage 2: Service Detection (matches content to predefined services)
 
 Phase 2: Building (Internal)
-Stage 2 -> Stage 3: Service Processing (fetches URLs, extracts text, generates tools) -> Stage 4: MCP Server (loads resources and tools, runs server)
+Stage 2 -> Stage 3: Service Processing (fetches URLs, extracts text, generates JSON Inventory) -> Stage 4: MCP Server (loads inventories and runs server)
 ```
 
 - **Stage 1**: Crawls the provided website URL.
 - **Stage 2**: Analyzes crawled data to produce a list of ScoutedService records.
-- **Stage 3**: Processes each ScoutedService record to output one Markdown content file and one generated tool file.
-- **Stage 4**: Starts the MCP server using the output files from Stage 3.
+- **Stage 3**: Processes each ScoutedService record to output a structured Service Inventory JSON file (per ADR-0003).
+- **Stage 4**: Starts the MCP server using the generated inventory data.
 
 ## 3. Mechanisms  {#C_GMP_03}
 ### 3.1. Core Algorithm  {#C_GMP_03_01}
 Stage 3 executes the following steps sequentially for each ScoutedService:
 
-1. **Availability Check**: If the ScoutedService indicates the service is unavailable, write a Markdown content file stating the service is absent and write an empty generated tool file. Proceed to the next ScoutedService.
-2. **Fetch**: Execute HTTP GET requests for each URL in the ScoutedService concurrently. Extract text from HTML or PDF content. Write the text to temporary Markdown fragment files. Save the raw source content.
-3. **Extract and Synthesize**: Execute the Content Synthesis Agent (a PydanticAI agent) providing the temporary Markdown fragment files as input. The agent returns a `SynthesizedContent` Pydantic model. Write the model data to the Markdown content file.
-4. **Generate Tools**: Execute the Tool Generation Agent (a PydanticAI agent) providing the synthesized Markdown, raw source content, and ScoutedService metadata as input. The agent returns a `GeneratedTools` Pydantic model. Write the model data to the generated tool file.
+1. **Availability Check**: If the ScoutedService indicates the service is unavailable, write an inventory file stating `unavailable` status.
+2. **Fetch**: Execute HTTP GET requests for each URL in the ScoutedService concurrently. Extract text from HTML or PDF content.
+3. **Extract and Synthesize**: Execute the Content Synthesis Agent to generate a clean markdown representation.
+4. **Generate Inventory Data**: Execute the Data Extraction Agent (a PydanticAI agent) providing the synthesized Markdown and source content as input. The agent returns a `ServiceInventory` Pydantic model (compliant with `mmp-service-inventory/v0`). Write the model to a JSON file.
 
 ### 3.2. Edge Cases  {#C_GMP_03_02}
 - **URL Fetch Failures**: Network errors or HTTP error responses during the fetch step halt processing for the specific URL.
 - **LLM Failures**: Timeout or connection errors from the LLM provider raise exceptions.
-- **Syntax Errors**: The Tool Generation Agent validates generated code using `ast.parse`. Syntax errors raise a `ModelRetry` exception, which prompts the LLM to self-correct the code.
+- **Schema Errors**: The Data Extraction Agent validates generated JSON against the schema. Validation errors trigger LLM self-correction.
 
 ## 4. Integration Points  {#C_GMP_04}
 ### 4.1. Dependencies  {#C_GMP_04_01}
@@ -76,19 +74,19 @@ Stage 3 executes the following steps sequentially for each ScoutedService:
 
 ## 5. Design Decisions  {#C_GMP_DEC}
 
-### DEC_01 — Declarative tool definitions with generic executor  {#C_GMP_DEC_01}
+### DEC_01 — Declarative tool definitions vs generated Python code {#C_GMP_DEC_01}
 **Status:** resolved
-**Question:** Should the system use declarative JSON tool definitions parsed by a generic executor instead of generating Python code?
+**Question:** Should the system use declarative JSON definitions or generate Python code?
 **Options:**
 
 | Option | Description |
 |--------|-------------|
-| Generate Python code | Selected |
-| Declarative JSON + generic executor | Rejected |
+| Declarative JSON (Service Inventory) | Selected |
+| Generate Python code | Rejected |
 
-**Decision:** Generate Python code.
-**Rationale:** Generated Python code provides flexibility for handling custom interaction flows in the initial version.
-**Rejected because:** A generic executor must anticipate and handle specific interaction types. Interaction schemas do not accommodate custom flows efficiently.
+**Decision:** Declarative JSON (Service Inventory).
+**Rationale:** Conforms to ADR-0003 and ADR-0007. Generating Python code for public infrastructure is a security risk and creates maintenance overhead.
+**Rejected because:** LLM-generated code cannot be safely verified by the Judge without a complex sandbox, and breaks the paradigm of a single generic MMP server.
 
 ### DEC_02 — Declarative tool definitions with runtime LLM interpreter  {#C_GMP_DEC_02}
 **Status:** resolved
@@ -97,11 +95,11 @@ Stage 3 executes the following steps sequentially for each ScoutedService:
 
 | Option | Description |
 |--------|-------------|
-| Generate Python code | Selected |
+| Deterministic parsing of JSON | Selected |
 | Declarative JSON + runtime LLM | Rejected |
 
-**Decision:** Generate Python code.
-**Rationale:** Eliminates runtime LLM dependency for tool execution.
+**Decision:** Deterministic parsing of JSON.
+**Rationale:** The MMP server should read standard attributes and map them deterministicly to tools.
 **Rejected because:** A runtime LLM adds 2 to 10 seconds of latency per tool call and incurs ongoing token usage costs.
 
 ### DEC_03 — LLM-generated cross-service tools  {#C_GMP_DEC_03}

@@ -25,16 +25,15 @@
 Invariants:
 - If `available` is true, `urls` must contain at least one valid URL.
 
-### 01_02. Generated Tool File  {#SP_GMP_01_02}
+### 01_02. Service Inventory  {#SP_GMP_01_02}
 
 | Field | Type | Required | Default | Constraints | Description |
 |---|---|---|---|---|---|
-| file_path | string | Yes | — | Matches `output/{name}_tools.py` | Path to the generated Python module. |
-| functions | list[function] | Yes | — | Syntactically valid Python | Contains tool functions with `@tool_meta(category="...", kind="action"\|"informational")` decorator, typed parameters, docstrings, and executable code. |
+| file_path | string | Yes | — | Matches `output/{name}_inventory.json` | Path to the generated JSON inventory. |
+| data | dict | Yes | — | Conforms to `mmp-service-inventory/v0` | Contains structured service attributes, contacts, procedures, and evidence. |
 
 Invariants:
-- `functions` must be parsable by `ast.parse`.
-- Tool functions return a string or dict.
+- `data` must pass JSON schema validation for `mmp-service-inventory/v0`.
 
 ### 01_03. ServiceProcessingDeps  {#SP_GMP_01_03}
 
@@ -54,16 +53,15 @@ Invariants:
 | markdown | string | Yes | — | — | Unified Markdown document. |
 | source_urls | list[string] | Yes | — | — | URLs used for synthesis. |
 
-### 01_05. GeneratedTools  {#SP_GMP_01_05}
+### 01_05. ExtractedData  {#SP_GMP_01_05}
 
 | Field | Type | Required | Default | Constraints | Description |
 |---|---|---|---|---|---|
 | service_name | string | Yes | — | Matches ScoutedService | Name of the service. |
-| python_code | string | Yes | — | Syntactically valid Python | Complete Python module source code. |
-| tool_names | list[string] | Yes | — | — | Names of generated tool functions. |
+| json_data | dict | Yes | — | Valid against schema | The extracted Service Inventory data. |
 
 Invariants:
-- `python_code` must pass `ast.parse` validation.
+- `json_data` must be structurally valid.
 
 ### 01_06. ServiceResource  {#SP_GMP_01_06}
 
@@ -253,26 +251,26 @@ Per-service processing lifecycle:
 
 | ID | Description |
 |---|---|
-| SP_GMP_03_01 | Synthesized Markdown for available services contains cohesive text without HTML tags. |
-| SP_GMP_03_02 | Synthesized Markdown for unavailable services states the service is unavailable, with an empty `_tools.py` file. |
-| SP_GMP_03_03 | Action tools match form fields, possess semantic names (e.g., `register_move_in`), and specify `kind="action"`. |
-| SP_GMP_03_04 | Informational tools extract correct facts (e.g., office hours), possess semantic names, and specify `kind="informational"`. |
-| SP_GMP_03_05 | MCP server with 5 service files exposes 5 resources with `gemeinde://services/{name}` URIs. |
-| SP_GMP_03_06 | Reading `gemeinde://services/{name}` returns the correct Markdown content. |
-| SP_GMP_03_07 | MCP server registers all functions from non-empty `_tools.py` files as MCP tools with correct metadata. |
-| SP_GMP_03_09 | `list_services()` returns all loaded services. |
+| SP_GMP_05_01 | Synthesized Markdown for available services contains cohesive text without HTML tags. |
+| SP_GMP_05_02 | Synthesized Markdown for unavailable services states the service is unavailable, with an empty `_tools.py` file. |
+| SP_GMP_05_03 | Action tools match form fields, possess semantic names (e.g., `register_move_in`), and specify `kind="action"`. |
+| SP_GMP_05_04 | Informational tools extract correct facts (e.g., office hours), possess semantic names, and specify `kind="informational"`. |
+| SP_GMP_05_05 | MCP server with 5 service files exposes 5 resources with `gemeinde://services/{name}` URIs. |
+| SP_GMP_05_06 | Reading `gemeinde://services/{name}` returns the correct Markdown content. |
+| SP_GMP_05_07 | MCP server registers all functions from non-empty `_tools.py` files as MCP tools with correct metadata. |
+| SP_GMP_05_09 | `list_services()` returns all loaded services. |
 
 ### 05_02. Invariant Checks  {#SP_GMP_05_02}
 
 | ID | Description |
 |---|---|
-| SP_GMP_03_10 | PydanticAI output validator raises `ModelRetry` for invalid Python code, and the agent self-corrects within 3 retries, producing code that passes `ast.parse`. |
+| SP_GMP_05_10 | PydanticAI output validator raises `ModelRetry` for invalid Python code, and the agent self-corrects within 3 retries, producing code that passes `ast.parse`. |
 
 ### 05_03. Integration Scenarios  {#SP_GMP_05_03}
 
 | ID | Description |
 |---|---|
-| SP_GMP_03_08 | Calling an action tool executes the HTTP POST to the correct URL and returns an outcome description. |
+| SP_GMP_05_08 | Calling an action tool executes the HTTP POST to the correct URL and returns an outcome description. |
 
 ### 05_04. Edge Cases and Boundaries  {#SP_GMP_05_04}
 
