@@ -9,6 +9,7 @@ This folder is the canonical design record for the project — promoted here fro
 - [`CONTEXT.md`](CONTEXT.md) — glossary (ubiquitous language: Build, Judge, Service Inventory, Withheld Attribute, Build Floor, Handoff, ...). Use these terms in code, docs and slides.
 - [`adr/`](adr/) — architecture decisions (all `status: accepted`)
 - [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) — decisions deliberately deferred (OQ-1 municipality sign-off, OQ-2 public-model tool-calling reliability)
+- [`judge-rubrics.md`](judge-rubrics.md) — outline of the six candidate Judge rubrics (three implemented in `pipeline/judge/`, three proposed), for team review
 
 ## ADRs and where they stand against current work (2026-09-24)
 
