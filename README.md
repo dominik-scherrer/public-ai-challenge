@@ -195,3 +195,4 @@ To send a different prompt:
 ```sh
 uv run python scripts/test_openai.py "Say hello in German."
 ```
+
