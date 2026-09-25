@@ -29,7 +29,6 @@ async def run_demo():
     print("[*] MODEL MUNICIPALITY PROTOCOL (MMP) - PIPELINE DEMO")
     print("=================================================================\n")
 
-    input_path = Path(__file__).parent / "input" / "scouted_services.json"
     output_dir = Path(__file__).parent / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
 

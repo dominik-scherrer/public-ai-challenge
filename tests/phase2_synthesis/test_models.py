@@ -24,9 +24,7 @@ def test_models_import():
 
 
 def test_scouted_services_json_parsing():
-    input_path = Path("demo/input/scouted_services.json")
-    if not input_path.exists():
-        input_path = Path("input/scouted_services.json")
+    input_path = Path(__file__).parent / "fixtures" / "scouted_services.json"
     assert input_path.exists()
 
     with open(input_path, "r", encoding="utf-8") as f:

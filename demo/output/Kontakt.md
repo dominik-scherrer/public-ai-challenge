@@ -1,36 +1,36 @@
-# Kontakt Service Information
+# Kontakt Service of Gemeinde Ausserberg
 
-The municipality of Ausserberg provides a contact service through an HTML form or request endpoint, allowing users to reach out to their offices for inquiries or further assistance.
+The Kontakt service offered by the municipality of Ausserberg allows residents and interested parties to reach out through an HTML form or request endpoint available on their official website. This facilitates efficient communication with the municipal office.
+
+## Contact Information
+
+- **Address:** 
+  - Gemeinde Ausserberg, Kanzlei, 3938 Ausserberg
+- **Phone:** +41 27 948 07 80
+- **Fax:** +41 27 948 07 81
+- **Email:** [gemeinde@ausserberg.ch](mailto:gemeinde@ausserberg.ch)
 
 ## How to Contact
 
-You can easily find the responsible person for a specific office by using the filtering system provided in their [directory of offices](https://www.ausserberg.ch/gemeinschaft/verwaltung/aemter).
+Please use the [contact form](https://www.ausserberg.ch/allgemein/standort-kontakt) available on the website. The form requires the following information:
 
-### Contact Details
+- Anrede (Salutation): Herr (Mr.) / Frau (Ms.)
+- Vorname (First Name)*
+- Name (Last Name)*
+- Adresse (Address)
+- PLZ / Ort (Postal Code / City)
+- Telefon (Phone)
+- E-Mail (Email)*
+- Ihre Nachricht (Your Message)*
 
-**Gemeinde Ausserberg**  
-Kanzlei  
-3938 Ausserberg  
+Fields marked with an asterisk (*) are mandatory. You must also read and accept the [Privacy Policy](https://www.ausserberg.ch/zusaetzliches/datenschutz) before submitting.
 
-- **Phone**: +41 27 948 07 80  
-- **Fax**: +41 27 948 07 81  
-- **Email**: [gemeinde@ausserberg.ch](mailto:gemeinde@ausserberg.ch)
+## Additional Resources
 
-### Contact Form
+- **Responsible Persons Search:** If you're looking for a responsible individual from a specific office, you can easily find them using the [filter option available here](https://www.ausserberg.ch/gemeinschaft/verwaltung/aemter).
 
-To get in touch, fill out the contact form with the following required fields:
+## Anti-Spam Measures
 
-- **Salutation**: Mr. or Mrs.
-- **First Name**
-- **Last Name**
-- **Address**
-- **Postal Code / City**
-- **Phone Number**
-- **Email**
-- **Your Message**
+- A Captcha Code is required (presented visually and must be confirmed) to prevent spam.
 
-You must also confirm acceptance of the [privacy policy](https://www.ausserberg.ch/zusaetzliches/datenschutz) and complete the spam protection captcha.
-
-![Captcha](https://www.ausserberg.ch/?action=captcha)
-
-Visit the [contact page](https://www.ausserberg.ch/allgemein/standort-kontakt) to access the form.
+For any additional questions or detailed inquiries, feel free to reach out to the provided contact points.
