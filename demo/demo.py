@@ -18,12 +18,10 @@ from public_ai_challenge.core.interfaces import (
     ScoutProtocol,
     SynthesisProtocol,
 )
-from public_ai_challenge.phase1_scout_pipeline.adapter import FileScoutAdapter
-from public_ai_challenge.phase2_synthesis_gemeinde.adapter import (
-    McpServerGemeindeAdapter,
-    SynthesisGemeindeAdapter,
-)
-from public_ai_challenge.phase3_judge_pipeline.adapter import JudgePipelineAdapter
+from public_ai_challenge.phase1_scout.adapter import FinalScoutAdapter
+from public_ai_challenge.phase2_synthesis.adapter import FinalSynthesisAdapter
+from public_ai_challenge.phase4_mcp.adapter import McpServerGemeindeAdapter
+from public_ai_challenge.phase3_judge.adapter import JudgePipelineAdapter
 
 
 async def run_demo():
@@ -44,8 +42,8 @@ async def run_demo():
     # -------------------------------------------------------------
     # 1. Initialize Pipeline Stage Implementations (Protocols)
     # -------------------------------------------------------------
-    scout: ScoutProtocol = FileScoutAdapter(input_path)
-    synthesis: SynthesisProtocol = SynthesisGemeindeAdapter(model_name=model_name)
+    scout: ScoutProtocol = FinalScoutAdapter(use_agent=False)  # Using heuristic agent to speed up demo
+    synthesis: SynthesisProtocol = FinalSynthesisAdapter(model_name=model_name)
     judge: JudgeProtocol = JudgePipelineAdapter(build_floor=0.0)
     mcp_server: McpServerProtocol = McpServerGemeindeAdapter()
 

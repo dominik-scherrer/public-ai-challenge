@@ -64,7 +64,7 @@ What was implemented:
 **Verify:** Conformance test in `tests/test_core_interfaces/test_interfaces.py`.
 
 What was implemented:
-- `JudgePipelineAdapter` (`phase3_judge_pipeline/adapter.py`) implementing `JudgeProtocol`.
+- `JudgePipelineAdapter` (`phase3_judge/adapter.py`) implementing `JudgeProtocol`.
 
 ### Phase 5 — Update Demo/Orchestrator [DONE]
 

@@ -20,7 +20,7 @@
 - **Goal (why):** Prepare the project for final jury presentation by separating demo/test artifacts, consolidating scattered documentation into `docs/legacy_notes/`, and organizing the independent subprojects (Scout, Gemeinde MCP, Judge, PublicAI) into explicit phased directories under `src/public_ai_challenge/` side by side.
 - **Target state:** 
   1. `docs/` contains official `architecture/`, preserved dev-flow documents, and a dedicated `legacy_notes/pipeline_working_notes/` folder.
-  2. `src/public_ai_challenge/` holds `phase1_scout_pipeline`, `phase2_synthesis_gemeinde`, `phase3_judge_pipeline`, and `alternative_pipeline_publicai`.
+  2. `src/public_ai_challenge/` holds `phase1_scout_pipeline`, `phase2_synthesis_gemeinde`, `phase3_judge`, and `alternative_pipeline_publicai`.
   3. `tests/` structured matching each phase.
   4. `demo/` completely separated from production source code with working `demo.py`.
   5. Retired subprojects and scripts moved cleanly to `archive/`.
