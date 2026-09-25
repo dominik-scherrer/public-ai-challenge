@@ -10,17 +10,26 @@ requires-python = ">=3.14"
 dependencies = [
     "beautifulsoup4>=4.15.0",
     "httpx>=0.28.1",
+    "logfire>=5.1.0",
     "markdownify>=1.2.3",
     "mcp>=2.2.0",
     "openai>=3.19.2",
+    "pydantic>=2.13.0,<3",
     "pydantic-ai[openai]>=2.49.0",
     "pymupdf>=1.28.2",
     "python-dotenv>=1.2.3",
+    "pyyaml>=6.0",
+    "rich>=15.0.0",
+    "typer>=0.15.0",
+    "tzdata",
 ]
 
 [project.scripts]
 public-ai-challenge = "public_ai_challenge:main"
-gemeinde-mcp-pipeline = "public_ai_challenge.gemeinde_mcp.pipeline:main"
+gemeinde-mcp-pipeline = "public_ai_challenge.phase2_synthesis_gemeinde.pipeline:main"
+scout = "public_ai_challenge.phase1_scout_pipeline.app:main"
+judge = "public_ai_challenge.phase3_judge_pipeline.pipeline:main"
+factory = "public_ai_challenge.alternative_pipeline_publicai.cli:app"
 
 [build-system]
 requires = ["uv_build>=0.12.16,<0.13.0"]
@@ -28,8 +37,14 @@ build-backend = "uv_build"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
 
 [dependency-groups]
 dev = [
+    "mypy>=1.15.0",
     "pytest>=9.1.1",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.0",
+    "types-pyyaml",
 ]

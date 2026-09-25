@@ -14,7 +14,7 @@
 > **Specification:** [SP_GMP](./gemeinde_mcp.sp.md)
 > **Plan:** [gemeinde_mcp.plan.md](./gemeinde_mcp.plan.md)
 >
-> Converts a Gemeinde (Swiss municipality) website into a running Model Context Protocol (MCP) server. A 4-stage pipeline extracts website content, synthesizes information, generates Python tool functions via Large Language Models (LLMs), and serves the resulting resources and tools to LLM clients.
+> Converts a Gemeinde (Swiss municipality) website into a Model Context Protocol (MCP) compatible Service Inventory. A pipeline extracts website content, synthesizes information, runs quality checks via a Judge, and serves the resulting JSON data to LLM clients via a generic stateless MMP server.
 
 ## 1. Philosophy  {#C_GMP_01}
 ### 1.1. Core Principle  {#C_GMP_01_01}
@@ -28,7 +28,7 @@ The pipeline consists of four stages. This team owns and builds Stage 3 (Service
 - **ScoutedService**: A JSON record containing a service name, description, availability status, and source URLs.
 - **Service Inventory**: A typed JSON document (`mmp-service-inventory/v0`) describing the service attributes, contacts, procedures, and evidence references.
 - **MCP Resource**: A read-only data item exposed by the MCP server, mapped to the Service Inventory or markdown.
-- **Cross-service tools**: Built-in MCP tools written in the server code that read the deterministic JSON state of the server.
+- **Service Card**: A standardized view of a service generated from the JSON Inventory.
 
 ### 2.2. Data Flows  {#C_GMP_02_02}
 The pipeline executes in two phases and four stages:
@@ -38,7 +38,7 @@ Phase 1: Scouting (External)
 Stage 1: Website Crawl (crawls HTML and PDFs) -> Stage 2: Service Detection (matches content to predefined services)
 
 Phase 2: Building (Internal)
-Stage 2 -> Stage 3: Service Processing (fetches URLs, extracts text, generates JSON Inventory) -> Stage 4: MCP Server (loads inventories and runs server)
+Stage 2 -> Stage 3: Service Processing (fetches URLs, extracts text, generates JSON Inventory) -> Stage 4: Judge (validates the generated JSON inventories for provenance, coverage, and injection). Stage 5: MMP Server (runs a generic stateless MCP server using the valid inventories)
 ```
 
 - **Stage 1**: Crawls the provided website URL.
@@ -70,68 +70,91 @@ Stage 3 executes the following steps sequentially for each ScoutedService:
 
 ### 4.2. API Surface  {#C_GMP_04_02}
 - **Contract A (Scouted Services List)**: The input from Stage 2 to Stage 3. A JSON array of ScoutedService objects. Each object contains `name` (string), `description` (string), `urls` (array of strings), and `available` (boolean).
-- **Contract B (Stage 3 Output)**: The output from Stage 3 to Stage 4. Two files per service: `output/{name}.md` (Markdown content file) and `output/{name}_tools.py` (generated tool file).
+- **Contract B (Stage 3 Output)**: The output from Stage 3 to Stage 4. A typed `ServiceInventory` JSON file and a synthesized `output/{name}.md` Markdown content file.
 
 ## 5. Design Decisions  {#C_GMP_DEC}
 
 ### DEC_01 — Declarative tool definitions vs generated Python code {#C_GMP_DEC_01}
-**Status:** resolved
+
+> **Status:** resolved
+> **Date:** 2026-09-24
+
 **Question:** Should the system use declarative JSON definitions or generate Python code?
-**Options:**
 
-| Option | Description |
+**Options considered:**
+| Option | Consequence |
 |--------|-------------|
-| Declarative JSON (Service Inventory) | Selected |
-| Generate Python code | Rejected |
+| A — Declarative JSON (Service Inventory) | Limits execution to safe, deterministic paths but requires structured schemas. |
+| B — Generate Python code | Security risk for public infrastructure, requires sandbox, harder to verify. |
 
-**Decision:** Declarative JSON (Service Inventory).
+**Decision:** A — Declarative JSON (Service Inventory)
 **Rationale:** Conforms to ADR-0003 and ADR-0007. Generating Python code for public infrastructure is a security risk and creates maintenance overhead.
 **Rejected because:** LLM-generated code cannot be safely verified by the Judge without a complex sandbox, and breaks the paradigm of a single generic MMP server.
 
 ### DEC_02 — Declarative tool definitions with runtime LLM interpreter  {#C_GMP_DEC_02}
-**Status:** resolved
+
+> **Status:** resolved
+> **Date:** 2026-09-24
+
 **Question:** Should the system use a runtime LLM to interpret declarative tool definitions during execution?
-**Options:**
 
-| Option | Description |
+**Options considered:**
+| Option | Consequence |
 |--------|-------------|
-| Deterministic parsing of JSON | Selected |
-| Declarative JSON + runtime LLM | Rejected |
+| A — Deterministic parsing of JSON | Server relies on strictly structured schemas without interpreting intent on the fly. |
+| B — Declarative JSON + runtime LLM | High latency per tool call and ongoing token usage costs. |
 
-**Decision:** Deterministic parsing of JSON.
+**Decision:** A — Deterministic parsing of JSON
 **Rationale:** The MMP server should read standard attributes and map them deterministicly to tools.
 **Rejected because:** A runtime LLM adds 2 to 10 seconds of latency per tool call and incurs ongoing token usage costs.
 
 ### DEC_03 — LLM-generated cross-service tools  {#C_GMP_DEC_03}
-**Status:** resolved
+
+> **Status:** resolved
+> **Date:** 2026-09-24
+
 **Question:** Should an LLM generate the cross-service tools (e.g., listing loaded services)?
-**Options:**
 
-| Option | Description |
+**Options considered:**
+| Option | Consequence |
 |--------|-------------|
-| Built-in server code | Selected |
-| LLM-generated tools | Rejected |
+| A — Built-in server code | Single implementation to maintain in the generic server codebase. |
+| B — LLM-generated tools | Redundant logic generation for deterministic queries. |
 
-**Decision:** Write cross-service tools directly in the server codebase.
+**Decision:** A — Built-in server code
 **Rationale:** Cross-service operations read the deterministic state of the server.
 **Rejected because:** LLM generation provides no benefit for deterministic operations.
 
-### DEC_04 — Markdown resources without informational tools  {#C_GMP_DEC_04}
-**Status:** resolved
-**Question:** Should the MCP server omit informational tools and require clients to read the full Markdown resources?
-**Options:**
+### DEC_04 — No Generated Tools  {#C_GMP_DEC_04}
 
-| Option | Description |
+> **Status:** resolved
+> **Date:** 2026-09-25
+
+**Question:** Should the pipeline generate informational Python tools alongside data?
+
+**Options considered:**
+| Option | Consequence |
 |--------|-------------|
-| Generate resources and informational tools | Selected |
-| Expose only resources | Rejected |
+| A — Generate resources and informational tools | Violates ADR-0003, introduces security risks, prevents the single generic MMP server architecture. |
+| B — Data only (Service Inventory) | Conforms to ADR-0003. The MMP server interprets standard attributes to expose the Service Card without executing untrusted code. |
 
-**Decision:** Generate both Markdown resources and informational tools.
-**Rationale:** Informational tools extract targeted facts and return the specific facts to the client, which uses fewer tokens.
-**Rejected because:** Reading full Markdown documents for specific factual questions increases token consumption and latency for the client.
+**Decision:** B — Data only (Service Inventory)
+**Rationale:** Generating Python code is banned for the MMP server per ADR-0003. A Build must produce data (Service Inventory) that the generic, stateless MMP server consumes.
+**Rejected because:** Option A breaks the security model of the public infrastructure.
 
 ## Changelog
 
 | Date | Change |
 |------|--------|
+| 2026-09-25 | Refactored design decisions to dev-flow structure |
 | 2026-09-24 | Initial version (v6.0.0) |
+
+
+### DEC_05 — Canonical Service Model  {#C_GMP_DEC_05}
+> **Status:** resolved (ADR-0001)
+> **Date:** 2026-09-25
+**Decision:** eCH-0070 is the canonical Service model. The builder maps scouted services to the official eCH-0070 Leistungs-IDs.
+
+### DEC_06 — Municipality sign-off before publish?  {#C_GMP_DEC_06}
+> **Status:** open (OQ-1)
+**Question:** Should there be a human sign-off gate by the Municipality before a Build goes live? Currently open. A Build without review is served with a "not yet verified" label. Needs a governance answer, not a technical one.
