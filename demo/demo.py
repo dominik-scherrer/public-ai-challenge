@@ -1,4 +1,4 @@
-"""End-to-End Demo showcasing live content scraping, inventory generation, and MCP queries."""
+"""End-to-End Demo showcasing live content scraping, inventory generation, Judge evaluation, and MCP queries using pipeline interfaces."""
 
 import asyncio
 import json
@@ -6,92 +6,101 @@ import os
 from pathlib import Path
 import sys
 from dotenv import load_dotenv
-import httpx
-from pydantic_ai.models.test import TestModel
 
 load_dotenv()
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from public_ai_challenge.phase2_synthesis_gemeinde.agents import (
-    data_extraction_agent,
-    process_service_content,
-    synthesis_agent,
+from public_ai_challenge.core.interfaces import (
+    JudgeProtocol,
+    McpServerProtocol,
+    ScoutProtocol,
+    SynthesisProtocol,
 )
-from public_ai_challenge.phase2_synthesis_gemeinde.data_generator import generate_inventory
-from public_ai_challenge.phase2_synthesis_gemeinde.models import ScoutedService, ServiceProcessingDeps
-from public_ai_challenge.phase2_synthesis_gemeinde.server import create_mcp_server
+from public_ai_challenge.phase1_scout_pipeline.adapter import FileScoutAdapter
+from public_ai_challenge.phase2_synthesis_gemeinde.adapter import (
+    McpServerGemeindeAdapter,
+    SynthesisGemeindeAdapter,
+)
+from public_ai_challenge.phase3_judge_pipeline.adapter import JudgePipelineAdapter
 
 
 async def run_demo():
     print("=================================================================")
-    print("[*] GEMEINDE MCP PIPELINE - LIVE DEMO")
+    print("[*] MODEL MUNICIPALITY PROTOCOL (MMP) - PIPELINE DEMO")
     print("=================================================================\n")
 
     input_path = Path(__file__).parent / "input" / "scouted_services.json"
     output_dir = Path(__file__).parent / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"[+] 1. Loading scouted services from '{input_path}'...")
-    with open(input_path, "r", encoding="utf-8") as f:
-        services_data = json.load(f)
-
-    services = [ScoutedService.model_validate(s) for s in services_data]
-    for s in services:
-        status_text = "[Available]" if s.available else "[Unavailable]"
-        print(f"    - {s.name:<25} | {status_text:<15} | URLs: {len(s.urls)}")
-
-    print("\n[+] 2. Fetching real live web content & generating inventories...")
     has_api_key = bool(os.getenv("OPENAI_API_KEY"))
     model_name = "openai:gpt-4o" if has_api_key else "test"
+    print(f"[*] Configuration:")
     print(f"    OpenAI API Key: {'Detected (using live LLM)' if has_api_key else 'Not set (using demo synthesized models)'}")
+    print(f"    Output Directory: {output_dir}")
 
-    async with httpx.AsyncClient() as client:
-        deps = ServiceProcessingDeps(http_client=client, model_name=model_name)
+    # -------------------------------------------------------------
+    # 1. Initialize Pipeline Stage Implementations (Protocols)
+    # -------------------------------------------------------------
+    scout: ScoutProtocol = FileScoutAdapter(input_path)
+    synthesis: SynthesisProtocol = SynthesisGemeindeAdapter(model_name=model_name)
+    judge: JudgeProtocol = JudgePipelineAdapter(build_floor=0.0)
+    mcp_server: McpServerProtocol = McpServerGemeindeAdapter()
 
-        for service in services:
-            print(f"\n    Processing service: '{service.name}'")
-            if not has_api_key and service.available:
-                synth_data = {
-                    "service_name": service.name,
-                    "markdown": f"# {service.name}\n\nOffizielle Dienstleistung der Gemeinde Ausserberg.\n\n"
-                                f"## Beschreibung\n{service.description}\n\n"
-                                f"## Online Schalter\nDie Anmeldung kann online eingereicht werden.",
-                    "source_urls": service.urls,
-                }
-                inv_data = {
-                    "service_name": service.name,
-                    "json_data": {
-                        "schema": "mmp-service-inventory/v0",
-                        "id": f"ch.vs.ausserberg.{service.name.lower().replace(' ', '_')}",
-                        "title": service.name,
-                        "category": "municipal_administration",
-                        "summary": service.description,
-                        "requirements": ["Gueltiger Ausweis", "Mietvertrag / Kaufvertrag"],
-                        "fees": [{"amount": 20, "currency": "CHF", "description": "Meldegebuehr"}],
-                        "contacts": [{"department": "Gemeindeverwaltung Ausserberg", "phone": "+41 27 946 21 54"}],
-                        "handoffs": [{"url": service.urls[0] if service.urls else "", "type": "online_form"}],
-                    },
-                }
-                with synthesis_agent.override(model=TestModel(custom_output_args=synth_data)), \
-                     data_extraction_agent.override(model=TestModel(custom_output_args=inv_data)):
-                    synthesized, raw_contents = await process_service_content(service, deps, output_dir=output_dir)
-                    await generate_inventory(service, synthesized.markdown, raw_contents, deps, output_dir=output_dir)
-            else:
-                synthesized, raw_contents = await process_service_content(service, deps, output_dir=output_dir)
-                await generate_inventory(service, synthesized.markdown, raw_contents, deps, output_dir=output_dir)
+    # -------------------------------------------------------------
+    # Phase 1: Scout Stage
+    # -------------------------------------------------------------
+    print("\n[+] [Phase 1: Scout] Scouting municipal services...")
+    scout_result = await scout.scout(
+        url="https://www.ausserberg.ch",
+        municipality="Ausserberg",
+        canton="VS",
+        output_dir=output_dir,
+    )
+    print(f"    Municipality: {scout_result.municipality_name} ({scout_result.canton})")
+    print(f"    Discovered services: {len(scout_result.services)}")
+    for s in scout_result.services:
+        status_text = "[Available]" if s.available else "[Unavailable]"
+        print(f"      - {s.name:<25} | {status_text:<15} | URLs: {len(s.urls)}")
 
-            safe_name = "".join(c if c.isalnum() or c in ("-", "_") else "_" for c in service.name)
-            md_file = output_dir / f"{safe_name}.md"
-            json_file = output_dir / f"{safe_name}_inventory.json"
-            print(f"       -> Markdown generated: {md_file.name} ({md_file.stat().st_size} bytes)")
-            print(f"       -> Inventory generated: {json_file.name} ({json_file.stat().st_size} bytes)")
+    # -------------------------------------------------------------
+    # Phase 2: Synthesis Stage
+    # -------------------------------------------------------------
+    print("\n[+] [Phase 2: Synthesis] Synthesizing markdown & extracting service inventories...")
+    inventory_records = await synthesis.synthesize(scout_result, output_dir=output_dir)
+    for rec in inventory_records:
+        md_name = Path(rec.markdown_path).name if rec.markdown_path else "N/A"
+        inv_name = Path(rec.inventory_path).name if rec.inventory_path else "N/A"
+        print(f"      - {rec.service_name:<25} -> {md_name} & {inv_name}")
 
-    print("\n[+] 3. Starting FastMCP Server & Loading Municipal Services...")
-    server = create_mcp_server(output_dir=output_dir, server_name="Ausserberg-MMP-Server")
+    # -------------------------------------------------------------
+    # Phase 3: Judge Stage (Quality Gate)
+    # -------------------------------------------------------------
+    print("\n[+] [Phase 3: Judge] Running automated quality gate evaluation...")
+    judge_report = await judge.evaluate(
+        inventory_records=inventory_records,
+        scout_result=scout_result,
+        dry_run=True,
+    )
+    print(f"    Build ID: {judge_report.build_id}")
+    print(f"    Gate Status: {'[PASSED]' if judge_report.passed else '[BLOCKED]'}")
+    print(f"    Coverage Ratio: {judge_report.coverage_ratio * 100:.1f}%")
+    print(f"    Evaluated findings: {len(judge_report.findings)}")
+    print(f"    Withheld fields (unsupported claims): {len(judge_report.withheld_fields)}")
 
-    print("\n[+] 4. Simulating MCP Client Invocations:")
+    # -------------------------------------------------------------
+    # Phase 4: MCP Serving Stage
+    # -------------------------------------------------------------
+    print("\n[+] [Phase 4: MCP Serving] Starting FastMCP Server & Loading Municipal Services...")
+    server = mcp_server.create_server(
+        inventory_records=inventory_records,
+        output_dir=output_dir,
+        server_name="Ausserberg-MMP-Server",
+    )
+
+    print("\n[+] Simulating MCP Client Invocations:")
 
     # Tool call: list_services
     list_res = await server.call_tool("list_services", {})
@@ -120,7 +129,7 @@ async def run_demo():
         print(f"               | {line}")
 
     print("\n=================================================================")
-    print("[OK] DEMO COMPLETED SUCCESSFULLY! All components working smoothly.")
+    print("[OK] FULL PIPELINE COMPLETED SUCCESSFULLY VIA ABSTRACT INTERFACES!")
     print("=================================================================\n")
 
 

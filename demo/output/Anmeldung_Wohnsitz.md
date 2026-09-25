@@ -1,21 +1,25 @@
 # Anmeldung Wohnsitz
 
-The "Anmeldung Wohnsitz" is the online form for registering a change of address to Ausserberg. This process involves filling out mandatory fields to update personal and contact details.
+This online form is for registering a move to Ausserberg.
 
 ## Required Information
 
-- **Salutation:** Herr, Frau
-- **First Name (Vorname):** Required
-- **Last Name (Name):** Required
-- **Address of Previous Municipality (Adresse Wegzugsgemeinde):** Required
-- **New Address in Ausserberg (Neue Adresse in Ausserberg):** Required
-- **Phone Number (Telefon):** Optional
-- **Email (E-Mail):** Optional
-- **Your Message (Ihre Nachricht):** Required, used for any additional information.
+- **Salutation:** Herr / Frau
+- **First Name:** (Mandatory)
+- **Last Name:** (Mandatory)
+- **Address of Previous Municipality:** (Mandatory)
+- **New Address in Ausserberg:** (Mandatory)
 
-## Declaration
+## Additional Information
 
-By completing the form, you confirm that you have read and accepted the [Privacy Policy](https://www.ausserberg.ch/zusaetzliches/datenschutz). This is a required declaration.
+- **Phone Number:**
+- **Email Address:**
+- **Your Message:** (Mandatory)
 
-## Source
-For more information, visit the [official page](https://www.ausserberg.ch/gemeinschaft/verwaltung/verwaltung/online-schalter/anmeldung-wohnsitz).
+## Privacy Agreement
+
+To complete the registration, you must acknowledge that you have read and accepted the [Privacy Policy](https://www.ausserberg.ch/zusaetzliches/datenschutz). This is a mandatory field.
+
+---
+
+For further details and to access the form, visit the [Anmeldung Wohnsitz page](https://www.ausserberg.ch/gemeinschaft/verwaltung/verwaltung/online-schalter/anmeldung-wohnsitz).

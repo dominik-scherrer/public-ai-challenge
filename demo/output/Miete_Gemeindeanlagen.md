@@ -1,97 +1,94 @@
 # Miete Gemeindeanlagen
 
-## Introduction
-The **Miete Gemeindeanlagen** service allows individuals or organizations to rent municipal facilities or equipment through an online form. This tool replaces the traditional paper form, streamlining the application process. The municipal office will review and approve requests as usual.
+## Overview
+Miete Gemeindeanlagen offers an online form to request and rent municipal facilities or equipment. This digital method replaces the traditional paper form, and requests continue to be reviewed and approved by the municipal office.
 
-## Application Process
-### General Information (Mandatory Fields)
-- **First Name, Last Name**
-- **Address, Postal Code, Town**
-- **Email Address**
-- **Phone Number**
-- **Acting On Behalf Of: Association or Organization**
+## Application Form Fields
+To rent facilities, the following information is required:
+- **Personal Details**: 
+  - First and Last Name (Mandatory)
+  - Address, Postal Code, City (Mandatory)
+  - Email Address (Mandatory)
+  - Phone Number (Mandatory)
+  - Acting on behalf of an Organization (Mandatory)
 
-### Usage
-- **Purpose of Use**
-- **Date and Time of Use**: Include setup and preparation.
-- **End Time** of the Event
+## Usage Details
+- **Purpose of Use** (Mandatory)
+- **Date and Time**: 
+  - Start (including setup) (Mandatory)
+  - End (Mandatory)
 
-## Facilities Available for Rent
-
-### Multi-purpose Hall (MZH)
-- **Gymnasium**
-- **Stage**
-- **Equipment Room**
-- **Kitchen (Gas Stove)**
-- **Dishes**
-- **Practice Room**
-- **Parking Lot**
+## Available Facilities
+### Multi-Purpose Hall (MZH)
+- Gymnasium
+- Stage
+- Equipment Room
+- Kitchen (Gas Stove)
+- Dishes
+- Practice Room
+- Parking
 
 ### Old School Building
-- **Classroom (Ground Floor)**
-- **Classroom (1st Floor)**
-- **Classroom (2nd Floor)**
-- **Parking - School Building**
+- Ground Floor Classroom
+- First Floor Classroom
+- Second Floor Classroom
+- Schoolhouse Parking
 
-### Municipal Building
-- **Burgerstube**
-- **Cultural Room**
-- **Meeting Room RB**
+### Town Hall
+- Burger Parlor
+- Cultural Room
+- RB Meeting Room
 
 ### Hehbirch Center
-- **Practice Venue**
-- **Meeting Room**
-- **Parking - Hehbirch**
+- Practice Room
+- Meeting Room
+- Hehbirch Parking
 
 ### Sports Field
-- **Canteen**
-- **Grill**
-- **Sports Field Area**
-- **Changing Rooms**
+- Canteen
+- Grill
+- Sports Field Grounds
+- Locker Rooms
 
 ### Bielhüs Cultural Spaces
-- **Entire Building**
-- **Bakery (includes baking)**
-- **Multimedia Room (with Kitchen)**
-- **Upper Floor Lounge**
+- Entire Building
+- Bakery (with Baking)
+- Multimedia Room (with Kitchen)
+- Upper Floor Parlor
 
-### Marien Chapel
-- **Marien Chapel (including lounge)**
+### Marienkapelle
+- Marien Chapel (including lounge)
 
-### Miscellaneous Equipment
+## Various Equipment Rental
 - **Portable Projector**: CHF 30.00
 - **Outdoor Microphone System**: CHF 150.00
-- **Standing Tables**: CHF 5.00 per table
-- **Festive Table Arrangements**: CHF 10.00 per set
-- **Stage Elements**: CHF 20.00 per element
+- **Standing Tables**: CHF 5.00 each
+- **Banquet Tables and Benches**: CHF 10.00 each
+- **Stage Elements**: CHF 20.00 each
 - **Raclette Oven**: CHF 20.00
-- **Gas**: CHF 40.00 (with or without gas)
+- **Gas**: CHF 40.00 (Included/Not Included)
 
-## Special Terms and Conditions
+## Special Conditions
 The applicant agrees to:
-- Use the facilities with care.
-- Adhere to the user regulations.
-- Follow instructions of the caretaker staff.
-- Pay the required usage fee.
-- Not cook in the Burgerstube (raclette allowed in the lobby).
-- Compensate for any damage caused by improper behavior.
-- Lay out carpet for festive operations in the MZH.
-- Comply with the smoking ban in all municipal rooms.
+- Use the facilities with due care
+- Comply with the user regulations
+- Follow the instructions of the caretaker staff
+- Pay the usage fee
+- Avoid cooking in the Burger parlor (Raclette allowed in the anteroom)
+- Be liable for any damage caused by inappropriate behavior
+- Lay carpet in MZH during events with seating
+- Adhere to the no-smoking policy in all municipal areas
 
-Event organizers are responsible for:
-- **Parking Order, Safety, Quiet Hours, Police Hours (3:00 AM)**
-- **Age Limit Compliance, Cleaning under Caretaker Supervision**
+For **events**, the organizer is responsible for:
+- Parking order / Safety / Night quiet / Adhering to the police curfew at 03:00 AM
+- Age restrictions / Supervised cleaning by the caretaker
 
-For postal services, contact the responsible Samaritan association.
+If postal services are needed, please contact the appropriate Samaritan association.
 
-### Agreements
-- I accept the aforementioned terms and conditions.
-- [Privacy Policy](https://www.ausserberg.ch/zusaetzliches/datenschutz) acceptance is mandatory.
+## Acknowledgments
+- Acceptance of the above conditions is mandatory.
+- [Disclaimer of Privacy Policy](https://www.ausserberg.ch/zusaetzliches/datenschutz) acceptance is required.
 
-### File Uploads
-- Select files to upload.
+To initiate a booking, fill in the form with the necessary details and upload any required documents. Please direct any inquiries or requests for postal service assistance to the municipal office or relevant organization.
 
-## Comments
-- Provide any additional remarks related to the rental request. 
-
-For more details and to access the application form, visit [Miete Gemeindeanlagen](https://www.ausserberg.ch/gemeinschaft/informationen/antraege-gesuche-reglemente/miete-gemeindeanlagen).
+For complete details, visit the [Miete Gemeindeanlagen Official Page](https://www.ausserberg.ch/gemeinschaft/informationen/antraege-gesuche-reglemente/miete-gemeindeanlagen).

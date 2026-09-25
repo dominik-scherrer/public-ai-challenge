@@ -8,7 +8,7 @@ from typing import Self
 
 import pytest
 from pydantic_ai import models
-from test_pipeline import RetainedCrawler, fixture_agents
+from .test_pipeline import RetainedCrawler, fixture_agents
 from typer.testing import CliRunner
 
 from public_ai_challenge.alternative_pipeline_publicai.agents import FactoryAgents
