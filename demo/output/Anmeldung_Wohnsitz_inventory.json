@@ -1,0 +1,18 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "id": "anmeldung-wohnsitz-ausserberg",
+  "title": "Anmeldung Wohnsitz",
+  "category": "Residential Registration",
+  "summary": "Online form for registering a move to Ausserberg.",
+  "requirements": [
+    "Completion of the online form with all required fields"
+  ],
+  "fees": [],
+  "documents": [],
+  "contacts": [
+    "Gemeinde Ausserberg"
+  ],
+  "handoffs": [
+    "https://www.ausserberg.ch/gemeinschaft/verwaltung/verwaltung/online-schalter/anmeldung-wohnsitz"
+  ]
+}

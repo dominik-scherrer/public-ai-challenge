@@ -6,6 +6,8 @@ This file is a **dashboard** — a thin index over the task files in [`tasks/`](
 
 | Task | Phase | Status | Contributors | Updated |
 |------|-------|--------|--------------|---------|
+| [task_20260925_define_interfaces](tasks/task_20260925_define_interfaces.md) — Define Pipeline Interfaces | plan | in-progress | antigravity | 2026-09-25 11:05 |
+| [task_20260925_reorganize_phases](tasks/task_20260925_reorganize_phases.md) — Reorganize Pipeline Phases | plan | review-pending | antigravity | 2026-09-25 10:57 |
 
 ## Recently Completed
 

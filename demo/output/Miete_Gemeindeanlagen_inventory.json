@@ -1,0 +1,57 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "id": "miete-gemeindeanlagen-ausserberg",
+  "title": "Miete Gemeindeanlagen",
+  "category": "Facility Rental",
+  "summary": "The Miete Gemeindeanlagen service enables individuals or organizations to rent municipal facilities or equipment through an online form, with requests reviewed by the municipal office.",
+  "requirements": [
+    "Use facilities with care",
+    "Adhere to user regulations",
+    "Follow caretaker staff instructions",
+    "Pay usage fee",
+    "Lay out carpet for festive operations in MZH",
+    "Smoking ban in all municipal rooms",
+    "Parking order, safety, and quiet hours compliance",
+    "Compensation for damage caused by improper behavior",
+    "Acceptance of privacy policy"
+  ],
+  "fees": [
+    {
+      "item": "Portable Projector",
+      "cost": "CHF 30.00"
+    },
+    {
+      "item": "Outdoor Microphone System",
+      "cost": "CHF 150.00"
+    },
+    {
+      "item": "Standing Tables",
+      "cost": "CHF 5.00 per table"
+    },
+    {
+      "item": "Festive Table Arrangements",
+      "cost": "CHF 10.00 per set"
+    },
+    {
+      "item": "Stage Elements",
+      "cost": "CHF 20.00 per element"
+    },
+    {
+      "item": "Raclette Oven",
+      "cost": "CHF 20.00"
+    },
+    {
+      "item": "Gas",
+      "cost": "CHF 40.00 (with or without gas)"
+    }
+  ],
+  "documents": [
+    "None specified, but may include uploads"
+  ],
+  "contacts": [
+    "Samaritan association for postal services"
+  ],
+  "handoffs": [
+    "https://www.ausserberg.ch/gemeinschaft/informationen/antraege-gesuche-reglemente/miete-gemeindeanlagen"
+  ]
+}

@@ -1,0 +1,25 @@
+[project]
+name = "municipality-mcp"
+version = "1.0.0"
+description = "Read-only municipal service snapshot MCP server"
+requires-python = ">=3.14"
+dependencies = [
+    "mcp==2.2.0",
+    "pydantic==2.13.5",
+]
+
+[project.scripts]
+municipality-mcp = "publicai.runtime:main"
+
+[build-system]
+requires = ["uv_build==0.12.16"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["pytest==9.1.1"]
+
+[tool.uv]
+exclude-newer = "7 days"
+
+[tool.uv.build-backend]
+module-name = "publicai"

@@ -1,0 +1,6 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "service_name": "Bauberatung",
+  "status": "unavailable",
+  "available": false
+}
