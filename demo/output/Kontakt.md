@@ -1,41 +1,36 @@
-# Kontakt Service Documentation
+# Kontakt Service Information
 
-The "Kontakt" service allows users to communicate with the Municipality of Ausserberg through an HTML form or a request endpoint.
+The municipality of Ausserberg provides a contact service through an HTML form or request endpoint, allowing users to reach out to their offices for inquiries or further assistance.
 
-## Contact Information
+## How to Contact
 
-**Municipality of Ausserberg**  
+You can easily find the responsible person for a specific office by using the filtering system provided in their [directory of offices](https://www.ausserberg.ch/gemeinschaft/verwaltung/aemter).
+
+### Contact Details
+
+**Gemeinde Ausserberg**  
 Kanzlei  
 3938 Ausserberg  
 
-**Phone:** +41 27 948 07 80  
-**Fax:** +41 27 948 07 81  
-**Email:** [gemeinde@ausserberg.ch](mailto:gemeinde@ausserberg.ch)  
+- **Phone**: +41 27 948 07 80  
+- **Fax**: +41 27 948 07 81  
+- **Email**: [gemeinde@ausserberg.ch](mailto:gemeinde@ausserberg.ch)
 
-## Contact Form Fields
+### Contact Form
 
-To reach out through the "Kontakt" service, users must fill out the following fields:
+To get in touch, fill out the contact form with the following required fields:
 
-- **Salutation:** Herr / Frau
-- **First Name** (mandatory)
-- **Last Name** (mandatory)
+- **Salutation**: Mr. or Mrs.
+- **First Name**
+- **Last Name**
 - **Address**
 - **Postal Code / City**
-- **Telephone**
-- **Email** (mandatory)
-- **Your Message** (mandatory)
+- **Phone Number**
+- **Email**
+- **Your Message**
 
-Users must confirm their understanding and acceptance of the [Privacy Policy](https://www.ausserberg.ch/zusaetzliches/datenschutz).
+You must also confirm acceptance of the [privacy policy](https://www.ausserberg.ch/zusaetzliches/datenschutz) and complete the spam protection captcha.
 
-### CAPTCHA Verification
-Users are required to complete a CAPTCHA verification to submit the form successfully. ![Captcha](https://www.ausserberg.ch/?action=captcha)
+![Captcha](https://www.ausserberg.ch/?action=captcha)
 
-## Related Resources
-
-If you are looking for a specific person in a particular office of the municipality, you can find them easily through the filtered directory:
-
-- [Overview of Offices](https://www.ausserberg.ch/gemeinschaft/verwaltung/aemter)
-
-## Legal Notices
-
-By using the contact form, you agree to our terms and have acknowledged our privacy policy.
+Visit the [contact page](https://www.ausserberg.ch/allgemein/standort-kontakt) to access the form.

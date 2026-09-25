@@ -1,4 +1,4 @@
-# Gemeinde MCP Pipeline — Specification  {#SP_GMP}
+﻿# Gemeinde MCP Pipeline — Specification  {#SP_GMP}
 
 > **Code:** SP_GMP
 > **Status:** draft
@@ -253,7 +253,7 @@ Per-service processing lifecycle:
 |---|---|
 | SP_GMP_05_01 | Synthesized Markdown for available services contains cohesive text without HTML tags. |
 | SP_GMP_05_02 | Synthesized Markdown for unavailable services states the service is unavailable, with a minimal inventory file. |
-| SP_GMP_05_03 | Action handoffs match form fields, possess semantic names, and point to valid municipality links. |
+
 | SP_GMP_05_04 | Informational facts extract correct attributes (e.g., office hours, fees, requirements). |
 | SP_GMP_05_05 | MCP server with service files exposes resources with `gemeinde://services/{name}` URIs. |
 | SP_GMP_05_06 | Reading `gemeinde://services/{name}` returns the correct Markdown content. |
@@ -264,7 +264,7 @@ Per-service processing lifecycle:
 
 | ID | Description |
 |---|---|
-| SP_GMP_05_10 | PydanticAI output validator raises `ModelRetry` for invalid Python code, and the agent self-corrects within 3 retries, producing code that passes `ast.parse`. |
+| SP_GMP_05_10 | PydanticAI output validator ensures JSON structure conforms to mmp-service-inventory/v0 |
 
 ### 05_03. Integration Scenarios  {#SP_GMP_05_03}
 
@@ -284,37 +284,79 @@ Per-service processing lifecycle:
 Output files in the `output/` directory can be deleted. The pipeline can be re-run at any time. The pipeline maintains no persistent state outside the output directory.
 
 ## 07. Design Decisions  {#SP_GMP_DEC}
+
 ### DEC_01 — How to detect interactions in HTML?  {#SP_GMP_DEC_01}
-**Context**: We need to identify actions a user can take on a service webpage.
-**Considered Options**:
-1. Mechanical HTML scanning: Rule-based script scans HTML for forms, links, widgets, generating JSON interactions.
-2. LLM-based tool generation: PydanticAI agent analyzes HTML/PDF and synthesized content to generate Python tools.
-**Decision**: Use LLM-based tool generation.
-**Rationale**: Mechanical scanning cannot create informational tools, produces generic names, and cannot understand form purpose. LLM provides semantic names and identifies information needs.
+
+> **Status:** resolved
+> **Date:** 2026-09-24
+
+**Question:** How should the system identify actions a user can take on a service webpage?
+
+**Options considered:**
+| Option | Consequence |
+|--------|-------------|
+| A — Mechanical HTML scanning | Rule-based script scans HTML for forms, links, widgets, generating JSON interactions. |
+| B — LLM-based tool generation | PydanticAI agent analyzes HTML/PDF and synthesized content to generate Python tools. |
+
+**Decision:** B — LLM-based tool generation
+**Rationale:** Mechanical scanning cannot create informational tools, produces generic names, and cannot understand form purpose. LLM provides semantic names and identifies information needs.
+**Rejected because:** A produces generic names and misses form purpose.
 
 ### DEC_02 — How to execute tools?  {#SP_GMP_DEC_02}
-**Context**: We need to execute the identified tools.
-**Considered Options**:
-1. Generated Python code: LLM generates Python code representing tools, executed by the server.
-2. Declarative tool definitions with generic executor: LLM generates JSON, interpreted by generic executor.
-**Decision**: Use generated Python code. (Declarative tool definitions are deferred.)
-**Rationale**: A generic executor must handle all possible interaction types, which is complex. Python code allows flexible interactions.
+
+> **Status:** resolved
+> **Date:** 2026-09-24
+
+**Question:** How should the identified tools be executed?
+
+**Options considered:**
+| Option | Consequence |
+|--------|-------------|
+| A — Generated Python code | LLM generates Python code representing tools, executed by the server. |
+| B — Declarative tool definitions with generic executor | LLM generates JSON, interpreted by generic executor. |
+
+**Decision:** A — Generated Python code
+**Rationale:** A generic executor must handle all possible interaction types, which is complex. Python code allows flexible interactions.
+**Rejected because:** B is too complex.
 
 ### DEC_03 — Should tools be interpreted by LLM at runtime?  {#SP_GMP_DEC_03}
-**Context**: We need a mechanism to execute declarative definitions if adopted.
-**Considered Options**:
-1. Runtime LLM interpreter: LLM interprets declarative definitions at runtime to execute actions.
-2. Direct execution: Tools execute directly as Python code.
-**Decision**: Direct execution. (Runtime interpreter is deferred.)
-**Rationale**: Runtime LLM adds cost and latency (2–10 seconds) per tool call.
+
+> **Status:** resolved
+> **Date:** 2026-09-24
+
+**Question:** Should tools be interpreted by LLM at runtime?
+
+**Options considered:**
+| Option | Consequence |
+|--------|-------------|
+| A — Direct execution | Tools execute directly as Python code. |
+| B — Runtime LLM interpreter | LLM interprets declarative definitions at runtime to execute actions. |
+
+**Decision:** A — Direct execution
+**Rationale:** Runtime LLM adds cost and latency (2-10 seconds) per tool call.
+**Rejected because:** B adds too much latency and cost.
 
 ### DEC_04 — Which LLM client framework to use?  {#SP_GMP_DEC_04}
-**Context**: We need a library to interact with LLMs.
-**Considered Options**:
-1. PydanticAI: Provides typed `BaseModel` outputs, `ModelRetry` self-healing, and dependency injection.
-2. Raw LLM client calls (OpenAI/Anthropic SDK): Manual prompt construction, JSON parsing, no validation loop.
-**Decision**: Use PydanticAI.
-**Rationale**: Raw calls lack type-safe structured output, automatic validation retries, and dependency injection. PydanticAI reduces boilerplate and handles syntax error retries automatically.
+
+> **Status:** resolved
+> **Date:** 2026-09-24
+
+**Question:** Which LLM client framework should be used to interact with LLMs?
+
+**Options considered:**
+| Option | Consequence |
+|--------|-------------|
+| A — PydanticAI | Provides typed BaseModel outputs, ModelRetry self-healing, and dependency injection. |
+| B — Raw LLM client calls (OpenAI/Anthropic SDK) | Manual prompt construction, JSON parsing, no validation loop. |
+
+**Decision:** A — PydanticAI
+**Rationale:** Raw calls lack type-safe structured output, automatic validation retries, and dependency injection. PydanticAI reduces boilerplate and handles syntax error retries automatically.
+**Rejected because:** B lacks automatic validation and structure.
 
 ## Changelog
-- 2026-09-24 | Initial version (v6.0.0)
+
+| Date | Change |
+|------|--------|
+| 2026-09-25 | Refactored design decisions to dev-flow structure |
+| 2026-09-24 | Initial version (v6.0.0) |
+

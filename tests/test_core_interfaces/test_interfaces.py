@@ -3,13 +3,13 @@
 import pytest
 from pathlib import Path
 
-from public_ai_challenge.core.interfaces import (
+from public_ai_challenge.core import (
     JudgeProtocol,
     McpServerProtocol,
     ScoutProtocol,
     SynthesisProtocol,
 )
-from public_ai_challenge.core.models import (
+from public_ai_challenge.core import (
     JudgeReport,
     ScoutedServiceRecord,
     ScoutResult,

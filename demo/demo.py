@@ -12,7 +12,7 @@ load_dotenv()
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from public_ai_challenge.core.interfaces import (
+from public_ai_challenge.core import (
     JudgeProtocol,
     McpServerProtocol,
     ScoutProtocol,

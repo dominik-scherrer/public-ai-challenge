@@ -177,13 +177,4 @@ cython_debug/
 # Repo specific files
 .DS_Store
 judge-report.json
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/.gitignore
-/.idea/misc.xml
-/.idea/mmp-judge.iml
-/.idea/modules.xml
-/.idea/municipality-mcp.iml
-/.idea/municipality-scout.iml
-/.idea/public-ai-challenge.iml
-/.idea/publicai.iml
-/.idea/vcs.xml
+/.idea/

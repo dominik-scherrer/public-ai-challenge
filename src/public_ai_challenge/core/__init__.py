@@ -1,27 +1,12 @@
-"""Core interfaces and domain models for Public AI Challenge."""
-
-from .interfaces import (
-    JudgeProtocol,
-    McpServerProtocol,
-    ScoutProtocol,
-    SynthesisProtocol,
-)
-from .models import (
-    JudgeFinding,
-    JudgeReport,
-    ScoutedServiceRecord,
-    ScoutResult,
-    ServiceInventoryRecord,
-)
+"""Core domain models and interfaces for the Public AI Challenge pipeline."""
+from .scout import ScoutedServiceRecord, ScoutResult, ScoutProtocol
+from .synthesis import ServiceInventoryRecord, SynthesisProtocol
+from .judge import JudgeFinding, JudgeReport, JudgeProtocol
+from .mcp import McpServerProtocol
 
 __all__ = [
-    "JudgeProtocol",
-    "McpServerProtocol",
-    "ScoutProtocol",
-    "SynthesisProtocol",
-    "JudgeFinding",
-    "JudgeReport",
-    "ScoutedServiceRecord",
-    "ScoutResult",
-    "ServiceInventoryRecord",
+    "ScoutedServiceRecord", "ScoutResult", "ScoutProtocol",
+    "ServiceInventoryRecord", "SynthesisProtocol",
+    "JudgeFinding", "JudgeReport", "JudgeProtocol",
+    "McpServerProtocol"
 ]

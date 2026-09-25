@@ -7,8 +7,8 @@ from pathlib import Path
 import tempfile
 from typing import Any
 
-from public_ai_challenge.core.interfaces import JudgeProtocol
-from public_ai_challenge.core.models import JudgeFinding, JudgeReport, ScoutResult, ServiceInventoryRecord
+from public_ai_challenge.core import JudgeProtocol
+from public_ai_challenge.core import JudgeFinding, JudgeReport, ScoutResult, ServiceInventoryRecord
 
 from .pipeline import run_judge
 from .schemas import BuildJudgeResult

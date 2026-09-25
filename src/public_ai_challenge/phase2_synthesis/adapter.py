@@ -8,8 +8,8 @@ from typing import Any, Dict
 import httpx
 from pydantic_ai import Agent
 
-from public_ai_challenge.core.interfaces import SynthesisProtocol
-from public_ai_challenge.core.models import ScoutResult, ServiceInventoryRecord
+from public_ai_challenge.core import SynthesisProtocol
+from public_ai_challenge.core import ScoutResult, ServiceInventoryRecord
 from public_ai_challenge.phase2_synthesis.agents import process_service_content, data_extraction_agent
 from public_ai_challenge.phase2_synthesis.models import ScoutedService, ServiceProcessingDeps
 

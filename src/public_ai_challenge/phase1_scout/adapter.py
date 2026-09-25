@@ -3,8 +3,8 @@
 import logging
 from typing import Any
 
-from public_ai_challenge.core.interfaces import ScoutProtocol
-from public_ai_challenge.core.models import ScoutResult, ScoutedServiceRecord
+from public_ai_challenge.core import ScoutProtocol
+from public_ai_challenge.core import ScoutResult, ScoutedServiceRecord
 from public_ai_challenge.phase1_scout.config import Settings
 from public_ai_challenge.phase1_scout.crawler import SafeCrawler
 from public_ai_challenge.phase1_scout.discovery import discover_findings
