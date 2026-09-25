@@ -8,11 +8,11 @@ on that merge. Revisit once pydantic lands on main.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Optional
+from enum import StrEnum
+from typing import Any
 
 
-class Verdict(str, Enum):
+class Verdict(StrEnum):
     """A judge's decision on one claim. No numeric score — see docs/architecture/adr/0004."""
 
     PASS = "pass"
@@ -35,7 +35,7 @@ class Claim:
     field: str  # e.g. "fees[0].amount", "requirements", "summary"
     value: Any
     source_refs: tuple[str, ...] = ()
-    evidence_text: Optional[str] = None  # exact supporting quote, if any was captured
+    evidence_text: str | None = None  # exact supporting quote, if any was captured
     is_free_text: bool = False  # True for fields a citizen-facing LLM might render verbatim
 
 
@@ -44,7 +44,7 @@ class ProvenanceVerdict:
     claim: Claim
     verdict: Verdict
     reason: str
-    model: Optional[str] = None  # None when withheld without calling a model (no evidence)
+    model: str | None = None  # None when withheld without calling a model (no evidence)
 
 
 @dataclass
@@ -84,4 +84,4 @@ class BuildJudgeResult:
     coverage: CoverageResult
     build_floor: float
     blocked: bool
-    block_reason: Optional[str] = None
+    block_reason: str | None = None

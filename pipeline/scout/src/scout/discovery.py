@@ -6,7 +6,6 @@ from collections import Counter
 from .contracts import IndexRelation, ScoutFinding, ServiceIndex
 from .runtime import PageIR, is_news_item
 
-
 GENERIC_SERVICE_SIGNALS = (
     "anmeldung", "abmeldung", "gesuch", "bewilligung", "formular",
     "bestellen", "beantragen", "patent", "gebühr", "gebuehr",

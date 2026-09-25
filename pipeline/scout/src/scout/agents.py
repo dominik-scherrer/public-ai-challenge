@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 
 from .contracts import (
     Availability,
     Handling,
     HandlingType,
-    IndexRelation,
     InteractionType,
     ReconResult,
     ScoutFinding,
@@ -17,6 +17,8 @@ from .contracts import (
     StrategyMode,
 )
 from .runtime import PageIR
+
+logger = logging.getLogger(__name__)
 
 
 def heuristic_strategy(
@@ -78,8 +80,16 @@ async def choose_strategy(
             for service in index.services
         ],
     }, ensure_ascii=False)
-    result = await agent.run(prompt)
-    return result.output
+    try:
+        result = await agent.run(prompt)
+        return result.output
+    except Exception as exc:
+        logger.warning(
+            "Agent strategy selection failed (%s: %s); falling back to heuristic",
+            type(exc).__name__,
+            exc,
+        )
+        return heuristic_strategy(recon, index)
 
 
 def heuristic_interpret(
@@ -162,5 +172,13 @@ async def inspect_service(
             "links": page.links[:60],
         },
     }, ensure_ascii=False)
-    result = await agent.run(prompt)
-    return result.output
+    try:
+        result = await agent.run(prompt)
+        return result.output
+    except Exception as exc:
+        logger.warning(
+            "Agent service inspection failed (%s: %s); falling back to heuristic",
+            type(exc).__name__,
+            exc,
+        )
+        return heuristic_interpret(finding, page)

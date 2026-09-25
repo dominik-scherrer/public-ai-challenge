@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Anmeldung Wohnsitz",
+    "description": "Online form for registering a move to Ausserberg.",
+    "urls": [
+      "https://www.ausserberg.ch/gemeinschaft/verwaltung/verwaltung/online-schalter/anmeldung-wohnsitz"
+    ],
+    "available": true
+  },
+  {
+    "name": "Miete Gemeindeanlagen",
+    "description": "Request municipal facilities or equipment; municipal office reviews the request.",
+    "urls": [
+      "https://www.ausserberg.ch/gemeinschaft/informationen/antraege-gesuche-reglemente/miete-gemeindeanlagen"
+    ],
+    "available": true
+  },
+  {
+    "name": "Bauberatung",
+    "description": "Building consultation service currently unavailable online.",
+    "urls": [],
+    "available": false
+  }
+]

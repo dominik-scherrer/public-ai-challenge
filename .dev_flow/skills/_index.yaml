@@ -1,0 +1,4 @@
+domains:
+  - name: python-cli
+    path: python-cli/
+    topics: [python, cli, uv]

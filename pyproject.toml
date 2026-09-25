@@ -8,13 +8,28 @@ authors = [
 ]
 requires-python = ">=3.14"
 dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "httpx>=0.28.1",
+    "markdownify>=1.2.3",
+    "mcp>=2.2.0",
     "openai>=3.19.2",
+    "pydantic-ai[openai]>=2.49.0",
+    "pymupdf>=1.28.2",
     "python-dotenv>=1.2.3",
 ]
 
 [project.scripts]
 public-ai-challenge = "public_ai_challenge:main"
+gemeinde-mcp-pipeline = "public_ai_challenge.gemeinde_mcp.pipeline:main"
 
 [build-system]
 requires = ["uv_build>=0.12.16,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

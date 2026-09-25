@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
-from datetime import datetime, timezone
-from pathlib import Path
 import hashlib
+import json
 import urllib.parse
+from datetime import UTC, datetime
+from pathlib import Path
 
 from .agents import choose_strategy, inspect_service
 from .catalog import all_terms, load_service_index
@@ -15,6 +15,7 @@ from .contracts import (
     BuildInfo,
     CatalogSuggestion,
     CoverageSummary,
+    DiscoveryFailure,
     Handling,
     HandlingType,
     IndexRelation,
@@ -139,7 +140,8 @@ async def run_scout(
     index = load_service_index()
     recon_result, root = recon(url)
     strategy = await choose_strategy(recon_result, index, use_agent)
-    pages = execute_strategy(root, strategy, all_terms(index))
+    failures: list[DiscoveryFailure] = []
+    pages = execute_strategy(root, strategy, all_terms(index), failures=failures)
     page_by_id = {page.source_id: page for page in pages}
 
     findings = discover_findings(pages, index)
@@ -209,7 +211,7 @@ async def run_scout(
         new_candidates=len(suggestions),
     )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     run_id = f"{municipality.lower().replace(' ', '-')}-{now.strftime('%Y%m%dT%H%M%SZ')}"
     discovery = MunicipalityDiscovery(
         municipality=Municipality(
@@ -226,7 +228,7 @@ async def run_scout(
         services=services,
         catalog_suggestions=suggestions,
         coverage=coverage,
-        failures=[],
+        failures=failures,
     )
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -248,6 +250,7 @@ async def run_scout(
             "run_id": run_id,
             "strategy": strategy.model_dump(mode="json"),
             "pages_fetched": len(pages),
+            "failures_encountered": len(failures),
             "findings": len(findings),
             "indexed_services_checked": len(index.services),
         }, ensure_ascii=False, indent=2),

@@ -3,16 +3,19 @@ from __future__ import annotations
 import hashlib
 import heapq
 import ipaddress
+import logging
 import re
 import socket
+import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from html.parser import HTMLParser
 
-from .contracts import ReconResult, ScoutStrategy, StrategyMode
+from .contracts import DiscoveryFailure, ReconResult, ScoutStrategy, StrategyMode
 
+logger = logging.getLogger(__name__)
 
 USER_AGENT = "MunicipalityScout/0.1 (+Swiss public-service discovery)"
 TRACKING_PREFIXES = ("utm_", "pk_", "mc_")
@@ -153,10 +156,10 @@ def fetch_page(url: str, timeout: int = 20) -> PageIR:
 
     parser = Parser(final_url)
     parser.feed(body.decode("utf-8", errors="replace"))
-    retrieved_at = datetime.now(timezone.utc)
+    retrieved_at = datetime.now(UTC)
     source_id = "src_" + hashlib.sha256(body).hexdigest()[:16]
     host = urllib.parse.urlsplit(final_url).netloc.lower()
-    links = []
+    links: list[dict[str, str | bool]] = []
     seen = set()
     for link in parser.links:
         candidate = normalize_url(link["url"])
@@ -188,14 +191,14 @@ def fetch_page(url: str, timeout: int = 20) -> PageIR:
 
 def recon(entrypoint: str) -> tuple[ReconResult, PageIR]:
     page = fetch_page(entrypoint)
-    directory_candidates = []
-    sampled = []
+    directory_candidates: list[str] = []
+    sampled: list[str] = []
     for link in page.links:
         text = f"{link['text']} {link['url']}".lower()
         if link["internal"] and any(term in text for term in (
             "dienstleistung", "online-schalter", "service", "guichet", "sportello"
         )):
-            directory_candidates.append(link["url"])
+            directory_candidates.append(str(link["url"]))
         if link["internal"] and len(sampled) < 30:
             sampled.append(str(link["text"] or link["url"]))
 
@@ -253,6 +256,7 @@ def broad_crawl(
     root: PageIR,
     strategy: ScoutStrategy,
     terms_by_service: dict[str, list[str]] | None = None,
+    failures: list[DiscoveryFailure] | None = None,
 ) -> list[PageIR]:
     terms = [term for values in (terms_by_service or {}).values() for term in values]
     pages = [root]
@@ -279,11 +283,14 @@ def broad_crawl(
         seen.add(url)
         try:
             page = fetch_page(url)
-        except Exception:
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+            logger.warning("Failed to fetch %s: %s: %s", url, type(exc).__name__, exc)
+            if failures is not None:
+                failures.append(DiscoveryFailure(url=url, stage="crawl", error=f"{type(exc).__name__}: {exc}"))
             continue
         # Redirects and aliases can land on a page we already have, or leave the
         # municipality's site entirely (e.g. a link that redirects to the canton).
-        if page.url in seen and page.url != url or page.source_id in seen_bodies:
+        if (page.url in seen and page.url != url) or page.source_id in seen_bodies:
             continue
         if urllib.parse.urlsplit(page.url).hostname != urllib.parse.urlsplit(root.url).hostname:
             continue
@@ -299,6 +306,7 @@ def targeted_crawl(
     root: PageIR,
     strategy: ScoutStrategy,
     terms_by_service: dict[str, list[str]],
+    failures: list[DiscoveryFailure] | None = None,
 ) -> list[PageIR]:
     pages = [root]
     scored: list[tuple[int, str]] = []
@@ -322,7 +330,10 @@ def targeted_crawl(
             break
         try:
             pages.append(fetch_page(url))
-        except Exception:
+        except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+            logger.warning("Failed to fetch %s: %s: %s", url, type(exc).__name__, exc)
+            if failures is not None:
+                failures.append(DiscoveryFailure(url=url, stage="crawl", error=f"{type(exc).__name__}: {exc}"))
             continue
     return pages
 
@@ -331,7 +342,8 @@ def execute_strategy(
     root: PageIR,
     strategy: ScoutStrategy,
     terms_by_service: dict[str, list[str]],
+    failures: list[DiscoveryFailure] | None = None,
 ) -> list[PageIR]:
     if strategy.mode == StrategyMode.BROAD_SMALL_SITE:
-        return broad_crawl(root, strategy, terms_by_service)
-    return targeted_crawl(root, strategy, terms_by_service)
+        return broad_crawl(root, strategy, terms_by_service, failures=failures)
+    return targeted_crawl(root, strategy, terms_by_service, failures=failures)

@@ -14,8 +14,9 @@ Currently handles: pipeline/legacy/handoff/delivery-2026-09-24/*/inventory.json
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from judge.schemas import Claim
 

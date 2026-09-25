@@ -6,7 +6,8 @@ No real network calls or keys needed: openai_is_configured/apertus_is_configured
 only check env vars.
 """
 
-import os
+
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -70,3 +71,25 @@ def test_resolve_returns_both_when_fully_configured(clean_env, capsys):
     configured = resolve_judge_models()
     assert configured == ["openai", "apertus"]
     assert "WARNING" not in capsys.readouterr().out
+
+
+def test_call_judge_ensemble_handles_model_failure(clean_env, monkeypatch, capsys):
+    from judge.llm import _PROVIDERS, RubricPrompt, call_judge_ensemble
+
+    mock_rubric = MagicMock(spec=RubricPrompt)
+    mock_rubric.render.return_value = ("sys", "inst")
+
+    def failing_call(sys, inst):
+        raise RuntimeError("Network connection reset")
+
+    monkeypatch.setitem(_PROVIDERS, "test_failing", (lambda: True, failing_call))
+
+    results = call_judge_ensemble(mock_rubric, models=["test_failing"], max_retries=1)
+    assert len(results) == 1
+    label, parsed = results[0]
+    assert label == "test_failing"
+    assert parsed is None
+
+    out = capsys.readouterr().out
+    assert "WARNING: Model 'test_failing' call failed (RuntimeError: Network connection reset)" in out
+

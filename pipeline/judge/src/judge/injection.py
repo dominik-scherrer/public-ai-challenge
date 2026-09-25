@@ -43,7 +43,7 @@ def _own_domain(url: str, municipality_domain: str) -> bool:
         host = urlparse(url).netloc.lower()
     except ValueError:
         return False
-    domain = municipality_domain.lower().lstrip("www.")
+    domain = municipality_domain.lower().removeprefix("www.")
     return host == domain or host.endswith("." + domain) or host == "www." + domain
 
 
