@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "crawl-report.schema.json",
+  "type": "object",
+  "required": ["strategy","strategy_reason","started_at","completed_at","pages_examined","sources_retained","services_found","languages_requested","languages_discovered","important_entrypoints","stop_reason","coverage_notes","problems"],
+  "properties": {
+    "strategy":{"enum":["full_crawl","section_crawl","directory_crawl","discovery_crawl"]},
+    "strategy_path":{"type":"array","items":{"type":"string"},"description":"e.g. ['discovery_crawl','section_crawl'] when strategy changed after recon"},
+    "strategy_reason":{"type":"array","items":{"type":"string"}},
+    "recon_plan":{"type":"array","items":{"type":"string"}},
+    "started_at":{"type":"string"},"completed_at":{"type":"string"},
+    "pages_examined":{"type":"integer"},"sources_retained":{"type":"integer"},"services_found":{"type":"integer"},
+    "services_by_status":{"type":"object"},
+    "rejected_candidates":{"type":"array","items":{"type":"object","required":["label","reason"],"properties":{"label":{"type":"string"},"url":{"type":["string","null"]},"reason":{"type":"string"}}}},
+    "languages_requested":{"type":"array"},"languages_discovered":{"type":"array"},
+    "important_entrypoints":{"type":"array"},
+    "stop_reason":{"type":"string"},
+    "coverage_notes":{"type":"array"},"problems":{"type":"array"},
+    "capture_stats":{"type":"object"}
+  }
+}

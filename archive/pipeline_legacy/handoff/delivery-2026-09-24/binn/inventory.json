@@ -1,0 +1,184 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "build_id": "binn-seed-20260924",
+  "built_at": "2026-09-24T14:55:00Z",
+  "build_status": "partial",
+  "municipality": {
+    "name": "Binn",
+    "canton": "VS",
+    "official_url": "https://www.binn.ch/"
+  },
+  "source_languages": [
+    "de"
+  ],
+  "services": [
+    {
+      "id": "ch.vs.binn.municipal_office",
+      "title": "Gemeindeverwaltung Binn",
+      "labels": {
+        "de": "Gemeindeverwaltung Binn"
+      },
+      "category": "municipal_contact",
+      "summary": "Municipal contact details and opening hours.",
+      "delivery_mode": [
+        "in_person"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_binn_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "authority_routing",
+        "municipal_contact",
+        "office_hours"
+      ]
+    },
+    {
+      "id": "ch.vs.binn.regulations",
+      "title": "Gemeindereglemente",
+      "labels": {
+        "de": "Gemeindereglemente"
+      },
+      "category": "regulations",
+      "summary": "Official municipal regulations, including waste, building, police and water.",
+      "delivery_mode": [
+        "document"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_binn_002"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "regulations"
+      ]
+    },
+    {
+      "id": "ch.vs.binn.official_information",
+      "title": "Gemeindeinformationen",
+      "labels": {
+        "de": "Gemeindeinformationen"
+      },
+      "category": "official_notices",
+      "summary": "Municipal news and current public information.",
+      "delivery_mode": [
+        "document"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_binn_003"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "local_notices",
+        "official_notices"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src_binn_001",
+      "url": "https://www.binn.ch/gemeinde/allgemein/kontakt",
+      "title": "Kontakt / Gemeindeverwaltung",
+      "classification": "official",
+      "publisher": {
+        "name": "Binn",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_binn_002",
+      "url": "https://www.binn.ch/gemeinde/verwaltung/reglemente",
+      "title": "Reglemente",
+      "classification": "official",
+      "publisher": {
+        "name": "Binn",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_binn_003",
+      "url": "https://www.binn.ch/gemeinde/allgemein/home",
+      "title": "Gemeindeinformationen",
+      "classification": "official",
+      "publisher": {
+        "name": "Binn",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    }
+  ],
+  "generation": {
+    "method": "source-backed-seed",
+    "native_crawler_execution": false
+  },
+  "capabilities": [
+    "authority_routing",
+    "local_notices",
+    "municipal_contact",
+    "office_hours",
+    "official_notices",
+    "regulations",
+    "service_catalog"
+  ]
+}

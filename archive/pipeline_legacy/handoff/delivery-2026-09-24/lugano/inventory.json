@@ -1,0 +1,176 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "build_id": "lugano-seed-20260924",
+  "built_at": "2026-09-24T14:55:00Z",
+  "build_status": "partial",
+  "municipality": {
+    "name": "Lugano",
+    "canton": "TI",
+    "official_url": "https://www.lugano.ch/"
+  },
+  "source_languages": [
+    "it"
+  ],
+  "services": [
+    {
+      "id": "ch.ti.lugano.arrival_certificate",
+      "title": "Certificato di avvenuta notifica di arrivo",
+      "labels": {
+        "it": "Certificato di avvenuta notifica di arrivo"
+      },
+      "category": "residence_certificate",
+      "summary": "Arrival notification certificate; paper or digitally signed PDF.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_lug_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "residence_certificate"
+      ]
+    },
+    {
+      "id": "ch.ti.lugano.departure_certificate",
+      "title": "Certificato di avvenuta notifica di partenza",
+      "labels": {
+        "it": "Certificato di avvenuta notifica di partenza"
+      },
+      "category": "residence_certificate",
+      "summary": "Departure notification certificate; paper or digitally signed PDF.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_lug_002"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "residence_certificate"
+      ]
+    },
+    {
+      "id": "ch.ti.lugano.residence_certificates",
+      "title": "Certificati di domicilio o dimora",
+      "labels": {
+        "it": "Certificati di domicilio o dimora"
+      },
+      "category": "residence_certificate",
+      "summary": "Online digitally signed residence certificates are available through the city eGov counter.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_lug_003"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "residence_certificate"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src_lug_001",
+      "url": "https://egov.lugano.ch/it/services/11/certificato-avvenuta-notifica-arrivo",
+      "title": "Certificato avvenuta notifica arrivo",
+      "classification": "official",
+      "publisher": {
+        "name": "Lugano",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "it"
+    },
+    {
+      "source_id": "src_lug_002",
+      "url": "https://egov.lugano.ch/it/services/10/certificato-avvenuta-notifica-partenza",
+      "title": "Certificato avvenuta notifica partenza",
+      "classification": "official",
+      "publisher": {
+        "name": "Lugano",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "it"
+    },
+    {
+      "source_id": "src_lug_003",
+      "url": "https://egov.lugano.ch/it/news/10/servizi-sempre-piu-smart-nuovi-certificati-firmati-elettronicamente",
+      "title": "Certificati firmati elettronicamente",
+      "classification": "official",
+      "publisher": {
+        "name": "Lugano",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "it"
+    }
+  ],
+  "generation": {
+    "method": "source-backed-seed",
+    "native_crawler_execution": false
+  },
+  "capabilities": [
+    "residence_certificate",
+    "service_catalog"
+  ]
+}

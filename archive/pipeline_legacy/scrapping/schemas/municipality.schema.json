@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "municipality.schema.json",
+  "type": "object",
+  "required": ["name","canton","bfs_id","administrative_languages","website_languages","official_domains","entrypoints","site_profile"],
+  "properties": {
+    "name":{"type":"string"},"canton":{"type":"string","pattern":"^[A-Z]{2}$"},
+    "bfs_id":{"type":["integer","null"]},
+    "bfs_id_source_ref":{"type":["string","null"]},
+    "administrative_languages":{"type":"array","items":{"type":"string"}},
+    "administrative_languages_basis":{"type":["string","null"],"description":"Source ref or 'inferred: ...' — never unstated."},
+    "population_languages":{"type":["object","null"],"description":"Only if backed by a source_ref."},
+    "website_languages":{"type":"array","items":{"type":"string"}},
+    "official_domains":{"type":"array","items":{"type":"string"}},
+    "related_official_domains":{"type":"array","items":{"type":"object","properties":{"domain":{"type":"string"},"role":{"type":"string"},"operator":{"type":["string","null"]},"basis":{"type":"string"}}}},
+    "entrypoints":{"type":"array","items":{"type":"object","required":["url","role"],"properties":{"url":{"type":"string"},"role":{"type":"string"},"source_ref":{"type":["string","null"]}}}},
+    "site_profile":{"type":"object","required":["estimated_scale","service_directory","site_search","sitemap","egov_portal"],"properties":{
+      "estimated_scale":{"enum":["tiny","small","medium","large",null]},
+      "estimated_scale_basis":{"type":["string","null"]},
+      "service_directory":{"type":"boolean"},"site_search":{"type":"boolean"},"sitemap":{"type":"boolean"},"egov_portal":{"type":"boolean"},
+      "cms_hint":{"type":["string","null"]},"js_rendering_required":{"type":["boolean","null"]}}}
+  }
+}

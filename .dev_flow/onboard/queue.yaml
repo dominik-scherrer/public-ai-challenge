@@ -1,0 +1,8 @@
+layers:
+  - layer: 0
+    modules:
+      - name: public_ai_challenge
+        path: src/public_ai_challenge/
+        status: pending
+        analyzed_at: null
+        docs_at: null

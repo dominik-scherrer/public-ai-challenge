@@ -1,0 +1,23 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "id": "ausserberg-contact-service",
+  "title": "Kontakt Service of Gemeinde Ausserberg",
+  "category": "Communication Service",
+  "summary": "Facilitates communication with the municipal office of Ausserberg through an online form.",
+  "requirements": [
+    "Read and accept the Privacy Policy"
+  ],
+  "fees": [],
+  "documents": [],
+  "contacts": [
+    {
+      "address": "Gemeinde Ausserberg, Kanzlei, 3938 Ausserberg",
+      "phone": "+41 27 948 07 80",
+      "fax": "+41 27 948 07 81",
+      "email": "gemeinde@ausserberg.ch"
+    }
+  ],
+  "handoffs": [
+    "https://www.ausserberg.ch/allgemein/standort-kontakt"
+  ]
+}

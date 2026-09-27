@@ -1,0 +1,21 @@
+{
+  "schema": "mmp-build-report/v0",
+  "build_id": "lugano-seed-20260924",
+  "municipality": {
+    "name": "Lugano",
+    "canton": "TI",
+    "official_url": "https://www.lugano.ch/"
+  },
+  "counts": {
+    "referenced_sources": 3,
+    "services": 3,
+    "documents": 0,
+    "unchecked_evidence_quotes": 0,
+    "conflicts": 0
+  },
+  "warnings": [
+    "Seed batch was assembled from retrievable official sources rather than executed by the native crawler."
+  ],
+  "handoff_ready": true,
+  "coverage": "partial"
+}

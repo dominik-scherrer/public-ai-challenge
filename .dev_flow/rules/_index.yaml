@@ -1,0 +1,3 @@
+rules:
+  - file: structure.md
+    summary: General structure conventions

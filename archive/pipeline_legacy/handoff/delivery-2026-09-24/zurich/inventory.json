@@ -1,0 +1,181 @@
+{
+  "schema": "mmp-service-inventory/v0",
+  "build_id": "zurich-seed-20260924",
+  "built_at": "2026-09-24T14:55:00Z",
+  "build_status": "partial",
+  "municipality": {
+    "name": "Zürich",
+    "canton": "ZH",
+    "official_url": "https://www.stadt-zuerich.ch/"
+  },
+  "source_languages": [
+    "de"
+  ],
+  "services": [
+    {
+      "id": "ch.zh.zurich.online_services",
+      "title": "Mein Konto",
+      "labels": {
+        "de": "Mein Konto"
+      },
+      "category": "service_portal",
+      "summary": "Central access to more than 100 city online services.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_zh_001"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "service_catalog"
+      ]
+    },
+    {
+      "id": "ch.zh.zurich.population_services",
+      "title": "Online-Schalter Bevölkerungsamt",
+      "labels": {
+        "de": "Online-Schalter Bevölkerungsamt"
+      },
+      "category": "population_services",
+      "summary": "Forms, confirmations and appointments from the population office.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_zh_002"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "identity_document_guidance",
+        "residence_certificate",
+        "residence_registration"
+      ]
+    },
+    {
+      "id": "ch.zh.zurich.applications",
+      "title": "Gesuche und Anträge",
+      "labels": {
+        "de": "Gesuche und Anträge"
+      },
+      "category": "applications",
+      "summary": "Digital applications and submissions through Mein Konto and AGOV.",
+      "delivery_mode": [
+        "online"
+      ],
+      "requirements": [],
+      "fees": [],
+      "documents": [],
+      "contacts": [],
+      "handoffs": [],
+      "source_refs": [
+        "src_zh_003"
+      ],
+      "evidence": [],
+      "completeness": {
+        "description": "supported",
+        "requirements": "unknown",
+        "fees": "unknown",
+        "documents": "unknown",
+        "processing_time": "unknown",
+        "actions": "unknown",
+        "contacts": "unknown"
+      },
+      "status": "candidate",
+      "trust": {
+        "authority": "high",
+        "freshness": "retrieved_current_run"
+      },
+      "capabilities": [
+        "forms"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "src_zh_001",
+      "url": "https://www.stadt-zuerich.ch/meinkonto",
+      "title": "Mein Konto",
+      "classification": "official",
+      "publisher": {
+        "name": "Zürich",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_zh_002",
+      "url": "https://www.kultur.stadt-zuerich.ch/de/lebenslagen/einwohner-services/online-schalter.html",
+      "title": "Online-Schalter Bevölkerungsamt",
+      "classification": "official",
+      "publisher": {
+        "name": "Zürich",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    },
+    {
+      "source_id": "src_zh_003",
+      "url": "https://www.stadt-zuerich.ch/de/service/mein-konto/gesuche-antraege.html",
+      "title": "Gesuche und Anträge",
+      "classification": "official",
+      "publisher": {
+        "name": "Zürich",
+        "authority_level": "municipality"
+      },
+      "retrieved_at": "2026-09-24T14:55:00Z",
+      "language": "de"
+    }
+  ],
+  "generation": {
+    "method": "source-backed-seed",
+    "native_crawler_execution": false
+  },
+  "capabilities": [
+    "forms",
+    "identity_document_guidance",
+    "residence_certificate",
+    "residence_registration",
+    "service_catalog"
+  ]
+}
